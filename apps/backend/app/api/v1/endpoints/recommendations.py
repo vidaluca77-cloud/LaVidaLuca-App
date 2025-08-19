@@ -1,22 +1,27 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
-import openai
 import json
 import logging
 
-from ...core.database import get_db
-from ...core.config import settings
-from ...models.activity import Activity
-from ...models.user import User
-from ...schemas.activity import ActivityRecommendation, ActivityResponse
+from app.core.database import get_db
+from app.core.config import settings
+from app.models.activity import Activity
+from app.models.user import User
+from app.schemas.activity import ActivityRecommendation, ActivityResponse
 from .users import get_current_user
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-# Initialize OpenAI
-openai.api_key = settings.openai_api_key
+# Initialize OpenAI if available
+try:
+    import openai
+    openai.api_key = settings.openai_api_key
+    OPENAI_AVAILABLE = bool(settings.openai_api_key)
+except ImportError:
+    OPENAI_AVAILABLE = False
+    logger.warning("OpenAI package not available")
 
 def calculate_activity_match_score(user: User, activity: Activity) -> float:
     """Calculate compatibility score between user and activity"""
@@ -99,11 +104,12 @@ def get_recommendation_reasons(user: User, activity: Activity, score: float) -> 
 
 async def get_ai_recommendations(user: User, activities: List[Activity]) -> str:
     """Get AI-powered recommendations using OpenAI"""
-    if not settings.openai_api_key:
+    if not OPENAI_AVAILABLE or not settings.openai_api_key:
         logger.warning("OpenAI API key not configured, skipping AI recommendations")
         return "AI recommendations not available"
     
     try:
+        import openai
         # Prepare user profile for AI
         user_profile = {
             "skills": user.skills or [],

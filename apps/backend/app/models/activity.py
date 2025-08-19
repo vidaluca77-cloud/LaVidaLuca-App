@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, JSON, Float
 from sqlalchemy.sql import func
-from ..core.database import Base
+from app.core.database import Base
 
 class Activity(Base):
     """Activity model for the 30 activities catalog"""

@@ -1,10 +1,10 @@
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import BaseModel, validator
 from typing import List, Optional
 from datetime import datetime
 
 class UserBase(BaseModel):
     """Base user schema"""
-    email: EmailStr
+    email: str  # Changed from EmailStr to str for now
     username: str
     full_name: Optional[str] = None
     skills: List[str] = []

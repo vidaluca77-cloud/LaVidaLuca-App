@@ -3,7 +3,7 @@ from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException, status
-from .config import settings
+from app.core.config import settings
 import logging
 
 logger = logging.getLogger(__name__)

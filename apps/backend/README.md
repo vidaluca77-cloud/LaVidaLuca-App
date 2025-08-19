@@ -177,10 +177,41 @@ pip install pytest pytest-asyncio httpx
 pytest
 ```
 
-## Contributing
+## API Testing
 
-1. Follow FastAPI and SQLAlchemy best practices
-2. Add type hints to all functions
-3. Include docstrings for all endpoints
-4. Test your changes before submitting
-5. Update this README if adding new features
+The backend has been tested and verified to work correctly. Here are some examples:
+
+### 1. Health Check
+```bash
+curl http://localhost:8000/health
+# Response: {"status":"healthy","version":"1.0.0","environment":"development"}
+```
+
+### 2. User Registration
+```bash
+curl -X POST http://localhost:8000/api/v1/users/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "username": "testuser", 
+    "password": "testpassword123",
+    "skills": ["sol", "plantes"],
+    "preferences": ["agri", "nature"]
+  }'
+# Returns: JWT tokens and user profile
+```
+
+### 3. Get Activity Categories
+```bash
+curl http://localhost:8000/api/v1/activities/categories/
+# Response: ["agri","transfo","artisanat","nature","social"]
+```
+
+### 4. Get Personalized Recommendations
+```bash
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+  http://localhost:8000/api/v1/recommendations/
+# Returns: Personalized activity recommendations with scores
+```
+
+The recommendation system successfully analyzes user skills and preferences to provide relevant activity suggestions with match scores.

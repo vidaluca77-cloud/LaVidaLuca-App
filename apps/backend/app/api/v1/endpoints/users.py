@@ -4,16 +4,16 @@ from sqlalchemy.orm import Session
 from typing import List
 from datetime import timedelta
 
-from ...core.database import get_db
-from ...core.security import (
+from app.core.database import get_db
+from app.core.security import (
     verify_password, 
     get_password_hash, 
     create_access_token, 
     create_refresh_token,
     verify_token
 )
-from ...models.user import User
-from ...schemas.user import UserCreate, UserUpdate, UserResponse, UserLogin, Token
+from app.models.user import User
+from app.schemas.user import UserCreate, UserUpdate, UserResponse, UserLogin, Token
 
 router = APIRouter()
 security = HTTPBearer()
