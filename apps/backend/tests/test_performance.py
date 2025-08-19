@@ -11,6 +11,8 @@ from sqlalchemy.orm import Session
 from app.models.models import User, Activity
 
 
+@pytest.mark.performance
+@pytest.mark.slow
 class TestAPIPerformance:
     """Test API endpoint performance."""
     
@@ -148,6 +150,8 @@ class TestAPIPerformance:
         assert response_time < 1.0  # Should complete within 1 second
 
 
+@pytest.mark.performance
+@pytest.mark.slow
 class TestConcurrentRequests:
     """Test API performance under concurrent load."""
     
@@ -256,6 +260,8 @@ class TestConcurrentRequests:
         assert total_time < 3.0
 
 
+@pytest.mark.performance
+@pytest.mark.slow
 class TestDatabasePerformance:
     """Test database operation performance."""
     
@@ -360,6 +366,8 @@ class TestDatabasePerformance:
         assert count == 20
 
 
+@pytest.mark.performance
+@pytest.mark.slow
 class TestMemoryUsage:
     """Test memory usage patterns."""
     
@@ -427,6 +435,8 @@ class TestMemoryUsage:
         assert memory_growth < 10 * 1024 * 1024
 
 
+@pytest.mark.performance
+@pytest.mark.slow
 class TestResponseTime:
     """Test response time characteristics."""
     
@@ -480,6 +490,8 @@ class TestResponseTime:
         assert max_time < 2.0  # Maximum should be under 2 seconds
 
 
+@pytest.mark.performance
+@pytest.mark.slow
 class TestScalability:
     """Test system scalability characteristics."""
     

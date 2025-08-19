@@ -14,6 +14,7 @@ from app.models.models import User, Activity
 from app.core.security import create_access_token
 
 
+@pytest.mark.security
 class TestAuthenticationSecurity:
     """Test authentication security measures."""
     
@@ -128,6 +129,7 @@ class TestAuthenticationSecurity:
             assert response.status_code == 401
 
 
+@pytest.mark.security
 class TestAuthorizationSecurity:
     """Test authorization and access control."""
     
@@ -192,6 +194,7 @@ class TestAuthorizationSecurity:
             assert user_data.get("is_superuser", False) is False
 
 
+@pytest.mark.security
 class TestInputValidationSecurity:
     """Test input validation and sanitization."""
     
@@ -314,6 +317,7 @@ class TestInputValidationSecurity:
             assert response.status_code in [400, 403, 404, 415]
 
 
+@pytest.mark.security
 class TestDataLeakagePrevention:
     """Test prevention of sensitive data leakage."""
     
@@ -366,6 +370,7 @@ class TestDataLeakagePrevention:
             assert "File \"" not in response_text
 
 
+@pytest.mark.security
 class TestSessionSecurity:
     """Test session and token security."""
     
@@ -432,6 +437,7 @@ class TestSessionSecurity:
         assert len(set(tokens)) == len(tokens)  # All tokens should be unique
 
 
+@pytest.mark.security
 class TestRateLimitingSecurity:
     """Test rate limiting and DoS protection."""
     
@@ -490,6 +496,7 @@ class TestRateLimitingSecurity:
         assert success_count > 0
 
 
+@pytest.mark.security
 class TestHTTPSSecurity:
     """Test HTTPS and transport security."""
     

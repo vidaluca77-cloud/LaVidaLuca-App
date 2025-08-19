@@ -12,6 +12,7 @@ from app.models.models import User, Activity, ActivitySuggestion
 from app.core.security import get_password_hash, verify_password
 
 
+@pytest.mark.db
 class TestUserModel:
     """Test User model database operations."""
     
@@ -161,6 +162,7 @@ class TestUserModel:
         assert test_user.activities[0].creator_id == test_user.id
 
 
+@pytest.mark.db
 class TestActivityModel:
     """Test Activity model database operations."""
     
@@ -291,6 +293,7 @@ class TestActivityModel:
         assert before_update <= activity.updated_at <= after_update
 
 
+@pytest.mark.db
 class TestActivitySuggestionModel:
     """Test ActivitySuggestion model database operations."""
     
@@ -356,6 +359,7 @@ class TestActivitySuggestionModel:
         assert suggestion.activity.id == test_activity.id
 
 
+@pytest.mark.db
 class TestDatabaseQueries:
     """Test complex database queries and operations."""
     
@@ -534,6 +538,7 @@ class TestDatabaseQueries:
         assert user_obj.id == test_user.id
 
 
+@pytest.mark.db
 class TestDatabaseTransactions:
     """Test database transaction handling."""
     
@@ -595,6 +600,7 @@ class TestDatabaseTransactions:
         assert final_count == initial_count + 2
 
 
+@pytest.mark.db
 class TestDatabasePerformance:
     """Test database performance and optimization."""
     

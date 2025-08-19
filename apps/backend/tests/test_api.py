@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 from app.models.models import User, Activity
 
 
+@pytest.mark.integration
+@pytest.mark.integration
 class TestHealthAndRoot:
     """Test health check and root endpoints."""
     
@@ -37,6 +39,8 @@ class TestHealthAndRoot:
         assert "info" in data
 
 
+@pytest.mark.integration
+@pytest.mark.integration
 class TestAuthenticationAPI:
     """Test authentication endpoints."""
     
@@ -119,6 +123,8 @@ class TestAuthenticationAPI:
         assert "Incorrect username or password" in response.json()["detail"]
 
 
+@pytest.mark.integration
+@pytest.mark.integration
 class TestActivitiesAPI:
     """Test activities endpoints."""
     
@@ -328,6 +334,7 @@ class TestActivitiesAPI:
             assert category in test_categories
 
 
+@pytest.mark.integration
 class TestUsersAPI:
     """Test users endpoints (if they exist)."""
     
@@ -344,6 +351,7 @@ class TestUsersAPI:
         assert data["email"] == test_user.email
 
 
+@pytest.mark.integration
 class TestErrorHandling:
     """Test error handling and edge cases."""
     
@@ -401,6 +409,7 @@ class TestErrorHandling:
         assert response.status_code == 401
 
 
+@pytest.mark.integration
 class TestRateLimiting:
     """Test rate limiting and performance considerations."""
     

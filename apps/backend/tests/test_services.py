@@ -17,6 +17,7 @@ from app.services.openai_service import OpenAIService
 from app.models.models import User, Activity
 
 
+@pytest.mark.unit
 class TestSecurityService:
     """Test security service functions."""
     
@@ -146,6 +147,7 @@ class TestSecurityService:
         assert exc_info.value.status_code == 401
 
 
+@pytest.mark.unit
 class TestOpenAIService:
     """Test OpenAI service integration."""
     
@@ -316,6 +318,7 @@ class TestOpenAIService:
         assert suggestions == []  # Should return empty list when no API key
 
 
+@pytest.mark.unit
 class TestActivityService:
     """Test activity-related service functions."""
     
@@ -382,6 +385,7 @@ class TestActivityService:
                 assert curr_score >= next_score
 
 
+@pytest.mark.unit
 class TestUserService:
     """Test user-related service functions."""
     
@@ -456,6 +460,7 @@ class TestUserService:
             assert activity.creator_id == test_user.id
 
 
+@pytest.mark.unit
 class TestValidationService:
     """Test validation service functions."""
     
@@ -540,6 +545,7 @@ class TestValidationService:
         assert "DROP TABLE" not in sanitized.upper()
 
 
+@pytest.mark.unit
 class TestCacheService:
     """Test caching service functionality."""
     
