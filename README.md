@@ -17,6 +17,7 @@ Objectif : permettre à chacun de contribuer à sa manière au projet, dans le r
 
 📦 Structure du projet
 	•	/apps/web → Site Next.js (Vercel)
+	•	/apps/backend → API FastAPI avec base de données (Render)
 	•	/apps/ia → API FastAPI pour l’IA (Render)
 	•	/infra/supabase → Base de données et schéma SQL
 	•	/assets → Médias (logos, visuels, documents)
@@ -40,6 +41,24 @@ NEXT_PUBLIC_CONTACT_EMAIL=
 NEXT_PUBLIC_CONTACT_PHONE=
 ALLOWED_ORIGINS=https://<site-vercel>.vercel.app
 
+
+⸻
+
+📊 Backend API
+Le backend FastAPI fournit une API complète avec :
+	•	🔐 Authentification JWT avec rôles (élève, encadrant, admin)
+	•	👥 Gestion des utilisateurs et profils
+	•	📍 Gestion des lieux d'action (fermes)
+	•	🎯 Catalogue des 30 activités MFR
+	•	📅 Système de réservations
+	•	📈 Suivi des progrès et compétences
+	•	💬 Messagerie interne
+	•	📝 Documentation API interactive
+
+**Accès API :**
+- Documentation interactive : `/docs`
+- Schéma OpenAPI : `/api/v1/openapi.json`
+- Health check : `/health`
 
 ⸻
 
