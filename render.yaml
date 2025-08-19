@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: lavidaluca-ia-api
+    runtime: python
+    plan: free
+    region: frankfurt
+    repo: https://github.com/vidaluca77-cloud/LaVidaLuca-App
+    rootDir: ./apps/ia
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SUPABASE_URL
+        fromService: 
+          type: web
+          name: lavidaluca-web
+          envVarKey: NEXT_PUBLIC_SUPABASE_URL
+      - key: SUPABASE_SERVICE_KEY
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: https://lavidaluca.vercel.app
+      - key: PORT
+        value: 10000
+    autoDeploy: true
+    branch: main
+
+databases:
+  - name: lavidaluca-cache
+    databaseName: cache
+    user: cache_user
+    plan: free
+    region: frankfurt
