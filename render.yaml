@@ -1,0 +1,43 @@
+services:
+  # API IA FastAPI - À déployer sur Render
+  - type: web
+    name: lavidaluca-ia-api
+    env: python
+    repo: https://github.com/vidaluca77-cloud/LaVidaLuca-App.git
+    rootDir: ./apps/ia
+    buildCommand: |
+      pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SUPABASE_URL
+        fromService:
+          type: web
+          name: lavidaluca-supabase
+          envVarKey: SUPABASE_URL
+      - key: SUPABASE_ANON_KEY
+        fromService:
+          type: web
+          name: lavidaluca-supabase
+          envVarKey: SUPABASE_ANON_KEY
+      - key: SUPABASE_SERVICE_KEY
+        fromService:
+          type: web
+          name: lavidaluca-supabase
+          envVarKey: SUPABASE_SERVICE_KEY
+      - key: ALLOWED_ORIGINS
+        value: https://la-vida-luca.vercel.app,http://localhost:3000
+      - key: OPENAI_API_KEY
+        sync: false # À configurer manuellement
+      - key: ENVIRONMENT
+        value: production
+
+databases:
+  # Base de données PostgreSQL pour dev/test si nécessaire
+  - name: lavidaluca-postgres
+    databaseName: lavidaluca
+    user: lavidaluca
+    plan: starter
