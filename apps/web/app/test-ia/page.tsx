@@ -24,8 +24,8 @@ export default function TestIA() {
       }
       const data = await r.json();
       setRes(data.answer ?? JSON.stringify(data));
-    } catch (err: any) {
-      setRes(`Erreur: ${err.message}`);
+    } catch (err: unknown) {
+      setRes(`Erreur: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setLoading(false);
     }
