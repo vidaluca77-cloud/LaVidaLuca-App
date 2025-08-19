@@ -1,6 +1,7 @@
 # FastAPI and ASGI server
 fastapi==0.116.1
 uvicorn[standard]==0.35.0
+gunicorn==21.2.0
 
 # Database
 psycopg2-binary==2.9.9
