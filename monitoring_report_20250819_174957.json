@@ -1,0 +1,68 @@
+{
+  "timestamp": "2025-08-19T17:49:57.950757+00:00",
+  "environment": "production",
+  "summary": {
+    "total_checks": 6,
+    "successful": 0,
+    "failed": 6,
+    "critical_failures": 4,
+    "success_rate": 0.0,
+    "avg_response_time": 0.0029737154642740884
+  },
+  "details": [
+    {
+      "name": "Site Web - Page d'accueil",
+      "url": "https://la-vida-luca.vercel.app/",
+      "success": false,
+      "critical": true,
+      "response_time": 0.0030095577239990234,
+      "status_code": null,
+      "error": "HTTPSConnectionPool(host='la-vida-luca.vercel.app', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x7fdf8054bf50>: Failed to resolve 'la-vida-luca.vercel.app' ([Errno -5] No address associated with hostname)\"))"
+    },
+    {
+      "name": "Site Web - Catalogue",
+      "url": "https://la-vida-luca.vercel.app/catalogue",
+      "success": false,
+      "critical": true,
+      "response_time": 0.003057241439819336,
+      "status_code": null,
+      "error": "HTTPSConnectionPool(host='la-vida-luca.vercel.app', port=443): Max retries exceeded with url: /catalogue (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x7fdf8018e990>: Failed to resolve 'la-vida-luca.vercel.app' ([Errno -5] No address associated with hostname)\"))"
+    },
+    {
+      "name": "Site Web - Contact",
+      "url": "https://la-vida-luca.vercel.app/contact",
+      "success": false,
+      "critical": false,
+      "response_time": 0.0026397705078125,
+      "status_code": null,
+      "error": "HTTPSConnectionPool(host='la-vida-luca.vercel.app', port=443): Max retries exceeded with url: /contact (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x7fdf8018f110>: Failed to resolve 'la-vida-luca.vercel.app' ([Errno -5] No address associated with hostname)\"))"
+    },
+    {
+      "name": "API - Health Check",
+      "url": "https://la-vida-luca-api.onrender.com/health",
+      "success": false,
+      "critical": true,
+      "response_time": 0.0026383399963378906,
+      "status_code": null,
+      "error": "HTTPSConnectionPool(host='la-vida-luca-api.onrender.com', port=443): Max retries exceeded with url: /health (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x7fdf8018f950>: Failed to resolve 'la-vida-luca-api.onrender.com' ([Errno -5] No address associated with hostname)\"))"
+    },
+    {
+      "name": "API - Activit\u00e9s",
+      "url": "https://la-vida-luca-api.onrender.com/api/v1/activities",
+      "success": false,
+      "critical": true,
+      "response_time": 0.0036432743072509766,
+      "status_code": null,
+      "error": "HTTPSConnectionPool(host='la-vida-luca-api.onrender.com', port=443): Max retries exceeded with url: /api/v1/activities (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x7fdf8018eba0>: Failed to resolve 'la-vida-luca-api.onrender.com' ([Errno -5] No address associated with hostname)\"))"
+    },
+    {
+      "name": "API - Documentation",
+      "url": "https://la-vida-luca-api.onrender.com/docs",
+      "success": false,
+      "critical": false,
+      "response_time": 0.0028541088104248047,
+      "status_code": null,
+      "error": "HTTPSConnectionPool(host='la-vida-luca-api.onrender.com', port=443): Max retries exceeded with url: /docs (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x7fdf8018e360>: Failed to resolve 'la-vida-luca-api.onrender.com' ([Errno -5] No address associated with hostname)\"))"
+    }
+  ]
+}

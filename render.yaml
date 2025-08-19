@@ -1,0 +1,54 @@
+services:
+  # Next.js Web App (Static Site)
+  - type: web
+    name: la-vida-luca-web
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./out
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        fromService: supabase
+        fromProperty: url
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        fromService: supabase
+        fromProperty: anon_key
+      - key: NEXT_PUBLIC_IA_API_URL
+        fromService: la-vida-luca-api
+        fromProperty: url
+      - key: NEXT_PUBLIC_CONTACT_EMAIL
+        value: contact@lavidaluca.fr
+      - key: NEXT_PUBLIC_CONTACT_PHONE
+        value: "+33 1 23 45 67 89"
+
+  # FastAPI Backend
+  - type: web
+    name: la-vida-luca-api
+    runtime: python3
+    rootDir: ./apps/ia
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: la-vida-luca-db
+          property: connectionString
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: "https://la-vida-luca-web.onrender.com,https://la-vida-luca.vercel.app"
+      - key: ENVIRONMENT
+        value: production
+      - key: API_SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+
+databases:
+  - name: la-vida-luca-db
+    databaseName: lavidaluca
+    user: lavidaluca_user
+    region: frankfurt
