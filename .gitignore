@@ -1,5 +1,28 @@
-.venv/
-apps/ia/.env
+# Dependencies
 node_modules/
+.venv/
+
+# Next.js build artifacts
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+apps/ia/.env
+
+# Legacy structure references
 apps/web/node_modules/
 apps/web/.next/
+
+# IDE and system files
+.DS_Store
+*.log
+
+# Temporary files
+tmp/

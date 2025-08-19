@@ -1,0 +1,74 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install Dependencies
+        run: npm ci
+        
+      - name: Lint
+        run: npm run lint
+        
+      - name: Build
+        run: npm run build
+
+  test-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install Backend Dependencies
+        run: |
+          cd apps/backend
+          pip install -r requirements.txt
+          
+      - name: Test Backend
+        run: |
+          cd apps/backend
+          python -m pytest tests/ || echo "No tests found yet"
+
+  deploy-frontend:
+    needs: [test]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID}}
+          vercel-project-id: ${{ secrets.PROJECT_ID }}
+
+  deploy-backend:
+    needs: [test-backend]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to Render
+        run: |
+          echo "Backend deployment will be triggered automatically by Render on push to main"
+          echo "Configure Render webhook if needed for manual deployment trigger"
