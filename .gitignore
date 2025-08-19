@@ -3,3 +3,46 @@ apps/ia/.env
 node_modules/
 apps/web/node_modules/
 apps/web/.next/
+.next/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# FastAPI
+.env
+.venv
+venv/
+ENV/
+env/
+.pytest_cache/
+
+# Database
+*.db
+*.sqlite3
+alembic/versions/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
