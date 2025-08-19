@@ -1,9 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    appDir: true,
+    // Remove deprecated appDir option
   },
-  output: 'export',
+  // Remove output: 'export' for proper Vercel deployment
   trailingSlash: true,
   images: {
     unoptimized: true
