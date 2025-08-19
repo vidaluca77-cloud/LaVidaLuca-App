@@ -45,11 +45,101 @@ def create_app() -> FastAPI:
     
     app = FastAPI(
         title="La Vida Luca API",
-        description="API pour la plateforme collaborative La Vida Luca",
+        description="""
+        ## 🌱 API pour la plateforme collaborative La Vida Luca
+
+        La Vida Luca est une plateforme dédiée à la formation des jeunes en MFR (Maisons Familiales Rurales) 
+        et au développement d'une agriculture vivante et respectueuse.
+
+        ### Fonctionnalités principales
+
+        * **🔐 Authentification** - Gestion des utilisateurs avec JWT
+        * **🎯 Activités** - Catalogue de 30+ activités pédagogiques
+        * **🤖 Suggestions IA** - Recommandations personnalisées basées sur les profils
+        * **📧 Contact** - Gestion des demandes de contact et d'inscription
+        * **👥 Utilisateurs** - Profils et préférences des participants
+
+        ### Architecture technique
+
+        * **Backend**: FastAPI + Python 3.11+
+        * **Base de données**: PostgreSQL avec SQLAlchemy (async)
+        * **Authentification**: JWT (JSON Web Tokens)
+        * **IA**: OpenAI GPT pour les suggestions personnalisées
+        * **Monitoring**: Sentry pour le tracking d'erreurs
+
+        ### Sécurité
+
+        * Authentification par tokens JWT
+        * Hashage sécurisé des mots de passe (bcrypt)
+        * Validation des données avec Pydantic
+        * Protection CORS configurée
+        * Rate limiting sur les endpoints sensibles
+
+        ### Utilisation
+
+        1. **Inscription/Connexion** via `/api/v1/auth/`
+        2. **Exploration du catalogue** via `/api/v1/activities/`
+        3. **Suggestions personnalisées** via `/api/v1/suggestions/`
+        4. **Contact** via `/api/v1/contacts/`
+
+        Pour plus d'informations, consultez notre [documentation complète](https://github.com/vidaluca77-cloud/LaVidaLuca-App).
+        """,
         version="1.0.0",
         lifespan=lifespan,
         docs_url="/docs" if settings.ENVIRONMENT != "production" else None,
         redoc_url="/redoc" if settings.ENVIRONMENT != "production" else None,
+        
+        # OpenAPI configuration
+        openapi_tags=[
+            {
+                "name": "authentication",
+                "description": "🔐 Gestion de l'authentification et des sessions utilisateur",
+            },
+            {
+                "name": "users",
+                "description": "👥 Gestion des profils utilisateurs et préférences",
+            },
+            {
+                "name": "activities",
+                "description": "🎯 Catalogue d'activités pédagogiques et agricoles",
+            },
+            {
+                "name": "suggestions",
+                "description": "🤖 Recommandations personnalisées par IA",
+            },
+            {
+                "name": "contacts",
+                "description": "📧 Gestion des demandes de contact et d'inscription",
+            },
+        ],
+        
+        # Contact information
+        contact={
+            "name": "Équipe La Vida Luca",
+            "email": "vidaluca77@gmail.com",
+            "url": "https://github.com/vidaluca77-cloud/LaVidaLuca-App",
+        },
+        
+        # License information
+        license_info={
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT",
+        },
+        
+        # Terms of service
+        terms_of_service="https://github.com/vidaluca77-cloud/LaVidaLuca-App/blob/main/LICENSE",
+        
+        # Servers information for different environments
+        servers=[
+            {
+                "url": "http://localhost:8000",
+                "description": "Serveur de développement local"
+            },
+            {
+                "url": "https://lavidaluca-api.render.com",
+                "description": "Serveur de production"
+            }
+        ]
     )
     
     # Setup middleware

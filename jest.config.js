@@ -1,10 +1,10 @@
 module.exports = {
   preset: 'ts-jest',
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   roots: ['<rootDir>/tests', '<rootDir>/src'],
   testMatch: [
-    '<rootDir>/tests/**/*.(test|spec).ts',
-    '<rootDir>/src/**/__tests__/**/*.(test|spec).ts'
+    '<rootDir>/tests/**/*.(test|spec).{ts,tsx}',
+    '<rootDir>/src/**/__tests__/**/*.(test|spec).{ts,tsx}'
   ],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
@@ -13,8 +13,14 @@ module.exports = {
   ],
   coverageReporters: ['text', 'lcov', 'html'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  moduleNameMapping: {
-    '^@/(.*)$': '<rootDir>/src/$1'
+  testTimeout: 10000,
+  transform: {
+    '^.+\\.(ts|tsx)$': ['ts-jest', {
+      tsconfig: {
+        jsx: 'react-jsx'
+      }
+    }],
   },
-  testTimeout: 10000
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
+  extensionsToTreatAsEsm: [],
 };

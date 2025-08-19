@@ -1,4 +1,5 @@
 // Jest setup file for La Vida Luca App
+require('@testing-library/jest-dom');
 
 // Mock console methods in test environment
 global.console = {
@@ -25,6 +26,7 @@ jest.mock('next/router', () => ({
 // Mock environment variables for testing
 process.env.NODE_ENV = 'test';
 process.env.NEXT_PUBLIC_SENTRY_DSN = 'https://test@sentry.io/123456';
+process.env.NEXT_PUBLIC_API_URL = 'http://localhost:8000';
 
 // Global test utilities
 global.sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
