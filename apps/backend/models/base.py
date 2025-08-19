@@ -22,19 +22,8 @@ class UUIDMixin:
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
 
 
-class BaseModel:
-    """Base model class with common functionality."""
-    
-    @declared_attr
-    def __tablename__(cls):
-        """Generate table name from class name."""
-        # Convert CamelCase to snake_case and make plural
-        name = cls.__name__
-        # Add 's' for plural (simple pluralization)
-        if not name.endswith('s'):
-            name += 's'
-        # Convert to lowercase
-        return name.lower()
+class BaseModelMixin:
+    """Base model mixin with common functionality."""
     
     def to_dict(self, exclude_fields=None):
         """
@@ -71,10 +60,10 @@ class BaseModel:
 
 
 # Create the declarative base
-Base = declarative_base(cls=BaseModel)
+Base = declarative_base()
 
 
 # Combined mixin for common use cases
-class BaseEntityMixin(UUIDMixin, TimestampMixin):
-    """Combined mixin with UUID and timestamp fields."""
+class BaseEntityMixin(UUIDMixin, TimestampMixin, BaseModelMixin):
+    """Combined mixin with UUID, timestamp fields and common methods."""
     pass
