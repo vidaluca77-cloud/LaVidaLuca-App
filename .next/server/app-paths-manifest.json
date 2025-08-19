@@ -1,0 +1,11 @@
+{
+  "/_not-found": "app/_not-found.js",
+  "/catalogue/page": "app/catalogue/page.js",
+  "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js",
+  "/api/contact/route": "app/api/contact/route.js",
+  "/contact/page": "app/contact/page.js",
+  "/page": "app/page.js",
+  "/sitemap.xml/route": "app/sitemap.xml/route.js",
+  "/rejoindre/page": "app/rejoindre/page.js",
+  "/robots.txt/route": "app/robots.txt/route.js"
+}
