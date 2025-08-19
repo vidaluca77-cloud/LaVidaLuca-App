@@ -1,6 +1,8 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 // Using system fonts instead of Google Fonts for better performance and reliability
 const fontClass = "font-sans";
@@ -49,28 +51,9 @@ export default function RootLayout({
       <body
         className={`${fontClass} min-h-screen bg-white text-neutral-900 antialiased`}
       >
-        <header className="border-b">
-          <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-            <a href="/" className="font-semibold">La Vida Luca</a>
-            <nav className="flex gap-6 text-sm">
-              <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
-              <a href="/rejoindre" className="opacity-80 hover:opacity-100">
-                Rejoindre
-              </a>
-              <a href="/contact" className="opacity-80 hover:opacity-100">
-                Contact
-              </a>
-            </nav>
-          </div>
-        </header>
-
+        <Header />
         <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
-
-        <footer className="border-t">
-          <div className="mx-auto max-w-6xl px-4 py-8 text-sm opacity-70">
-            © {new Date().getFullYear()} La Vida Luca — Tous droits réservés
-          </div>
-        </footer>
+        <Footer />
       </body>
     </html>
   );
