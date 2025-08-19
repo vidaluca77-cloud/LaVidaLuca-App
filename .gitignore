@@ -1,5 +1,17 @@
 .venv/
+env/
+.venv/
+.env/
 apps/ia/.env
+apps/ia/venv/
 node_modules/
 apps/web/node_modules/
 apps/web/.next/
+.next/
+*.pyc
+__pycache__/
+.pytest_cache/
+.coverage
+.env
+dist/
+build/
