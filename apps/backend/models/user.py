@@ -2,22 +2,26 @@
 User model for authentication and profile management.
 """
 
-from sqlalchemy import Column, String, DateTime, Boolean, JSON, Text
+from sqlalchemy import Column, String, DateTime, Boolean, JSON, Text, Index
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
 
-from ..database import Base
+from .base import Base, BaseEntityMixin
 
 
-class User(Base):
+class User(Base, BaseEntityMixin):
     """User model for authentication and profiles."""
     
     __tablename__ = "users"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # Authentication fields
     email = Column(String(255), unique=True, nullable=False, index=True)
     hashed_password = Column(String(255), nullable=False)
+    
+    # Role-based access
+    role = Column(String(50), default="user", nullable=False)  # user, admin, moderator
     
     # Profile information
     first_name = Column(String(100))
@@ -29,10 +33,12 @@ class User(Base):
     is_verified = Column(Boolean, default=False)
     is_superuser = Column(Boolean, default=False)
     
-    # Timestamps
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    # Login tracking
     last_login = Column(DateTime(timezone=True))
+    
+    # Relationships
+    activities = relationship("Activity", back_populates="creator")
+    assigned_contacts = relationship("Contact", back_populates="assigned_user")
     
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email})>"
@@ -46,16 +52,12 @@ class User(Base):
     
     def to_dict(self):
         """Convert user to dictionary (excluding sensitive data)."""
-        return {
-            "id": str(self.id),
-            "email": self.email,
-            "first_name": self.first_name,
-            "last_name": self.last_name,
-            "full_name": self.full_name,
-            "profile": self.profile,
-            "is_active": self.is_active,
-            "is_verified": self.is_verified,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-            "last_login": self.last_login.isoformat() if self.last_login else None,
-        }
+        data = super().to_dict(exclude_fields=['hashed_password'])
+        data['full_name'] = self.full_name
+        return data
+
+
+# Create indexes for search optimization
+Index('ix_users_email_active', User.email, User.is_active)
+Index('ix_users_role', User.role)
+Index('ix_users_last_login', User.last_login)

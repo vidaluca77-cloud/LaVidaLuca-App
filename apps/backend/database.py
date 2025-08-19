@@ -4,11 +4,11 @@ Database configuration and connection management.
 
 import sqlalchemy
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from databases import Database
 
 from .config import settings
+from .models.base import Base
 
 
 # Create async database instance
@@ -26,9 +26,6 @@ engine = create_async_engine(
 AsyncSessionLocal = sessionmaker(
     engine, class_=AsyncSession, expire_on_commit=False
 )
-
-# Create declarative base for models
-Base = declarative_base()
 
 
 async def get_database() -> Database:

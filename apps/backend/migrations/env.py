@@ -1,16 +1,14 @@
 from logging.config import fileConfig
-
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
+import os
+import sys
+from sqlalchemy import engine_from_config, pool
 from alembic import context
 
-# Import your models here
-import sys
-import os
+# Add the parent directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from database import Base
+# Import the models and base
+from models.base import Base
 from models import User, Activity, Contact
 
 # this is the Alembic Config object, which provides
@@ -32,6 +30,12 @@ target_metadata = Base.metadata
 # ... etc.
 
 
+def get_url():
+    """Get database URL from environment or config."""
+    from config import settings
+    return settings.DATABASE_URL
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -44,12 +48,14 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = get_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        compare_type=True,
+        compare_server_default=True,
     )
 
     with context.begin_transaction():
@@ -63,15 +69,22 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    # Override sqlalchemy.url from configuration
+    configuration = config.get_section(config.config_ini_section)
+    configuration["sqlalchemy.url"] = get_url()
+    
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection, 
+            target_metadata=target_metadata,
+            compare_type=True,
+            compare_server_default=True,
         )
 
         with context.begin_transaction():
