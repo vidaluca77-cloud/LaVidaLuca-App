@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: lavidaluca-backend
+    runtime: python3
+    repo: https://github.com/vidaluca77-cloud/LaVidaLuca-App.git
+    rootDir: apps/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: ./start.sh
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lavidaluca-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false
+    healthCheckPath: /health
+
+databases:
+  - name: lavidaluca-db
+    databaseName: lavidaluca
+    user: lavidaluca
