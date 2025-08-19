@@ -43,3 +43,20 @@ next-env.d.ts
 apps/ia/.env
 apps/web/node_modules/
 apps/web/.next/
+
+# Backend Python
+apps/backend/venv/
+apps/backend/__pycache__/
+apps/backend/src/__pycache__/
+apps/backend/**/__pycache__/
+apps/backend/*.pyc
+apps/backend/*.pyo
+apps/backend/*.pyd
+apps/backend/.pytest_cache/
+apps/backend/.coverage
+apps/backend/htmlcov/
+apps/backend/*.db
+apps/backend/*.sqlite3
+apps/backend/uploads/
+apps/backend/.env
+apps/backend/test_*.py
