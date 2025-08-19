@@ -11,7 +11,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from database import Base
-from models import User, Activity, Contact
+from models import User, Activity, Contact, Profile
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

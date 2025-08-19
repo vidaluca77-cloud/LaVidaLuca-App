@@ -27,7 +27,7 @@ async def get_personalized_suggestions(
     db: AsyncSession = Depends(get_db_session)
 ):
     """
-    Get personalized activity suggestions using AI.
+    Get personalized activity suggestions using AI based on user profile.
     """
     if not settings.OPENAI_API_KEY:
         raise HTTPException(
@@ -36,8 +36,17 @@ async def get_personalized_suggestions(
         )
     
     try:
-        # Get user's profile for personalization
-        user_profile = current_user.profile or {}
+        # Get user's profile for enhanced personalization
+        from ..models.profile import Profile
+        profile_result = await db.execute(select(Profile).where(Profile.user_id == current_user.id))
+        user_profile_obj = profile_result.scalar_one_or_none()
+        
+        if user_profile_obj:
+            # Use detailed profile information
+            user_profile = user_profile_obj.to_dict()
+        else:
+            # Fallback to basic user profile if no detailed profile exists
+            user_profile = current_user.profile or {}
         
         # Get available activities from database
         activities_result = await db.execute(
@@ -45,7 +54,7 @@ async def get_personalized_suggestions(
         )
         activities = activities_result.scalars().all()
         
-        # Generate suggestions using OpenAI
+        # Generate suggestions using OpenAI with enhanced profile
         suggestions = await get_activity_suggestions(
             user_profile=user_profile,
             user_request=request.request,
@@ -56,7 +65,7 @@ async def get_personalized_suggestions(
         return ApiResponse(
             success=True,
             data=suggestions,
-            message="Suggestions generated successfully"
+            message="Personalized suggestions generated successfully"
         )
         
     except Exception as e:

@@ -10,7 +10,7 @@ import logging
 
 from .config import settings
 from .database import database
-from .routes import auth, users, activities, contacts, suggestions
+from .routes import auth, users, activities, contacts, suggestions, profiles
 from .middleware import setup_middleware
 from .exceptions import setup_exception_handlers
 
@@ -61,6 +61,7 @@ def create_app() -> FastAPI:
     # Include routes
     app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
     app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
+    app.include_router(profiles.router, prefix="/api/v1/profiles", tags=["profiles"])
     app.include_router(activities.router, prefix="/api/v1/activities", tags=["activities"])
     app.include_router(contacts.router, prefix="/api/v1/contacts", tags=["contacts"])
     app.include_router(suggestions.router, prefix="/api/v1/suggestions", tags=["suggestions"])

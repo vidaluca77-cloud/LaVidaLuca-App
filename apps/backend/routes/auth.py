@@ -50,6 +50,17 @@ async def register_user(
     await db.commit()
     await db.refresh(new_user)
     
+    # Create a basic profile for the new user
+    from ..models.profile import Profile
+    basic_profile = Profile(
+        user_id=new_user.id,
+        experience_level="beginner",
+        is_complete=False,
+        is_public=True
+    )
+    db.add(basic_profile)
+    await db.commit()
+    
     return ApiResponse(
         success=True,
         data=UserResponse.from_orm(new_user),
