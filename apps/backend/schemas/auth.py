@@ -41,6 +41,20 @@ class Token(BaseModel):
     expires_in: int  # seconds
 
 
+class TokenPair(BaseModel):
+    """JWT token pair response with refresh token."""
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    expires_in: int  # seconds
+    refresh_expires_in: int = 604800  # 7 days in seconds
+
+
+class RefreshTokenRequest(BaseModel):
+    """Refresh token request."""
+    refresh_token: str
+
+
 class TokenData(BaseModel):
     """JWT token payload data."""
     user_id: str

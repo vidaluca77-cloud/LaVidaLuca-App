@@ -9,6 +9,8 @@ import time
 import logging
 
 from .config import settings
+from .middleware.security import SecurityMiddleware
+from .middleware.rate_limit import RateLimitMiddleware
 
 
 logger = logging.getLogger(__name__)
@@ -16,6 +18,17 @@ logger = logging.getLogger(__name__)
 
 def setup_middleware(app: FastAPI):
     """Setup all middleware for the application."""
+    
+    # Add rate limiting middleware first
+    app.add_middleware(
+        RateLimitMiddleware,
+        requests_per_minute=settings.RATE_LIMIT_REQUESTS_PER_MINUTE,
+        requests_per_minute_anonymous=settings.RATE_LIMIT_REQUESTS_PER_MINUTE_ANONYMOUS,
+        burst_size=10
+    )
+    
+    # Add security headers middleware
+    app.add_middleware(SecurityMiddleware)
     
     # CORS middleware
     app.add_middleware(

@@ -50,6 +50,12 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: Optional[str] = None
     SMTP_FROM_EMAIL: str = "noreply@lavidaluca.fr"
     
+    # OAuth Settings
+    GOOGLE_OAUTH_CLIENT_ID: Optional[str] = None
+    GOOGLE_OAUTH_CLIENT_SECRET: Optional[str] = None
+    GITHUB_OAUTH_CLIENT_ID: Optional[str] = None
+    GITHUB_OAUTH_CLIENT_SECRET: Optional[str] = None
+    
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
