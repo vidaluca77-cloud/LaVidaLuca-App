@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://la-vida-luca.vercel.app/sitemap.xml
