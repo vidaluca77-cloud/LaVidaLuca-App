@@ -3,3 +3,8 @@ apps/ia/.env
 node_modules/
 apps/web/node_modules/
 apps/web/.next/
+.next/
+out/
+*.log
+.env
+.env.local
