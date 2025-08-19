@@ -79,10 +79,35 @@ ENV/
 *.sqlite
 *.sqlite3
 
-# Pytest
+# Testing and Coverage
 .pytest_cache/
 .coverage
 htmlcov/
+coverage.xml
+.tox/
+.cache
+nosetests.xml
+coverage/
+*.cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Performance Testing
+performance-*.csv
+performance-report.html
+locust-*.log
+
+# Security Testing
+bandit-report.json
+safety-report.json
+security-report.json
+
+# Test artifacts
+test-results/
+test-artifacts/
+test.db
+test_*.db
 
 # Alembic
 alembic/versions/
@@ -91,3 +116,19 @@ alembic/versions/
 .DS_Store
 **/__pycache__/
 **/*.pyc
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Log files
+*.log
+logs/
+
+# Backup files
+*.bak
+*.backup
+*.tmp
