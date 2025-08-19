@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: lavida-luca-api
+    env: python
+    buildCommand: pip install -r apps/backend/requirements.txt
+    startCommand: cd apps/backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lavida-luca-db
+          property: connectionString
+      - key: JWT_SECRET
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+    autoDeploy: true
+    healthCheckPath: /health
+
+databases:
+  - name: lavida-luca-db
+    databaseName: lavidaluca
+    user: lavidaluca
