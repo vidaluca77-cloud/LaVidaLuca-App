@@ -3,3 +3,10 @@ apps/ia/.env
 node_modules/
 apps/web/node_modules/
 apps/web/.next/
+.next/
+.env*
+!.env.example
+.vercel/
+dist/
+build/
+out/

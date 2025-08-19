@@ -1,0 +1,67 @@
+{
+  "projectId": "votre-projet-id",
+  "hostname": "votre-projet.supabase.co",
+  "port": 5432,
+  "database": "postgres",
+  "auth": {
+    "enabled": true,
+    "providers": [
+      "email"
+    ],
+    "email": {
+      "enabled": true,
+      "confirmSignUp": true,
+      "doubleConfirmChanges": true
+    },
+    "siteUrl": "https://la-vida-luca.vercel.app",
+    "redirectUrls": [
+      "https://la-vida-luca.vercel.app/auth/callback",
+      "http://localhost:3000/auth/callback"
+    ]
+  },
+  "api": {
+    "schemas": ["public"],
+    "port": 54321
+  },
+  "db": {
+    "schemas": ["public"],
+    "port": 54322
+  },
+  "realtime": {
+    "enabled": true,
+    "tenants": {
+      "realtime": {
+        "max_connections": 200,
+        "max_channels_per_client": 100,
+        "max_joins_per_second": 500,
+        "max_events_per_second": 1000
+      }
+    }
+  },
+  "storage": {
+    "enabled": true,
+    "buckets": [
+      {
+        "name": "avatars",
+        "public": true,
+        "file_size_limit": 5242880,
+        "allowed_mime_types": ["image/jpeg", "image/png", "image/webp"]
+      },
+      {
+        "name": "activities-photos",
+        "public": true,
+        "file_size_limit": 10485760,
+        "allowed_mime_types": ["image/jpeg", "image/png", "image/webp"]
+      },
+      {
+        "name": "documents",
+        "public": false,
+        "file_size_limit": 20971520,
+        "allowed_mime_types": ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
+      }
+    ]
+  },
+  "edge_functions": {
+    "enabled": true
+  }
+}
