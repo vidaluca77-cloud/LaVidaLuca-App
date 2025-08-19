@@ -6,6 +6,7 @@ apps/ia/.env
 .pytest_cache/
 __pycache__/
 .next/
+out/
 dist/
 build/
 *.pyc
