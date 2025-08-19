@@ -9,26 +9,32 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import os
 import sys
+import logging
 from pathlib import Path
-
-# Add the parent directory to Python path to import monitoring utilities
-parent_dir = Path(__file__).parent.parent.parent / "backend"
-sys.path.append(str(parent_dir))
 
 from routers import auth, activities
 from database import engine, Base
-from monitoring.metrics import metrics_middleware, set_app_info
 
-# Import monitoring utilities
+# Import monitoring utilities if available
 try:
+    # Add the parent directory to Python path to import monitoring utilities
+    parent_dir = Path(__file__).parent.parent.parent / "backend"
+    sys.path.append(str(parent_dir))
+    
     from monitoring.logger import setup_logging, context_logger
-    from monitoring.metrics import set_app_info
+    from monitoring.metrics import metrics_middleware, set_app_info
     logger = setup_logging("la-vida-luca-backend")
+    monitoring_available = True
 except ImportError:
     # Fallback if monitoring utilities aren't available
-    import logging
+    logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
     context_logger = logger
+    monitoring_available = False
+
+    # Create a dummy metrics middleware
+    async def metrics_middleware(request: Request, call_next):
+        return await call_next(request)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -39,12 +45,14 @@ async def lifespan(app: FastAPI):
     # Create database tables
     Base.metadata.create_all(bind=engine)
     
-    # Set application info for metrics
-    set_app_info(
-        version="1.0.0",
-        environment=os.getenv("ENVIRONMENT", "development"),
-        build_date="2024-01-01"
-    )
+    # Set application info for metrics if available
+    if monitoring_available:
+        from monitoring.metrics import set_app_info
+        set_app_info(
+            version="1.0.0",
+            environment=os.getenv("ENVIRONMENT", "development"),
+            build_date="2024-01-01"
+        )
     
     yield
     
