@@ -7,27 +7,33 @@ La Vida Luca est une plateforme collaborative dédiée à la formation des jeune
 
 ### Composants
 - **Frontend**: Next.js + React + TypeScript
-- **Base de données**: PostgreSQL (Supabase)
-- **Authentification**: JWT via Supabase
-- **Déploiement**: Vercel (frontend)
+- **Backend**: FastAPI + Python
+- **Base de données**: PostgreSQL
+- **Authentification**: JWT 
+- **IA**: OpenAI integration
+- **Déploiement**: Vercel (frontend) + Render (backend)
 - **Monitoring**: Sentry (erreurs) + métriques personnalisées
 
 ### Schéma d'architecture
 ```mermaid
 graph TB
     Client[Client Browser] --> Frontend[Next.js Frontend]
-    Frontend --> Supabase[(Supabase PostgreSQL)]
+    Frontend --> Backend[FastAPI Backend]
+    Backend --> Database[(PostgreSQL)]
+    Backend --> OpenAI[OpenAI API]
     Frontend --> Sentry[Sentry Monitoring]
-    Frontend --> OpenAI[OpenAI API]
+    Backend --> Sentry
     
     subgraph "Déploiement"
         Frontend --> Vercel[Vercel Hosting]
+        Backend --> Render[Render Hosting]
     end
     
     subgraph "Fonctionnalités"
-        Frontend --> Activities[Catalogue d'activités]
-        Frontend --> IA[Suggestions IA]
-        Frontend --> Contact[Contact & Rejoindre]
+        Backend --> Activities[Catalogue d'activités]
+        Backend --> IA[Suggestions IA]
+        Backend --> Contact[Contact & Rejoindre]
+        Backend --> Auth[Authentification JWT]
     end
 ```
 
@@ -35,6 +41,8 @@ graph TB
 
 ### Prérequis
 - Node.js 18.x ou supérieur
+- Python 3.11+
+- PostgreSQL 12+
 - npm ou yarn
 - Git
 
@@ -44,20 +52,43 @@ git clone https://github.com/vidaluca77-cloud/LaVidaLuca-App.git
 cd LaVidaLuca-App
 ```
 
-### 2. Installation des dépendances
+### 2. Installation complète
 ```bash
-npm install
+# Installation frontend et backend
+npm run setup
+
+# Ou installation séparée:
+npm install                    # Frontend
+npm run backend:install       # Backend
 ```
 
-### 3. Configuration de l'environnement
-Créer un fichier `.env.local` avec les variables suivantes :
-```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=votre_url_supabase
-NEXT_PUBLIC_SUPABASE_ANON_KEY=votre_clé_supabase
+### 3. Configuration Backend
+```bash
+cd apps/backend
+cp .env.example .env
+# Éditer .env avec vos valeurs
+```
 
-# OpenAI (pour les suggestions IA)
-OPENAI_API_KEY=votre_clé_openai
+### 4. Configuration Base de données
+```bash
+# Créer la base de données
+createdb lavidaluca_dev
+
+# Appliquer les migrations
+npm run backend:migrate
+
+# (Optionnel) Peupler avec des données d'exemple
+cd apps/backend && python seed.py
+```
+
+### 5. Configuration Frontend
+Créer un fichier `.env.local` à la racine avec les variables suivantes :
+```env
+# Backend API
+NEXT_PUBLIC_API_URL=http://localhost:8000
+
+# Backend API
+NEXT_PUBLIC_API_URL=http://localhost:8000
 
 # Sentry (monitoring)
 NEXT_PUBLIC_SENTRY_DSN=votre_dsn_sentry
@@ -67,32 +98,72 @@ NEXT_PUBLIC_CONTACT_EMAIL=contact@lavidaluca.fr
 NEXT_PUBLIC_CONTACT_PHONE=+33123456789
 ```
 
-### 4. Lancement en développement
+### 6. Lancement en développement
 ```bash
+# Frontend seul
 npm run dev
+
+# Backend seul  
+npm run backend:dev
+
+# Frontend + Backend simultanément
+npm run dev:full
 ```
 
-L'application sera accessible sur `http://localhost:3000`
+L'application sera accessible sur :
+- **Frontend**: `http://localhost:3000`
+- **Backend API**: `http://localhost:8000`
+- **Documentation API**: `http://localhost:8000/docs`
 
 ## Scripts disponibles
 
+### Frontend
 | Script | Description |
 |--------|-------------|
-| `npm run dev` | Lance le serveur de développement |
+| `npm run dev` | Lance le serveur de développement frontend |
 | `npm run build` | Compile l'application pour la production |
 | `npm run start` | Lance l'application compilée |
 | `npm run lint` | Vérifie la qualité du code |
 | `npm run type-check` | Vérifie les types TypeScript |
+| `npm test` | Lance les tests frontend |
+
+### Backend
+| Script | Description |
+|--------|-------------|
+| `npm run backend:dev` | Lance le serveur de développement backend |
+| `npm run backend:install` | Installe les dépendances Python |
+| `npm run backend:test` | Lance les tests backend |
+| `npm run backend:migrate` | Applique les migrations de base de données |
+| `npm run backend:migration` | Crée une nouvelle migration |
+
+### Full-stack
+| Script | Description |
+|--------|-------------|
+| `npm run setup` | Installation complète (frontend + backend) |
+| `npm run dev:full` | Lance frontend et backend simultanément |
 
 ## Structure du projet
 
 ```
+├── apps/
+│   ├── backend/            # API FastAPI
+│   │   ├── main.py         # Point d'entrée de l'API
+│   │   ├── config.py       # Configuration
+│   │   ├── database.py     # Connexion base de données
+│   │   ├── auth/           # Authentification JWT
+│   │   ├── models/         # Modèles SQLAlchemy
+│   │   ├── schemas/        # Schémas Pydantic
+│   │   ├── routes/         # Points de terminaison API
+│   │   ├── services/       # Logique métier
+│   │   ├── migrations/     # Migrations Alembic
+│   │   └── tests/          # Tests backend
+│   └── web/                # Application frontend Next.js
 ├── public/                 # Fichiers statiques
 │   ├── icons/             # Icônes PWA
 │   └── manifest.webmanifest
 ├── src/
 │   ├── app/               # App Router Next.js 13+
-│   │   ├── api/           # Routes API
+│   │   ├── api/           # Routes API (legacy)
 │   │   ├── catalogue/     # Page catalogue d'activités
 │   │   ├── contact/       # Page contact
 │   │   ├── rejoindre/     # Page rejoindre
@@ -104,7 +175,7 @@ L'application sera accessible sur `http://localhost:3000`
 │   └── types/            # Types TypeScript
 ├── monitoring/            # Configuration monitoring backend
 ├── docs/                 # Documentation additionnelle
-└── tests/                # Tests
+└── tests/                # Tests frontend
 ```
 
 ## Déploiement
