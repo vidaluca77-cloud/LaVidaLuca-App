@@ -19,6 +19,22 @@
   @apply bg-green-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-600 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors;
 }
 
+/* Animation for notifications */
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+
 .btn-secondary {
   @apply bg-white text-green-500 border-2 border-green-500 px-6 py-3 rounded-lg font-medium hover:bg-green-50 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors;
 }
