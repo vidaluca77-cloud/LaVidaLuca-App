@@ -2,8 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Focus styles for accessibility */
 :focus {
-  @apply outline-none ring-2 ring-green-500 ring-offset-2;
+  @apply outline-none ring-2 ring-green-500 ring-offset-2 dark:ring-offset-gray-900;
 }
 
 /* Respect prefers-reduced-motion */
@@ -15,10 +16,40 @@
   }
 }
 
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .btn-primary {
+    @apply border-2 border-black dark:border-white;
+  }
+}
+
+/* Button components with dark mode support */
 .btn-primary {
-  @apply bg-green-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-600 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors;
+  @apply bg-green-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-600 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors;
 }
 
 .btn-secondary {
-  @apply bg-white text-green-500 border-2 border-green-500 px-6 py-3 rounded-lg font-medium hover:bg-green-50 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors;
+  @apply bg-white dark:bg-gray-800 text-green-500 dark:text-green-400 border-2 border-green-500 dark:border-green-400 px-6 py-3 rounded-lg font-medium hover:bg-green-50 dark:hover:bg-gray-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors;
+}
+
+/* Skip to main content link for screen readers */
+.skip-link {
+  @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-green-500 text-white px-4 py-2 rounded z-50;
+}
+
+/* Custom scrollbar for dark mode */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-gray-500;
 }
