@@ -2,7 +2,7 @@
 apps/ia/.env
 apps/backend/venv/
 apps/backend/.env
-apps/backend/lavidaluca.db
+apps/backend/*.db
 apps/backend/__pycache__/
 apps/backend/src/__pycache__/
 apps/backend/src/**/__pycache__/
