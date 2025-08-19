@@ -3,3 +3,17 @@ apps/ia/.env
 node_modules/
 apps/web/node_modules/
 apps/web/.next/
+
+# Next.js build artifacts
+.next/
+out/
+next-env.d.ts
+.env*.local
+
+# TypeScript
+*.tsbuildinfo
+
+# Package managers
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
