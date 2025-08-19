@@ -57,13 +57,13 @@ jobs:
     - name: Run tests
       working-directory: apps/backend
       run: |
-        pytest app/tests/ -v --tb=short
+        pytest tests/ -v --tb=short
     
     - name: Run linting (optional)
       working-directory: apps/backend
       run: |
         pip install flake8
-        flake8 app/ --max-line-length=120 --exclude=app/tests/,alembic/ --extend-ignore=E203,W503
+        flake8 . --max-line-length=120 --exclude=tests/,alembic/,migrations/ --extend-ignore=E203,W503
       continue-on-error: true
 
   deploy:

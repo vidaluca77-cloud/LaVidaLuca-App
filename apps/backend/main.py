@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 import logging
 
 from .config import settings
-from .database import database
+from .database import init_db, close_db, AsyncSessionLocal
 from .routes import auth, users, activities, contacts, suggestions
 from .middleware import setup_middleware
 from .exceptions import setup_exception_handlers
@@ -28,15 +28,15 @@ async def lifespan(app: FastAPI):
     """Application lifespan manager."""
     logger.info("Starting La Vida Luca API...")
     
-    # Connect to database
-    await database.connect()
-    logger.info("Database connected")
+    # Initialize database
+    await init_db()
+    logger.info("Database initialized")
     
     yield
     
     # Cleanup
-    await database.disconnect()
-    logger.info("Database disconnected")
+    await close_db()
+    logger.info("Database connections closed")
     logger.info("La Vida Luca API shutdown")
 
 
@@ -80,7 +80,8 @@ def create_app() -> FastAPI:
         """Health check endpoint."""
         try:
             # Test database connection
-            await database.execute("SELECT 1")
+            async with AsyncSessionLocal() as session:
+                await session.execute("SELECT 1")
             db_status = "healthy"
         except Exception as e:
             logger.error(f"Database health check failed: {e}")

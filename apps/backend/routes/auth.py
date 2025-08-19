@@ -52,7 +52,7 @@ async def register_user(
     
     return ApiResponse(
         success=True,
-        data=UserResponse.from_orm(new_user),
+        data=UserResponse.model_validate(new_user),
         message="User registered successfully"
     )
 
@@ -114,6 +114,6 @@ async def verify_token_endpoint(
     """
     return ApiResponse(
         success=True,
-        data=UserResponse.from_orm(current_user),
+        data=UserResponse.model_validate(current_user),
         message="Token is valid"
     )

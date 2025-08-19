@@ -41,7 +41,7 @@ async def create_activity(
     
     return ApiResponse(
         success=True,
-        data=ActivityResponse.from_orm(new_activity),
+        data=ActivityResponse.model_validate(new_activity),
         message="Activity created successfully"
     )
 
@@ -111,7 +111,7 @@ async def list_activities(
     )
     activities = activities_result.scalars().all()
     
-    activity_responses = [ActivityListResponse.from_orm(activity) for activity in activities]
+    activity_responses = [ActivityListResponse.model_validate(activity) for activity in activities]
     paginated_data = PaginatedResponse.create(activity_responses, total, pagination)
     
     return ApiResponse(
@@ -144,7 +144,7 @@ async def get_activity(
     
     return ApiResponse(
         success=True,
-        data=ActivityResponse.from_orm(activity),
+        data=ActivityResponse.model_validate(activity),
         message="Activity retrieved successfully"
     )
 
@@ -185,7 +185,7 @@ async def update_activity(
     
     return ApiResponse(
         success=True,
-        data=ActivityResponse.from_orm(activity),
+        data=ActivityResponse.model_validate(activity),
         message="Activity updated successfully"
     )
 
