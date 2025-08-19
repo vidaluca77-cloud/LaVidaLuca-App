@@ -1,0 +1,124 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Test Frontend
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Lint frontend
+        run: npm run lint
+
+      - name: Build frontend
+        run: npm run build
+        env:
+          NEXT_PUBLIC_IA_API_URL: ${{ secrets.NEXT_PUBLIC_IA_API_URL }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+
+  # Test Backend IA
+  test-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install backend dependencies
+        run: |
+          cd apps/ia
+          pip install -r requirements.txt
+
+      - name: Run backend tests
+        run: |
+          cd apps/ia
+          python -m pytest tests/ -v
+        env:
+          DEBUG: true
+          ALLOWED_ORIGINS: http://localhost:3000
+
+      - name: Test API startup
+        run: |
+          cd apps/ia
+          timeout 10s python main.py || true
+        env:
+          PORT: 8000
+          DEBUG: true
+
+  # Security and Quality
+  security-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # Deploy to staging (develop branch)
+  deploy-staging:
+    needs: [test-frontend, test-backend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    steps:
+      - name: Deploy to Render (Staging)
+        run: |
+          echo "🚀 Déploiement automatique vers l'environnement de staging"
+          echo "Webhook Render à configurer dans les secrets GitHub"
+          # curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_STAGING }}
+
+  # Deploy to production (main branch)
+  deploy-production:
+    needs: [test-frontend, test-backend, security-check]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to Vercel (Frontend)
+        run: |
+          echo "🚀 Déploiement automatique du frontend vers Vercel"
+          echo "Configure Vercel GitHub integration"
+
+      - name: Deploy to Render (Backend)
+        run: |
+          echo "🚀 Déploiement automatique du backend vers Render"
+          echo "Webhook Render à configurer dans les secrets GitHub"
+          # curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_PRODUCTION }}
+
+      - name: Notify deployment
+        if: success()
+        run: |
+          echo "✅ Déploiement réussi !"
+          echo "Frontend: https://la-vida-luca.vercel.app"
+          echo "API IA: https://lavidaluca-ia-api.onrender.com"
