@@ -1,0 +1,29 @@
+# Render deployment configuration
+services:
+  - type: web
+    name: lavidaluca-api
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: "https://your-frontend-domain.vercel.app"
+      - key: ENVIRONMENT
+        value: "production"
+    healthCheckPath: /health
+
+databases:
+  - name: lavidaluca-db
+    databaseName: lavidaluca
+    user: lavidaluca
+
+  - name: lavidaluca-redis
+    type: redis
