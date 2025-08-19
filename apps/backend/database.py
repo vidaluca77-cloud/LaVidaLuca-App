@@ -36,7 +36,7 @@ async def get_database() -> Database:
     return database
 
 
-async def get_db_session() -> AsyncSession:
+async def get_db_session():
     """Get database session."""
     async with AsyncSessionLocal() as session:
         try:

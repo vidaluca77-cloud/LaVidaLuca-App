@@ -11,8 +11,11 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Import app models and config
-from app.models.models import Base
-from app.core.config import settings
+from models.user import User
+from models.activity import Activity
+from models.contact import Contact
+from database import Base
+from config import settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -45,7 +48,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = settings.database_url
+    url = settings.DATABASE_URL
     context.configure(
         url=url,
         target_metadata=target_metadata,
