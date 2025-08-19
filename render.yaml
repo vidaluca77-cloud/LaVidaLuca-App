@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: lavidaluca-api
+    env: python
+    plan: free
+    buildCommand: "cd apps/ia && pip install -r requirements.txt"
+    startCommand: "cd apps/ia && python main.py"
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lavidaluca-db
+          property: connectionString
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: https://lavidaluca.vercel.app,https://la-vida-luca.vercel.app
+      - key: PORT
+        value: 10000
+      - key: ENVIRONMENT
+        value: production
+
+databases:
+  - name: lavidaluca-db
+    databaseName: lavidaluca
+    user: lavidaluca_user
+    plan: free
