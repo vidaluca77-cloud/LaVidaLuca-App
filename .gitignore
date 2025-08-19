@@ -1,5 +1,9 @@
 .venv/
+env/
+.venv/
+.env/
 apps/ia/.env
+apps/ia/venv/
 node_modules/
 apps/web/node_modules/
 apps/web/.next/
