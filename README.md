@@ -65,3 +65,42 @@ Voir /apps/web/pages/catalogue-activites.tsx pour la liste complète et la prés
 	5.	Configurer les variables d’environnement
 	6.	Tester l’accès aux pages protégées
  
+
+
+⸻
+
+🎯 **Backend FastAPI Status - ✅ COMPLETED**
+
+L'API FastAPI a été entièrement implémentée dans `/apps/ia/` avec :
+
+**Core Features:**
+- ✅ Configuration base de données (PostgreSQL/SQLite)
+- ✅ Système d'authentification JWT
+- ✅ Gestion des utilisateurs et profils
+- ✅ CRUD des activités (30 activités prédéfinies)
+- ✅ Recommandations IA avec OpenAI + fallback
+- ✅ Gestion d'erreurs et middleware de sécurité
+- ✅ Documentation API automatique (OpenAPI/Swagger)
+- ✅ Structure de tests avec pytest
+
+**Endpoints API disponibles:**
+- `/api/v1/auth/` - Authentification (register/login)
+- `/api/v1/users/` - Gestion utilisateurs et profils
+- `/api/v1/activities/` - Activités MFR (liste, recherche, CRUD)
+- `/api/v1/recommendations/` - Recommandations IA personnalisées
+
+**Prêt pour déploiement:**
+- ✅ Docker & Docker Compose configurés
+- ✅ Configuration Render prête 
+- ✅ Variables d'environnement documentées
+- ✅ Base de données initialisée avec données de test
+
+**Variables backend requises:**
+```
+DATABASE_URL=postgresql://user:pass@host:port/db
+SECRET_KEY=your-secret-key-32-chars
+OPENAI_API_KEY=your-openai-api-key
+ALLOWED_ORIGINS=["https://your-frontend.vercel.app"]
+```
+
+Voir `/apps/ia/README.md` et `/apps/ia/TEST_RESULTS.md` pour les détails complets.
