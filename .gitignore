@@ -3,3 +3,48 @@ apps/ia/.env
 node_modules/
 apps/web/node_modules/
 apps/web/.next/
+.next/
+package-lock.json
+
+# Python
+apps/backend/__pycache__/
+apps/backend/**/__pycache__/
+apps/backend/**/*.py[cod]
+apps/backend/**/*$py.class
+*.so
+.Python
+apps/backend/build/
+apps/backend/develop-eggs/
+apps/backend/dist/
+apps/backend/downloads/
+apps/backend/eggs/
+apps/backend/.eggs/
+apps/backend/lib/
+apps/backend/lib64/
+apps/backend/parts/
+apps/backend/sdist/
+apps/backend/var/
+apps/backend/wheels/
+apps/backend/*.egg-info/
+apps/backend/.installed.cfg
+apps/backend/*.egg
+apps/backend/MANIFEST
+
+# Virtual environments
+apps/backend/.env
+apps/backend/.venv
+apps/backend/env/
+apps/backend/venv/
+apps/backend/ENV/
+apps/backend/env.bak/
+apps/backend/venv.bak/
+
+# Database
+*.db
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
