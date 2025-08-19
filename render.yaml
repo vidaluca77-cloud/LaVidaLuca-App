@@ -1,0 +1,59 @@
+services:
+  # FastAPI IA Service
+  - type: web
+    name: lavidaluca-ia-api
+    env: python
+    plan: starter
+    buildCommand: "cd apps/ia && pip install -r requirements.txt"
+    startCommand: "cd apps/ia && uvicorn main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    autoDeploy: false
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+    scaling:
+      minInstances: 1
+      maxInstances: 3
+    
+  # Background Worker (optional)
+  - type: worker
+    name: lavidaluca-worker
+    env: python
+    plan: starter
+    buildCommand: "cd apps/ia && pip install -r requirements.txt"
+    startCommand: "cd apps/ia && python -m worker.main"
+    autoDeploy: false
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+    scaling:
+      minInstances: 0
+      maxInstances: 2
+
+databases:
+  # PostgreSQL instance for development (Supabase is recommended for production)
+  - name: lavidaluca-db
+    plan: starter
+    databaseName: lavidaluca
+    user: lavidaluca_user
+    
+# Environment groups for shared configuration
+envVarGroups:
+  - name: shared-config
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TZ
+        value: Europe/Paris
