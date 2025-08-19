@@ -3,3 +3,14 @@ apps/ia/.env
 node_modules/
 apps/web/node_modules/
 apps/web/.next/
+
+# Next.js
+.next/
+out/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# npm
+package-lock.json
