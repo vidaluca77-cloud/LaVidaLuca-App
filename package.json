@@ -6,7 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "health-check": "./scripts/monitoring/health-check.sh",
+    "monitor": "node scripts/monitoring/performance-monitor.js",
+    "deploy:vercel": "vercel --prod",
+    "db:migrate": "cd infra/supabase && supabase db push",
+    "db:reset": "cd infra/supabase && supabase db reset",
+    "ia:dev": "cd apps/ia && uvicorn main:app --reload --host 0.0.0.0 --port 8000",
+    "ia:test": "cd apps/ia && python -m pytest tests/ -v"
   },
   "dependencies": {
     "next": "14.0.4",
