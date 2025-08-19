@@ -25,7 +25,7 @@ async def get_current_user_profile(
     """
     return ApiResponse(
         success=True,
-        data=UserResponse.from_orm(current_user),
+        data=UserResponse.model_validate(current_user),
         message="User profile retrieved successfully"
     )
 
@@ -52,7 +52,7 @@ async def update_current_user_profile(
     
     return ApiResponse(
         success=True,
-        data=UserResponse.from_orm(current_user),
+        data=UserResponse.model_validate(current_user),
         message="Profile updated successfully"
     )
 
@@ -77,7 +77,7 @@ async def get_user_by_id(
     
     return ApiResponse(
         success=True,
-        data=UserResponse.from_orm(user),
+        data=UserResponse.model_validate(user),
         message="User retrieved successfully"
     )
 
@@ -104,7 +104,7 @@ async def list_users(
     )
     users = result.scalars().all()
     
-    user_responses = [UserListResponse.from_orm(user) for user in users]
+    user_responses = [UserListResponse.model_validate(user) for user in users]
     paginated_data = PaginatedResponse.create(user_responses, total, pagination)
     
     return ApiResponse(

@@ -38,7 +38,7 @@ async def create_contact(
     
     return ApiResponse(
         success=True,
-        data=ContactResponse.from_orm(new_contact),
+        data=ContactResponse.model_validate(new_contact),
         message="Contact request submitted successfully"
     )
 
@@ -96,7 +96,7 @@ async def list_contacts(
     )
     contacts = contacts_result.scalars().all()
     
-    contact_responses = [ContactListResponse.from_orm(contact) for contact in contacts]
+    contact_responses = [ContactListResponse.model_validate(contact) for contact in contacts]
     paginated_data = PaginatedResponse.create(contact_responses, total, pagination)
     
     return ApiResponse(
@@ -126,7 +126,7 @@ async def get_contact(
     
     return ApiResponse(
         success=True,
-        data=ContactResponse.from_orm(contact),
+        data=ContactResponse.model_validate(contact),
         message="Contact retrieved successfully"
     )
 
@@ -160,7 +160,7 @@ async def update_contact(
     
     return ApiResponse(
         success=True,
-        data=ContactResponse.from_orm(contact),
+        data=ContactResponse.model_validate(contact),
         message="Contact updated successfully"
     )
 
