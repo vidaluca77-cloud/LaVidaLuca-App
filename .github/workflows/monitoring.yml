@@ -1,0 +1,192 @@
+name: Monitor & Health Checks
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  frontend-health:
+    name: Frontend Health Check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [production, staging]
+    steps:
+      - name: Check frontend health
+        run: |
+          if [ "${{ matrix.environment }}" == "production" ]; then
+            URL="https://la-vida-luca.vercel.app"
+          else
+            URL="https://la-vida-luca-staging.vercel.app"
+          fi
+          
+          # Check if site is accessible
+          if ! curl -f -s --max-time 10 "$URL" > /dev/null; then
+            echo "❌ Frontend health check failed for ${{ matrix.environment }}"
+            exit 1
+          fi
+          
+          # Check response time
+          RESPONSE_TIME=$(curl -o /dev/null -s -w '%{time_total}' "$URL")
+          if (( $(echo "$RESPONSE_TIME > 3.0" | bc -l) )); then
+            echo "⚠️ Slow response time: ${RESPONSE_TIME}s for ${{ matrix.environment }}"
+          fi
+          
+          echo "✅ Frontend health check passed for ${{ matrix.environment }}"
+
+      - name: Notify on failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: '🚨 Frontend health check failed for ${{ matrix.environment }}!'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  backend-health:
+    name: Backend Health Check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [production, staging]
+    steps:
+      - name: Check backend health
+        run: |
+          if [ "${{ matrix.environment }}" == "production" ]; then
+            URL="https://la-vida-luca-ia.onrender.com"
+          else
+            URL="https://la-vida-luca-ia-staging.onrender.com"
+          fi
+          
+          # Check health endpoint
+          if ! curl -f -s --max-time 10 "$URL/health" > /dev/null; then
+            echo "❌ Backend health check failed for ${{ matrix.environment }}"
+            exit 1
+          fi
+          
+          # Check API endpoint
+          if ! curl -f -s --max-time 10 "$URL/api/v1/status" > /dev/null; then
+            echo "❌ Backend API check failed for ${{ matrix.environment }}"
+            exit 1
+          fi
+          
+          echo "✅ Backend health check passed for ${{ matrix.environment }}"
+
+      - name: Notify on failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: '🚨 Backend health check failed for ${{ matrix.environment }}!'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  database-health:
+    name: Database Health Check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [production, staging]
+    steps:
+      - name: Check database health
+        run: |
+          if [ "${{ matrix.environment }}" == "production" ]; then
+            SUPABASE_URL="${{ secrets.SUPABASE_URL_PROD }}"
+            SUPABASE_KEY="${{ secrets.SUPABASE_ANON_KEY_PROD }}"
+          else
+            SUPABASE_URL="${{ secrets.SUPABASE_URL_STAGING }}"
+            SUPABASE_KEY="${{ secrets.SUPABASE_ANON_KEY_STAGING }}"
+          fi
+          
+          # Check Supabase health
+          if ! curl -f -s --max-time 10 "$SUPABASE_URL/rest/v1/" \
+            -H "apikey: $SUPABASE_KEY" > /dev/null; then
+            echo "❌ Database health check failed for ${{ matrix.environment }}"
+            exit 1
+          fi
+          
+          echo "✅ Database health check passed for ${{ matrix.environment }}"
+
+      - name: Notify on failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: '🚨 Database health check failed for ${{ matrix.environment }}!'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  performance-monitoring:
+    name: Performance Monitoring
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Lighthouse audit
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            https://la-vida-luca.vercel.app
+          uploadDir: './lighthouse'
+          temporaryPublicStorage: true
+
+      - name: Check Core Web Vitals
+        run: |
+          # This would integrate with real monitoring tools like:
+          # - Google PageSpeed Insights API
+          # - New Relic
+          # - DataDog
+          echo "📊 Core Web Vitals monitoring would run here"
+
+  security-monitoring:
+    name: Security Monitoring
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check SSL certificates
+        run: |
+          # Check SSL expiry for all domains
+          DOMAINS=("la-vida-luca.vercel.app" "la-vida-luca-staging.vercel.app")
+          
+          for domain in "${DOMAINS[@]}"; do
+            EXPIRY=$(echo | openssl s_client -servername $domain -connect $domain:443 2>/dev/null | openssl x509 -noout -dates | grep notAfter | cut -d= -f2)
+            EXPIRY_EPOCH=$(date -d "$EXPIRY" +%s)
+            CURRENT_EPOCH=$(date +%s)
+            DAYS_LEFT=$(( ($EXPIRY_EPOCH - $CURRENT_EPOCH) / 86400 ))
+            
+            if [ $DAYS_LEFT -lt 30 ]; then
+              echo "⚠️ SSL certificate for $domain expires in $DAYS_LEFT days"
+            fi
+          done
+
+      - name: Security headers check
+        run: |
+          curl -I https://la-vida-luca.vercel.app | grep -E "(X-Frame-Options|X-Content-Type-Options|Strict-Transport-Security|Content-Security-Policy)"
+
+  cleanup:
+    name: Cleanup Old Data
+    runs-on: ubuntu-latest
+    if: github.event.schedule
+    steps:
+      - name: Cleanup old artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: artifacts } = await github.rest.actions.listArtifactsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            
+            const oldArtifacts = artifacts.artifacts.filter(artifact => {
+              const createdAt = new Date(artifact.created_at);
+              const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+              return createdAt < thirtyDaysAgo;
+            });
+            
+            for (const artifact of oldArtifacts) {
+              console.log(`Deleting artifact: ${artifact.name}`);
+              await github.rest.actions.deleteArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: artifact.id,
+              });
+            }
