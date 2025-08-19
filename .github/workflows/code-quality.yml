@@ -1,0 +1,117 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Frontend Code Quality
+  frontend-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run ESLint
+      run: npx eslint . --ext .ts,.tsx,.js,.jsx --format=github
+    
+    - name: Run Prettier check
+      run: npx prettier --check "src/**/*.{ts,tsx,js,jsx,json,css,md}"
+    
+    - name: TypeScript strict check
+      run: npx tsc --strict --noEmit
+
+  # Backend Code Quality
+  backend-quality:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./apps/api
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install black flake8 mypy bandit
+    
+    - name: Run Black (formatting check)
+      run: black --check --diff .
+    
+    - name: Run Flake8 (linting)
+      run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    
+    - name: Run MyPy (type checking)
+      run: mypy app/ --ignore-missing-imports
+    
+    - name: Run Bandit (security check)
+      run: bandit -r app/ -f json -o bandit-report.json || true
+    
+    - name: Upload Bandit report
+      uses: actions/upload-artifact@v4
+      with:
+        name: bandit-security-report
+        path: apps/api/bandit-report.json
+
+  # Dependency Check
+  dependency-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run npm audit
+      run: npm audit --audit-level=moderate
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install Python security tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install safety
+    
+    - name: Run Python safety check
+      working-directory: ./apps/api
+      run: |
+        pip install -r requirements.txt
+        safety check --json --output safety-report.json || true
+    
+    - name: Upload safety report
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-safety-report
+        path: apps/api/safety-report.json
