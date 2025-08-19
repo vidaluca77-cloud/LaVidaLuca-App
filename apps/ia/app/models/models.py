@@ -2,7 +2,7 @@
 Database models for La Vida Luca application
 """
 
-from sqlalchemy import Column, Integer, String, Text, JSON, DateTime, Boolean, ForeignKey, Float, ARRAY
+from sqlalchemy import Column, Integer, String, Text, JSON, DateTime, Boolean, ForeignKey, Float
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -35,10 +35,10 @@ class UserProfile(Base):
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
     
     # Profile information
-    skills = Column(ARRAY(String), default=[])
-    availability = Column(ARRAY(String), default=[])
+    skills = Column(JSON, default=[])
+    availability = Column(JSON, default=[])
     location = Column(String)
-    preferences = Column(ARRAY(String), default=[])
+    preferences = Column(JSON, default=[])
     bio = Column(Text)
     
     # MFR specific
@@ -65,10 +65,10 @@ class Activity(Base):
     
     # Activity properties
     duration_min = Column(Integer)
-    skill_tags = Column(ARRAY(String), default=[])
-    seasonality = Column(ARRAY(String), default=[])
+    skill_tags = Column(JSON, default=[])
+    seasonality = Column(JSON, default=[])
     safety_level = Column(Integer, default=1)  # 1-5 scale
-    materials = Column(ARRAY(String), default=[])
+    materials = Column(JSON, default=[])
     
     # Additional properties
     difficulty_level = Column(String, default="beginner")  # beginner, intermediate, advanced
@@ -94,7 +94,7 @@ class Recommendation(Base):
     
     # Recommendation data
     score = Column(Float, nullable=False)  # 0.0-1.0 confidence score
-    reasons = Column(ARRAY(String), default=[])
+    reasons = Column(JSON, default=[])
     ai_explanation = Column(Text)
     
     # Metadata
