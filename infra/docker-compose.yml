@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: lavidaluca_postgres
+    environment:
+      POSTGRES_DB: lavidaluca
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./supabase/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./supabase/seeds.sql:/docker-entrypoint-initdb.d/02-seeds.sql
+    networks:
+      - lavidaluca_network
+
+  # Backend API (FastAPI)
+  backend:
+    build:
+      context: ../apps/backend
+      dockerfile: Dockerfile
+    container_name: lavidaluca_backend
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/lavidaluca
+      SECRET_KEY: development-secret-key-change-in-production
+      ALLOWED_ORIGINS: http://localhost:3000,http://frontend:3000
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    volumes:
+      - ../apps/backend:/app
+    networks:
+      - lavidaluca_network
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Frontend (Next.js)
+  frontend:
+    build:
+      context: ../apps/frontend
+      dockerfile: Dockerfile
+    container_name: lavidaluca_frontend
+    environment:
+      NEXT_PUBLIC_IA_API_URL: http://localhost:8000
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      NEXT_PUBLIC_CONTACT_EMAIL: contact@lavidaluca.fr
+      NEXT_PUBLIC_CONTACT_PHONE: "+33123456789"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ../apps/frontend:/app
+      - /app/node_modules
+    networks:
+      - lavidaluca_network
+
+  # pgAdmin for database management (optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: lavidaluca_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@lavidaluca.fr
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - lavidaluca_network
+    profiles:
+      - dev
+
+volumes:
+  postgres_data:
+
+networks:
+  lavidaluca_network:
+    driver: bridge
