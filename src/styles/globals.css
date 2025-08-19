@@ -1,0 +1,222 @@
+/* Base styles for La Vida Luca Application */
+
+/* Import Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global CSS variables */
+:root {
+  --color-primary: #10b981;
+  --color-primary-dark: #065f46;
+  --color-secondary: #f59e0b;
+  --color-accent: #ef4444;
+  --color-neutral: #6b7280;
+  --color-background: #ffffff;
+  --color-surface: #f9fafb;
+  --border-radius: 0.5rem;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+/* Base layer overrides */
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
+  }
+}
+
+/* Component layer utilities */
+@layer components {
+  /* Button components */
+  .btn-primary {
+    @apply bg-green-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-green-500 border-2 border-green-500 px-6 py-3 rounded-lg font-medium hover:bg-green-50 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+  }
+
+  .btn-neutral {
+    @apply bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-400 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+  }
+
+  /* Card components */
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+  }
+
+  .card-hover {
+    @apply card hover:shadow-md transition-shadow;
+  }
+
+  /* Form components */
+  .form-input {
+    @apply w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500;
+  }
+
+  .form-checkbox {
+    @apply w-4 h-4 text-green-500 focus:ring-green-500 border-gray-300 rounded;
+  }
+
+  /* Badge components */
+  .badge {
+    @apply px-3 py-1 rounded-full text-xs font-medium;
+  }
+
+  .badge-green {
+    @apply badge bg-green-100 text-green-800;
+  }
+
+  .badge-yellow {
+    @apply badge bg-yellow-100 text-yellow-800;
+  }
+
+  .badge-red {
+    @apply badge bg-red-100 text-red-800;
+  }
+
+  .badge-gray {
+    @apply badge bg-gray-100 text-gray-800;
+  }
+
+  .badge-blue {
+    @apply badge bg-blue-100 text-blue-800;
+  }
+
+  /* Layout components */
+  .container-main {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .container-narrow {
+    @apply max-w-2xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .container-wide {
+    @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Typography */
+  .heading-xl {
+    @apply text-4xl md:text-6xl font-bold text-gray-900;
+  }
+
+  .heading-lg {
+    @apply text-3xl md:text-4xl font-bold text-gray-900;
+  }
+
+  .heading-md {
+    @apply text-2xl font-bold text-gray-900;
+  }
+
+  .heading-sm {
+    @apply text-xl font-bold text-gray-900;
+  }
+
+  .text-body {
+    @apply text-gray-600;
+  }
+
+  .text-muted {
+    @apply text-gray-500;
+  }
+
+  /* Navigation */
+  .nav-link {
+    @apply text-gray-700 hover:text-green-500 font-medium transition-colors;
+  }
+
+  /* Page transitions */
+  .page-transition {
+    @apply min-h-screen bg-gradient-to-br from-green-50 via-white to-amber-50;
+  }
+}
+
+/* Utility layer additions */
+@layer utilities {
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  /* Custom spacing */
+  .space-section {
+    @apply py-20;
+  }
+
+  .space-section-sm {
+    @apply py-12;
+  }
+}
+
+/* Keyframe animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    @apply text-black bg-white;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .btn-primary {
+    @apply border-2 border-black;
+  }
+
+  .btn-secondary {
+    @apply border-2 border-black bg-white text-black;
+  }
+}
+
+/* Dark mode support (future enhancement) */
+@media (prefers-color-scheme: dark) {
+  /* Placeholder for future dark mode implementation */
+}
