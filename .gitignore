@@ -1,6 +1,7 @@
 .venv/
 apps/ia/.env
 apps/backend/.env
+apps/backend/test.db
 node_modules/
 apps/web/node_modules/
 apps/web/.next/
