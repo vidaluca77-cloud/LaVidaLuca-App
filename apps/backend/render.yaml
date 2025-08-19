@@ -5,12 +5,23 @@ services:
   - type: web
     name: lavidaluca-backend
     runtime: python3
-    buildCommand: cd apps/backend && pip install -r requirements.txt
-    startCommand: cd apps/backend && gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT
+    buildCommand: |
+      pip install --upgrade pip &&
+      pip install -r requirements.txt &&
+      python -m pytest --version &&
+      echo "Build completed successfully"
+    startCommand: |
+      python -m alembic upgrade head &&
+      gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT --timeout 120 --keep-alive 2 --max-requests 1000 --max-requests-jitter 50 --access-logfile - --error-logfile -
     plan: starter
     region: oregon
     branch: main
     healthCheckPath: /health
+    autoDeploy: true
+    disk:
+      name: backend-disk
+      sizeGB: 1
+      mountPath: /tmp
     envVars:
       - key: ENVIRONMENT
         value: production
@@ -20,15 +31,37 @@ services:
           property: connectionString
       - key: JWT_SECRET_KEY
         generateValue: true
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_EXPIRE_HOURS
+        value: 24
       - key: OPENAI_API_KEY
         sync: false  # Set this manually in Render dashboard
       - key: CORS_ORIGINS
-        value: '["https://lavidaluca.fr","https://www.lavidaluca.fr"]'
+        value: '["https://lavidaluca.fr","https://www.lavidaluca.fr","https://la-vida-luca.vercel.app"]'
       - key: LOG_LEVEL
         value: INFO
+      - key: SENTRY_DSN
+        sync: false  # Set this manually in Render dashboard if using Sentry
+      - key: MAX_UPLOAD_SIZE
+        value: 10485760  # 10MB
+      - key: RATE_LIMIT_PER_MINUTE
+        value: 60
+      - key: PYTHONPATH
+        value: /opt/render/project/src
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: PYTHONDONTWRITEBYTECODE
+        value: 1
 
 databases:
   - name: lavidaluca-db
     plan: starter
     region: oregon
     postgresMajorVersion: 15
+    
+# Redis cache for sessions (optional)
+# - name: lavidaluca-redis
+#   type: redis
+#   plan: starter
+#   region: oregon

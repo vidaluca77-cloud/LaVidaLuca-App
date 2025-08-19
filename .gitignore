@@ -91,3 +91,24 @@ alembic/versions/
 .DS_Store
 **/__pycache__/
 **/*.pyc
+
+# Deployment artifacts
+.vercel/
+render.yaml.backup
+deployment-logs/
+*.log
+.next/analyze/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+
+# Temporary files for deployment testing
+/tmp/
+temp/
