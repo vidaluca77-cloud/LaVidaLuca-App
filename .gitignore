@@ -86,3 +86,8 @@ htmlcov/
 
 # Alembic
 alembic/versions/
+
+# System files
+.DS_Store
+**/__pycache__/
+**/*.pyc

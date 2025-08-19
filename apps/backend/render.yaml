@@ -1,23 +1,34 @@
+# Render.com deployment configuration
+version: "1"
+
 services:
   - type: web
     name: lavidaluca-backend
     runtime: python3
-    repo: https://github.com/vidaluca77-cloud/LaVidaLuca-App.git
-    rootDir: apps/backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: ./start.sh
+    buildCommand: cd apps/backend && pip install -r requirements.txt
+    startCommand: cd apps/backend && gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT
+    plan: starter
+    region: oregon
+    branch: main
+    healthCheckPath: /health
     envVars:
+      - key: ENVIRONMENT
+        value: production
       - key: DATABASE_URL
         fromDatabase:
           name: lavidaluca-db
           property: connectionString
-      - key: SECRET_KEY
+      - key: JWT_SECRET_KEY
         generateValue: true
       - key: OPENAI_API_KEY
-        sync: false
-    healthCheckPath: /health
+        sync: false  # Set this manually in Render dashboard
+      - key: CORS_ORIGINS
+        value: '["https://lavidaluca.fr","https://www.lavidaluca.fr"]'
+      - key: LOG_LEVEL
+        value: INFO
 
 databases:
   - name: lavidaluca-db
-    databaseName: lavidaluca
-    user: lavidaluca
+    plan: starter
+    region: oregon
+    postgresMajorVersion: 15

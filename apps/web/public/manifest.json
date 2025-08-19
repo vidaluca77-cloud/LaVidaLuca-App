@@ -1,0 +1,9 @@
+{
+  "name": "La Vida Luca",
+  "short_name": "VidaLuca",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4ade80",
+  "description": "Formation des jeunes & agriculture vivante – Le cœur avant l’argent."
+}
