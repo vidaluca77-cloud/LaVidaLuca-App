@@ -30,7 +30,7 @@ describe('AlertManager', () => {
   test('should add and retrieve alerts', () => {
     alertManager.addAlert('info', 'Test message');
     const alerts = alertManager.getAlerts();
-    
+
     expect(alerts).toHaveLength(1);
     expect(alerts[0].type).toBe('info');
     expect(alerts[0].message).toBe('Test message');
@@ -53,14 +53,19 @@ describe('AlertManager', () => {
 
   test('should send error alerts to Sentry', () => {
     alertManager.addAlert('error', 'Critical error', { userId: '123' });
-    
-    expect(mockSentry.captureMessage).toHaveBeenCalledWith('Critical error', 'error');
-    expect(mockSentry.setContext).toHaveBeenCalledWith('alert_metadata', { userId: '123' });
+
+    expect(mockSentry.captureMessage).toHaveBeenCalledWith(
+      'Critical error',
+      'error'
+    );
+    expect(mockSentry.setContext).toHaveBeenCalledWith('alert_metadata', {
+      userId: '123',
+    });
   });
 
   test('should not send info alerts to Sentry', () => {
     alertManager.addAlert('info', 'Info message');
-    
+
     expect(mockSentry.captureMessage).not.toHaveBeenCalled();
   });
 
@@ -105,9 +110,9 @@ describe('AlertManager', () => {
   test('should clear all alerts', () => {
     alertManager.addAlert('info', 'Test 1');
     alertManager.addAlert('error', 'Test 2');
-    
+
     expect(alertManager.getAlerts()).toHaveLength(2);
-    
+
     alertManager.clearAlerts();
     expect(alertManager.getAlerts()).toHaveLength(0);
   });
