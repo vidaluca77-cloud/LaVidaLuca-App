@@ -97,7 +97,8 @@ def delete_activity(
 @router.get("/categories/list")
 def get_categories(db: Session = Depends(get_db)):
     """Get list of all activity categories with counts"""
-    categories = db.query(Activity.category, db.func.count(Activity.id).label('count')).group_by(Activity.category).all()
+    from sqlalchemy import func
+    categories = db.query(Activity.category, func.count(Activity.id).label('count')).group_by(Activity.category).all()
     
     category_names = {
         'agri': 'Agriculture',
