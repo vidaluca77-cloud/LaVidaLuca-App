@@ -21,6 +21,15 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "super-secret-key-change-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 30
+    
+    # Rate limiting
+    LOGIN_RATE_LIMIT_ATTEMPTS: int = 5
+    LOGIN_RATE_LIMIT_WINDOW: int = 15  # minutes
+    
+    # Account lockout
+    MAX_FAILED_LOGIN_ATTEMPTS: int = 5
+    ACCOUNT_LOCKOUT_DURATION: int = 30  # minutes
     
     # OpenAI
     OPENAI_API_KEY: Optional[str] = None
