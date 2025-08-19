@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "monitor:health": "./scripts/monitoring/health-check.sh",
+    "monitor:performance": "./scripts/monitoring/performance-check.sh",
+    "deploy": "./scripts/deployment/deploy.sh",
+    "deploy:staging": "./scripts/deployment/deploy.sh --staging",
+    "deploy:cleanup": "./scripts/deployment/deploy.sh --cleanup"
   },
   "dependencies": {
     "next": "14.0.4",
