@@ -12,3 +12,7 @@ apps/web/.next/
 dist/
 build/
 out/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
