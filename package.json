@@ -23,10 +23,13 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",
+    "@reduxjs/toolkit": "^2.8.2",
     "@sentry/nextjs": "^10.5.0",
+    "axios": "^1.11.0",
     "next": "14.0.4",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-redux": "^9.2.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.7.0",

@@ -15,8 +15,8 @@ export const renderWithProviders = (
   options?: Omit<RenderOptions, 'wrapper'>
 ): RenderResult => {
   // Wrapper component that includes common providers
-  const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    return <>{children}</>;
+  const Wrapper = ({ children }: { children: React.ReactNode }) => {
+    return React.createElement(React.Fragment, null, children);
   };
 
   return render(ui, { wrapper: Wrapper, ...options });
