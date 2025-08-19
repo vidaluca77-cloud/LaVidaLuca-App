@@ -1,0 +1,141 @@
+name: Backend Build & Deploy
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'apps/ia/**'
+      - 'render.yaml'
+      - '.github/workflows/backend.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'apps/ia/**'
+      - 'render.yaml'
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  lint-and-test:
+    name: Lint and Test Backend
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('apps/ia/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Install dependencies
+      run: |
+        cd apps/ia
+        pip install -r requirements.txt
+        pip install pytest pytest-asyncio httpx black flake8 mypy
+        
+    - name: Run Black (code formatting)
+      run: |
+        cd apps/ia
+        black --check .
+        
+    - name: Run Flake8 (linting)
+      run: |
+        cd apps/ia
+        flake8 . --max-line-length=88 --exclude=__pycache__
+        
+    - name: Run MyPy (type checking)
+      run: |
+        cd apps/ia
+        mypy . --ignore-missing-imports
+        
+    - name: Run tests
+      run: |
+        cd apps/ia
+        pytest -v
+      env:
+        DATABASE_URL: sqlite:///test.db
+        JWT_SECRET_KEY: test-secret-key
+        ALLOWED_ORIGINS: http://localhost:3000
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install security tools
+      run: |
+        pip install safety bandit
+        
+    - name: Check for known vulnerabilities
+      run: |
+        cd apps/ia
+        safety check -r requirements.txt
+        
+    - name: Run Bandit security scan
+      run: |
+        cd apps/ia
+        bandit -r . -f json -o bandit-report.json || true
+        
+    - name: Upload security report
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-report
+        path: apps/ia/bandit-report.json
+
+  deploy-render:
+    name: Deploy to Render
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: [lint-and-test, security-scan]
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Deploy to Render
+      uses: johnbeynon/render-deploy-action@v0.0.8
+      with:
+        service-id: ${{ secrets.RENDER_SERVICE_ID }}
+        api-key: ${{ secrets.RENDER_API_KEY }}
+        
+    - name: Wait for deployment
+      run: |
+        echo "Waiting for deployment to complete..."
+        sleep 30
+        
+    - name: Health check
+      run: |
+        echo "Checking API health..."
+        curl -f ${{ secrets.RENDER_API_URL }}/health || exit 1
+        echo "✅ API is healthy!"
+        
+    - name: Notify deployment success
+      if: success()
+      run: |
+        echo "✅ Backend deployed successfully to Render!"
+        
+    - name: Notify deployment failure
+      if: failure()
+      run: |
+        echo "❌ Backend deployment failed!"
+        exit 1

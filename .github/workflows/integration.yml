@@ -1,0 +1,144 @@
+name: Full Stack Integration Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run integration tests daily at 6 AM UTC
+    - cron: '0 6 * * *'
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  integration-tests:
+    name: Full Stack Integration Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install frontend dependencies
+      run: npm ci
+      
+    - name: Install backend dependencies
+      run: |
+        cd apps/ia
+        pip install -r requirements.txt
+        pip install pytest pytest-asyncio httpx
+        
+    - name: Setup test database
+      run: |
+        PGPASSWORD=testpass psql -h localhost -U testuser -d testdb -f infra/supabase/schema.sql
+        PGPASSWORD=testpass psql -h localhost -U testuser -d testdb -f infra/supabase/seeds.sql
+      env:
+        PGPASSWORD: testpass
+        
+    - name: Start backend server
+      run: |
+        cd apps/ia
+        python main.py &
+        echo $! > backend.pid
+        sleep 10
+      env:
+        DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+        JWT_SECRET_KEY: test-secret-key
+        ALLOWED_ORIGINS: http://localhost:3000
+        PORT: 8000
+        
+    - name: Build frontend
+      run: npm run build
+      env:
+        NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
+        NEXT_PUBLIC_IA_API_URL: http://localhost:8000
+        NEXT_PUBLIC_CONTACT_EMAIL: test@example.com
+        NEXT_PUBLIC_CONTACT_PHONE: "+33123456789"
+        
+    - name: Start frontend server
+      run: |
+        npm start &
+        echo $! > frontend.pid
+        sleep 10
+      env:
+        NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
+        NEXT_PUBLIC_IA_API_URL: http://localhost:8000
+        NEXT_PUBLIC_CONTACT_EMAIL: test@example.com
+        NEXT_PUBLIC_CONTACT_PHONE: "+33123456789"
+        
+    - name: Run API tests
+      run: |
+        cd apps/ia
+        python -m pytest test_integration.py -v
+      env:
+        DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+        JWT_SECRET_KEY: test-secret-key
+        ALLOWED_ORIGINS: http://localhost:3000
+        
+    - name: Test API endpoints
+      run: |
+        # Test health endpoint
+        curl -f http://localhost:8000/health
+        
+        # Test activities endpoint
+        curl -f http://localhost:8000/activities
+        
+        # Test contact form
+        curl -f -X POST http://localhost:8000/contact \
+          -H "Content-Type: application/json" \
+          -d '{"name":"Test User","email":"test@example.com","subject":"Test","message":"Test message"}'
+        
+    - name: Test frontend pages
+      run: |
+        # Test main pages are accessible
+        curl -f http://localhost:3000/
+        curl -f http://localhost:3000/catalogue
+        curl -f http://localhost:3000/contact
+        curl -f http://localhost:3000/rejoindre
+        
+    - name: Cleanup
+      if: always()
+      run: |
+        # Kill backend and frontend servers
+        if [ -f backend.pid ]; then kill $(cat backend.pid) || true; fi
+        if [ -f frontend.pid ]; then kill $(cat frontend.pid) || true; fi
+        
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: integration-test-results
+        path: |
+          apps/ia/pytest-report.xml
+          test-results/
