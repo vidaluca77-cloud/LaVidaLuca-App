@@ -5,12 +5,14 @@ services:
   - type: web
     name: lavidaluca-backend
     runtime: python3
-    buildCommand: cd apps/backend && pip install -r requirements.txt
-    startCommand: cd apps/backend && gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT
+    rootDir: apps/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT --timeout 120 --keep-alive 2
     plan: starter
     region: oregon
     branch: main
     healthCheckPath: /health
+    autoDeploy: true
     envVars:
       - key: ENVIRONMENT
         value: production
@@ -23,12 +25,22 @@ services:
       - key: OPENAI_API_KEY
         sync: false  # Set this manually in Render dashboard
       - key: CORS_ORIGINS
-        value: '["https://lavidaluca.fr","https://www.lavidaluca.fr"]'
+        value: '["https://lavidaluca-app.vercel.app","https://lavidaluca.fr","https://www.lavidaluca.fr","http://localhost:3000"]'
       - key: LOG_LEVEL
         value: INFO
+      - key: PYTHONPATH
+        value: /opt/render/project/src
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: SENTRY_ENVIRONMENT
+        value: production
+      - key: ALLOWED_HOSTS
+        value: "lavidaluca-backend.onrender.com,localhost"
 
 databases:
   - name: lavidaluca-db
     plan: starter
     region: oregon
     postgresMajorVersion: 15
+    databaseName: lavidaluca
+    user: lavidaluca_user

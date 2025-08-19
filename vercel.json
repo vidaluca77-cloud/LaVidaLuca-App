@@ -1,0 +1,78 @@
+{
+  "version": 2,
+  "name": "lavidaluca-app",
+  "build": {
+    "env": {
+      "NEXT_TELEMETRY_DISABLED": "1"
+    }
+  },
+  "buildCommand": "cd apps/web && npm run build",
+  "outputDirectory": "apps/web/.next",
+  "installCommand": "npm install && cd apps/web && npm install",
+  "framework": "nextjs",
+  "functions": {
+    "apps/web/app/**/*.tsx": {
+      "runtime": "nodejs20.x"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/v1/(.*)",
+      "destination": "https://lavidaluca-backend.onrender.com/api/v1/$1"
+    },
+    {
+      "source": "/docs",
+      "destination": "https://lavidaluca-backend.onrender.com/docs"
+    },
+    {
+      "source": "/health",
+      "destination": "https://lavidaluca-backend.onrender.com/health"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://lavidaluca-backend.onrender.com",
+    "NEXT_PUBLIC_APP_ENV": "production"
+  },
+  "regions": ["cdg1"],
+  "trailingSlash": false
+}

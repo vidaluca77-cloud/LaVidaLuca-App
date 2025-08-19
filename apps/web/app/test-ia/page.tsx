@@ -24,8 +24,9 @@ export default function TestIA() {
       }
       const data = await r.json();
       setRes(data.answer ?? JSON.stringify(data));
-    } catch (err: any) {
-      setRes(`Erreur: ${err.message}`);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Une erreur inconnue est survenue';
+      setRes(`Erreur: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
