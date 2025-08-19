@@ -6,7 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "echo \"No tests specified yet\" && exit 0",
+    "type-check": "tsc --noEmit",
+    "docker:dev": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "security:scan": "npm audit",
+    "prepare": "husky install || true"
   },
   "dependencies": {
     "next": "14.0.4",
@@ -23,6 +29,11 @@
     "postcss": "^8.4.32",
     "tailwindcss": "^3.4.0",
     "eslint": "^8.56.0",
-    "eslint-config-next": "14.0.4"
+    "eslint-config-next": "14.0.4",
+    "husky": "^8.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   }
 }

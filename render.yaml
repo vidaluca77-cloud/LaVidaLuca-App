@@ -1,0 +1,57 @@
+services:
+  - type: web
+    name: la-vida-luca-ia
+    runtime: docker
+    repo: https://github.com/vidaluca77-cloud/LaVidaLuca-App.git
+    rootDir: ./apps/ia
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    region: frankfurt
+    branch: main
+    buildCommand: poetry install --no-dev
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    env: production
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: ALLOWED_ORIGINS
+        fromService:
+          type: web
+          name: la-vida-luca-frontend
+          property: url
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+    autoDeploy: true
+    dockerCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+
+  - type: web
+    name: la-vida-luca-ia-staging
+    runtime: docker
+    repo: https://github.com/vidaluca77-cloud/LaVidaLuca-App.git
+    rootDir: ./apps/ia
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    region: frankfurt
+    branch: develop
+    buildCommand: poetry install --no-dev
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    env: staging
+    envVars:
+      - key: ENVIRONMENT
+        value: staging
+      - key: ALLOWED_ORIGINS
+        value: https://la-vida-luca-staging.vercel.app
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+    autoDeploy: true
+    dockerCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
