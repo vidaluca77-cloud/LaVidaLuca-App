@@ -7,10 +7,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from contextlib import asynccontextmanager
 import logging
+import sqlalchemy
 
 from .config import settings
-from .database import database
-from .routes import auth, users, activities, contacts, suggestions
+from .database import engine
+from .routes import auth, users, activities, contacts, suggestions, examples
 from .middleware import setup_middleware
 from .exceptions import setup_exception_handlers
 
@@ -27,16 +28,13 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
     logger.info("Starting La Vida Luca API...")
-    
-    # Connect to database
-    await database.connect()
-    logger.info("Database connected")
+    logger.info("Database engine initialized")
     
     yield
     
     # Cleanup
-    await database.disconnect()
-    logger.info("Database disconnected")
+    await engine.dispose()
+    logger.info("Database engine disposed")
     logger.info("La Vida Luca API shutdown")
 
 
@@ -64,6 +62,7 @@ def create_app() -> FastAPI:
     app.include_router(activities.router, prefix="/api/v1/activities", tags=["activities"])
     app.include_router(contacts.router, prefix="/api/v1/contacts", tags=["contacts"])
     app.include_router(suggestions.router, prefix="/api/v1/suggestions", tags=["suggestions"])
+    app.include_router(examples.router, prefix="/api/v1/examples", tags=["examples"])
     
     @app.get("/")
     async def root():
@@ -80,7 +79,8 @@ def create_app() -> FastAPI:
         """Health check endpoint."""
         try:
             # Test database connection
-            await database.execute("SELECT 1")
+            async with engine.begin() as conn:
+                await conn.execute(sqlalchemy.text("SELECT 1"))
             db_status = "healthy"
         except Exception as e:
             logger.error(f"Database health check failed: {e}")
