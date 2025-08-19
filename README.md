@@ -65,3 +65,22 @@ Voir /apps/web/pages/catalogue-activites.tsx pour la liste complète et la prés
 	5.	Configurer les variables d’environnement
 	6.	Tester l’accès aux pages protégées
  
+
+⸻
+
+## 🚀 Configuration de Déploiement
+
+### ✅ Fichiers de configuration prêts
+
+Tous les fichiers nécessaires au déploiement sont maintenant disponibles :
+
+- **`vercel.json`** : Configuration Vercel pour le frontend
+- **`render.yaml`** : Configuration Render pour l'API
+- **`apps/ia/`** : Backend FastAPI complet avec dépendances
+- **`infra/supabase/`** : Schémas et données de base SQL
+- **`docs/DEPLOYMENT.md`** : Guide de déploiement détaillé
+- **`.env.example`** : Variables d'environnement
+
+### 📋 Guide de déploiement
+
+Consultez `docs/DEPLOYMENT.md` pour les instructions complètes de déploiement sur Vercel, Render et Supabase.

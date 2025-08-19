@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: lavidaluca-ia-api
+    env: python
+    region: frankfurt  # ou oregon selon votre préférence
+    plan: free  # ou starter selon vos besoins
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    rootDir: ./apps/ia
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: ALLOWED_ORIGINS
+        value: https://la-vida-luca.vercel.app
+      - key: SUPABASE_URL
+        sync: false  # À configurer manuellement dans Render
+      - key: SUPABASE_SERVICE_KEY
+        sync: false  # À configurer manuellement dans Render
+      - key: OPENAI_API_KEY
+        sync: false  # À configurer manuellement dans Render (optionnel)
+      - key: RENDER_ENVIRONMENT
+        value: production
