@@ -1,4 +1,5 @@
 // Jest setup file for La Vida Luca App
+require('@testing-library/jest-dom');
 
 // Mock console methods in test environment
 global.console = {
@@ -22,9 +23,42 @@ jest.mock('next/router', () => ({
   }),
 }));
 
+// Mock Next.js navigation (App Router)
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    refresh: jest.fn(),
+    prefetch: jest.fn(),
+  }),
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 // Mock environment variables for testing
 process.env.NODE_ENV = 'test';
 process.env.NEXT_PUBLIC_SENTRY_DSN = 'https://test@sentry.io/123456';
 
 // Global test utilities
 global.sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Mock fetch for API calls
+global.fetch = jest.fn();
+
+// Mock PerformanceObserver
+global.PerformanceObserver = class PerformanceObserver {
+  constructor() {}
+  observe() {}
+  disconnect() {}
+  takeRecords() { return []; }
+};
+
+// Mock IntersectionObserver
+global.IntersectionObserver = class IntersectionObserver {
+  constructor() {}
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
