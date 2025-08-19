@@ -6,7 +6,7 @@ pydantic-settings==2.1.0
 gunicorn==21.2.0
 
 # Database
-sqlalchemy==2.0.23
+sqlalchemy==1.4.53
 psycopg2-binary==2.9.9
 asyncpg==0.29.0
 alembic==1.13.1
@@ -28,5 +28,21 @@ email-validator==2.1.0
 # Testing & Development
 pytest==7.4.3
 pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+pytest-xdist==3.5.0
 httpx==0.25.2
 factory-boy==3.3.0
+
+# Performance Testing
+locust==2.17.0
+
+# Security Testing
+safety==2.3.5
+bandit==1.7.5
+
+# Code Quality
+flake8==6.1.0
+black==23.11.0
+isort==5.12.0
+mypy==1.7.1
