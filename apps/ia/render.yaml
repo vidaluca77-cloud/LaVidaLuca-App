@@ -1,0 +1,21 @@
+# Render deployment configuration
+version: "1"
+
+builds:
+  - type: pip
+    cmd: pip install -r requirements.txt
+
+runs:
+  - type: python
+    cmd: python main.py
+    port: 8000
+
+env:
+  - key: DATABASE_URL
+    description: "PostgreSQL database URL"
+  - key: SECRET_KEY
+    description: "Secret key for JWT tokens"
+  - key: OPENAI_API_KEY
+    description: "OpenAI API key for recommendations"
+  - key: ALLOWED_ORIGINS
+    description: "Allowed CORS origins"
