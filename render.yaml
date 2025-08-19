@@ -1,0 +1,53 @@
+# Configuration Render pour La Vida Luca App
+services:
+  # Service API FastAPI pour l'IA
+  - type: web
+    name: lavidaluca-ia-api
+    env: python
+    buildCommand: "cd apps/ia && pip install -r requirements.txt"
+    startCommand: "cd apps/ia && python main.py"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: API_HOST
+        value: 0.0.0.0
+      - key: API_PORT
+        value: 10000
+      - key: API_DEBUG
+        value: false
+      - key: ALLOWED_ORIGINS
+        fromGroup: cors-origins
+    healthCheckPath: /health
+    autoDeploy: true
+    
+  # Service Web Next.js (optionnel - peut être déployé sur Vercel)
+  - type: web
+    name: lavidaluca-web
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_IA_API_URL
+        fromGroup: api-urls
+    autoDeploy: false # Désactivé si déployé sur Vercel
+
+# Groupes de variables d'environnement
+envVarGroups:
+  - name: cors-origins
+    envVars:
+      - key: CORS_ORIGINS
+        value: "https://la-vida-luca.vercel.app,https://lavidaluca-web.onrender.com"
+        
+  - name: api-urls
+    envVars:
+      - key: API_URL
+        value: "https://lavidaluca-ia-api.onrender.com"
+
+# Base de données (optionnel)
+databases:
+  - name: lavidaluca-db
+    databaseName: lavidaluca
+    user: lavidaluca_user
+    plan: free # Starter plan gratuit
