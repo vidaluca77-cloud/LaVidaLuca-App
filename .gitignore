@@ -1,5 +1,80 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring-files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+*/node_modules
+
+# testing
+/coverage
+*/coverage
+
+# next.js
+/.next/
+/out/
+*/out/
+*/.next/
+
+# production
+/build
+*/build
+*/dist
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+.env
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# FastAPI
 .venv/
-apps/ia/.env
-node_modules/
-apps/web/node_modules/
-apps/web/.next/
+venv/
+.env
+
+# Alembic
+alembic/versions/*.py
+!alembic/versions/__init__.py
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Package managers
+package-lock.json
+yarn.lock
+
+# Temporary files
+tmp/
+temp/
