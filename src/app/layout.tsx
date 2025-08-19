@@ -1,9 +1,9 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+// Use system fonts instead of Google Fonts for build compatibility
+const systemFonts = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://la-vida-luca.vercel.app"),
@@ -47,7 +47,8 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <body
-        className={`${inter.className} min-h-screen bg-white text-neutral-900 antialiased`}
+        className={`min-h-screen bg-white text-neutral-900 antialiased`}
+        style={{ fontFamily: systemFonts }}
       >
         <header className="border-b">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
