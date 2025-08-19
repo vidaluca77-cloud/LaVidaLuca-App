@@ -1,0 +1,1667 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "LaVidaLuca Backend API",
+    "description": "Backend API for LaVidaLuca - MFR training platform. This API provides endpoints for user authentication, activity management, contact form submissions, and AI-powered suggestions for collaborative learning experiences.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "LaVidaLuca Support",
+      "email": "support@lavidaluca.com",
+      "url": "https://lavidaluca.com/contact"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "Development server"
+    }
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register a new user",
+        "description": "Create a new user account with email, username and password",
+        "operationId": "register_user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              },
+              "example": {
+                "email": "john.doe@example.com",
+                "username": "johndoe",
+                "full_name": "John Doe",
+                "password": "securePassword123",
+                "is_active": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                },
+                "example": {
+                  "id": 1,
+                  "email": "john.doe@example.com",
+                  "username": "johndoe",
+                  "full_name": "John Doe",
+                  "is_active": true,
+                  "created_at": "2024-01-15T10:30:00Z",
+                  "updated_at": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "User already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                },
+                "example": {
+                  "detail": "Email or username already registered"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Login user",
+        "description": "Authenticate user with username and password, returns JWT access token",
+        "operationId": "login_user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLogin"
+              },
+              "example": {
+                "username": "johndoe",
+                "password": "securePassword123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                },
+                "example": {
+                  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                  "token_type": "bearer"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Incorrect credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                },
+                "example": {
+                  "detail": "Incorrect username or password"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/activities/": {
+      "get": {
+        "tags": ["Activities"],
+        "summary": "Get activities list",
+        "description": "Retrieve a paginated list of activities with optional filtering by category, difficulty, and publication status",
+        "operationId": "get_activities",
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "title": "Skip",
+              "minimum": 0,
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Number of activities to skip (for pagination)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "default": 100
+            },
+            "description": "Maximum number of activities to return"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "title": "Category",
+              "type": "string"
+            },
+            "description": "Filter by activity category"
+          },
+          {
+            "name": "difficulty",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "title": "Difficulty",
+              "type": "string",
+              "enum": ["beginner", "intermediate", "advanced"]
+            },
+            "description": "Filter by difficulty level"
+          },
+          {
+            "name": "published_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "title": "Published Only",
+              "type": "boolean",
+              "default": true
+            },
+            "description": "Only show published activities"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activities retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Activities",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Activity"
+                  }
+                },
+                "example": [
+                  {
+                    "id": 1,
+                    "title": "Introduction to Permaculture",
+                    "description": "Learn the basics of sustainable farming practices",
+                    "category": "agriculture",
+                    "difficulty_level": "beginner",
+                    "duration_minutes": 120,
+                    "location": "Farm Workshop",
+                    "equipment_needed": "Notebook, gloves",
+                    "learning_objectives": "Understand permaculture principles",
+                    "is_published": true,
+                    "creator_id": 1,
+                    "created_at": "2024-01-15T10:30:00Z",
+                    "updated_at": null
+                  }
+                ]
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Activities"],
+        "summary": "Create activity",
+        "description": "Create a new learning activity (requires authentication)",
+        "operationId": "create_activity",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityCreate"
+              },
+              "example": {
+                "title": "Organic Farming Workshop",
+                "description": "Hands-on experience with organic farming techniques",
+                "category": "agriculture",
+                "difficulty_level": "intermediate",
+                "duration_minutes": 180,
+                "location": "Greenhouse #2",
+                "equipment_needed": "Work clothes, water bottle",
+                "learning_objectives": "Master organic farming techniques",
+                "is_published": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Activity created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Activity"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/activities/{activity_id}": {
+      "get": {
+        "tags": ["Activities"],
+        "summary": "Get activity by ID",
+        "description": "Retrieve detailed information about a specific activity",
+        "operationId": "get_activity",
+        "parameters": [
+          {
+            "name": "activity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "title": "Activity Id",
+              "type": "integer"
+            },
+            "description": "The ID of the activity to retrieve"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activity retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Activity"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Activity not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                },
+                "example": {
+                  "detail": "Activity not found"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Activities"],
+        "summary": "Update activity",
+        "description": "Update an existing activity (requires authentication and ownership)",
+        "operationId": "update_activity",
+        "parameters": [
+          {
+            "name": "activity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "title": "Activity Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Activity updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Activity"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                },
+                "example": {
+                  "detail": "Not enough permissions"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Activity not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["Activities"],
+        "summary": "Delete activity",
+        "description": "Delete an activity (requires authentication and ownership)",
+        "operationId": "delete_activity",
+        "parameters": [
+          {
+            "name": "activity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "title": "Activity Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activity deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Delete Activity",
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Activity deleted successfully"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Activity not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/activities/categories/": {
+      "get": {
+        "tags": ["Activities"],
+        "summary": "Get activity categories",
+        "description": "Retrieve a list of all available activity categories",
+        "operationId": "get_activity_categories",
+        "responses": {
+          "200": {
+            "description": "Categories retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Get Activity Categories",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "example": [
+                  "agriculture",
+                  "livestock",
+                  "forestry",
+                  "environment",
+                  "technology",
+                  "business"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contacts/": {
+      "post": {
+        "tags": ["Contacts"],
+        "summary": "Submit contact form",
+        "description": "Submit a new contact form (public endpoint)",
+        "operationId": "create_contact",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactCreate"
+              },
+              "example": {
+                "name": "Jean Dupont",
+                "email": "jean.dupont@example.com",
+                "phone": "+33123456789",
+                "organization": "MFR de Provence",
+                "subject": "Demande de partenariat",
+                "message": "Bonjour, nous souhaitons explorer une collaboration avec La Vida Luca pour nos formations...",
+                "contact_type": "partnership",
+                "consent_privacy": true,
+                "consent_marketing": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Contact request submitted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseContactResponse"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "name": "Jean Dupont",
+                    "email": "jean.dupont@example.com",
+                    "subject": "Demande de partenariat",
+                    "contact_type": "partnership",
+                    "status": "new",
+                    "priority": "normal",
+                    "is_responded": false,
+                    "created_at": "2024-01-15T10:30:00Z"
+                  },
+                  "message": "Contact request submitted successfully"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Contacts"],
+        "summary": "List contact requests",
+        "description": "List contact requests with filtering (admin only)",
+        "operationId": "list_contacts",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1,
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "default": 20
+            }
+          },
+          {
+            "name": "contact_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "title": "Contact Type",
+              "enum": ["general", "partnership", "support", "feedback", "collaboration", "press"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "title": "Status",
+              "enum": ["new", "in_progress", "resolved", "closed"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "title": "Search",
+              "type": "string"
+            },
+            "description": "Search in name, email, subject, message"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contacts retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePaginatedResponseContactListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin access required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/contacts/{contact_id}": {
+      "get": {
+        "tags": ["Contacts"],
+        "summary": "Get contact by ID",
+        "description": "Get contact by ID (admin only)",
+        "operationId": "get_contact",
+        "parameters": [
+          {
+            "name": "contact_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "title": "Contact Id",
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contact retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseContactResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin access required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Contact not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": ["Contacts"],
+        "summary": "Update contact",
+        "description": "Update contact status and metadata (admin only)",
+        "operationId": "update_contact",
+        "parameters": [
+          {
+            "name": "contact_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "title": "Contact Id",
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactUpdate"
+              },
+              "example": {
+                "status": "in_progress",
+                "priority": "high",
+                "tags": ["urgent", "partnership"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Contact updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseContactResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin access required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Contact not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["Contacts"],
+        "summary": "Delete contact",
+        "description": "Delete contact (admin only)",
+        "operationId": "delete_contact",
+        "parameters": [
+          {
+            "name": "contact_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "title": "Contact Id",
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contact deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseDict"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin access required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Contact not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "title": "User",
+        "required": ["email", "username", "is_active", "id", "created_at"],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string",
+            "format": "email"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean",
+            "default": true
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UserCreate": {
+        "title": "UserCreate",
+        "required": ["email", "username", "password"],
+        "type": "object",
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string",
+            "format": "email"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 50
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string",
+            "maxLength": 255
+          },
+          "password": {
+            "title": "Password",
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 100
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "description": "Schema for creating a new user account"
+      },
+      "UserLogin": {
+        "title": "UserLogin",
+        "required": ["username", "password"],
+        "type": "object",
+        "properties": {
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "description": "Schema for user login credentials"
+      },
+      "Token": {
+        "title": "Token",
+        "required": ["access_token", "token_type"],
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "title": "Access Token",
+            "type": "string",
+            "description": "JWT access token for API authentication"
+          },
+          "token_type": {
+            "title": "Token Type",
+            "type": "string",
+            "description": "Type of token (always 'bearer')"
+          }
+        },
+        "description": "JWT token response"
+      },
+      "Activity": {
+        "title": "Activity",
+        "required": ["title", "category", "id", "creator_id", "created_at"],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string",
+            "maxLength": 255
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "category": {
+            "title": "Category",
+            "type": "string",
+            "enum": ["agriculture", "livestock", "forestry", "environment", "technology", "business", "other"]
+          },
+          "difficulty_level": {
+            "title": "Difficulty Level",
+            "type": "string",
+            "enum": ["beginner", "intermediate", "advanced"],
+            "default": "beginner"
+          },
+          "duration_minutes": {
+            "title": "Duration Minutes",
+            "type": "integer",
+            "minimum": 1
+          },
+          "location": {
+            "title": "Location",
+            "type": "string",
+            "maxLength": 255
+          },
+          "equipment_needed": {
+            "title": "Equipment Needed",
+            "type": "string"
+          },
+          "learning_objectives": {
+            "title": "Learning Objectives",
+            "type": "string"
+          },
+          "is_published": {
+            "title": "Is Published",
+            "type": "boolean",
+            "default": false
+          },
+          "creator_id": {
+            "title": "Creator Id",
+            "type": "integer"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Complete activity information"
+      },
+      "ActivityCreate": {
+        "title": "ActivityCreate",
+        "required": ["title", "category"],
+        "type": "object",
+        "properties": {
+          "title": {
+            "title": "Title",
+            "type": "string",
+            "maxLength": 255
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "category": {
+            "title": "Category",
+            "type": "string",
+            "enum": ["agriculture", "livestock", "forestry", "environment", "technology", "business", "other"]
+          },
+          "difficulty_level": {
+            "title": "Difficulty Level",
+            "type": "string",
+            "enum": ["beginner", "intermediate", "advanced"],
+            "default": "beginner"
+          },
+          "duration_minutes": {
+            "title": "Duration Minutes",
+            "type": "integer",
+            "minimum": 1
+          },
+          "location": {
+            "title": "Location",
+            "type": "string",
+            "maxLength": 255
+          },
+          "equipment_needed": {
+            "title": "Equipment Needed",
+            "type": "string"
+          },
+          "learning_objectives": {
+            "title": "Learning Objectives",
+            "type": "string"
+          },
+          "is_published": {
+            "title": "Is Published",
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "description": "Schema for creating a new activity"
+      },
+      "ActivityUpdate": {
+        "title": "ActivityUpdate",
+        "type": "object",
+        "properties": {
+          "title": {
+            "title": "Title",
+            "type": "string",
+            "maxLength": 255
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "category": {
+            "title": "Category",
+            "type": "string",
+            "enum": ["agriculture", "livestock", "forestry", "environment", "technology", "business", "other"]
+          },
+          "difficulty_level": {
+            "title": "Difficulty Level",
+            "type": "string",
+            "enum": ["beginner", "intermediate", "advanced"]
+          },
+          "duration_minutes": {
+            "title": "Duration Minutes",
+            "type": "integer",
+            "minimum": 1
+          },
+          "location": {
+            "title": "Location",
+            "type": "string",
+            "maxLength": 255
+          },
+          "equipment_needed": {
+            "title": "Equipment Needed",
+            "type": "string"
+          },
+          "learning_objectives": {
+            "title": "Learning Objectives",
+            "type": "string"
+          },
+          "is_published": {
+            "title": "Is Published",
+            "type": "boolean"
+          }
+        },
+        "description": "Schema for updating an existing activity"
+      },
+      "ContactCreate": {
+        "title": "ContactCreate",
+        "required": ["name", "email", "subject", "message"],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "maxLength": 255
+          },
+          "email": {
+            "title": "Email",
+            "type": "string",
+            "format": "email"
+          },
+          "phone": {
+            "title": "Phone",
+            "type": "string",
+            "maxLength": 50
+          },
+          "organization": {
+            "title": "Organization",
+            "type": "string",
+            "maxLength": 255
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string",
+            "maxLength": 500
+          },
+          "message": {
+            "title": "Message",
+            "type": "string",
+            "minLength": 10
+          },
+          "contact_type": {
+            "title": "Contact Type",
+            "type": "string",
+            "enum": ["general", "partnership", "support", "feedback", "collaboration", "press"],
+            "default": "general"
+          },
+          "consent_privacy": {
+            "title": "Consent Privacy",
+            "type": "boolean",
+            "default": true
+          },
+          "consent_marketing": {
+            "title": "Consent Marketing",
+            "type": "boolean",
+            "default": false
+          },
+          "metadata": {
+            "title": "Metadata",
+            "type": "object",
+            "default": {}
+          }
+        },
+        "description": "Schema for creating a contact form submission"
+      },
+      "ContactUpdate": {
+        "title": "ContactUpdate",
+        "type": "object",
+        "properties": {
+          "status": {
+            "title": "Status",
+            "type": "string",
+            "enum": ["new", "in_progress", "resolved", "closed"]
+          },
+          "priority": {
+            "title": "Priority",
+            "type": "string",
+            "enum": ["low", "normal", "high", "urgent"]
+          },
+          "assigned_to": {
+            "title": "Assigned To",
+            "type": "string",
+            "format": "uuid"
+          },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metadata": {
+            "title": "Metadata",
+            "type": "object"
+          }
+        },
+        "description": "Schema for updating contact metadata (admin only)"
+      },
+      "ContactResponse": {
+        "title": "ContactResponse",
+        "required": ["id", "name", "email", "subject", "message", "contact_type", "status", "priority", "is_responded", "response_count", "metadata", "tags", "consent_privacy", "consent_marketing"],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string",
+            "format": "email"
+          },
+          "phone": {
+            "title": "Phone",
+            "type": "string"
+          },
+          "organization": {
+            "title": "Organization",
+            "type": "string"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "contact_type": {
+            "title": "Contact Type",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "priority": {
+            "title": "Priority",
+            "type": "string"
+          },
+          "assigned_to": {
+            "title": "Assigned To",
+            "type": "string",
+            "format": "uuid"
+          },
+          "is_responded": {
+            "title": "Is Responded",
+            "type": "boolean"
+          },
+          "response_count": {
+            "title": "Response Count",
+            "type": "integer"
+          },
+          "last_response_at": {
+            "title": "Last Response At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "metadata": {
+            "title": "Metadata",
+            "type": "object"
+          },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "consent_privacy": {
+            "title": "Consent Privacy",
+            "type": "boolean"
+          },
+          "consent_marketing": {
+            "title": "Consent Marketing",
+            "type": "boolean"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Complete contact information response"
+      },
+      "ContactListResponse": {
+        "title": "ContactListResponse",
+        "required": ["id", "name", "email", "subject", "contact_type", "status", "priority", "is_responded"],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string",
+            "format": "email"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          },
+          "contact_type": {
+            "title": "Contact Type",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "priority": {
+            "title": "Priority",
+            "type": "string"
+          },
+          "is_responded": {
+            "title": "Is Responded",
+            "type": "boolean"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Simplified contact information for listing"
+      },
+      "ApiResponseContactResponse": {
+        "title": "ApiResponse[ContactResponse]",
+        "required": ["success", "data"],
+        "type": "object",
+        "properties": {
+          "success": {
+            "title": "Success",
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ContactResponse"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        }
+      },
+      "ApiResponsePaginatedResponseContactListResponse": {
+        "title": "ApiResponse[PaginatedResponse[ContactListResponse]]",
+        "required": ["success", "data"],
+        "type": "object",
+        "properties": {
+          "success": {
+            "title": "Success",
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PaginatedResponseContactListResponse"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        }
+      },
+      "PaginatedResponseContactListResponse": {
+        "title": "PaginatedResponse[ContactListResponse]",
+        "required": ["items", "total", "page", "size", "pages"],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactListResponse"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "type": "integer"
+          }
+        }
+      },
+      "ApiResponseDict": {
+        "title": "ApiResponse[Dict]",
+        "required": ["success", "data"],
+        "type": "object",
+        "properties": {
+          "success": {
+            "title": "Success",
+            "type": "boolean"
+          },
+          "data": {
+            "title": "Data",
+            "type": "object"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        }
+      },
+      "HTTPValidationError": {
+        "title": "HTTPValidationError",
+        "type": "object",
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "title": "ValidationError",
+        "required": ["loc", "msg", "type"],
+        "type": "object",
+        "properties": {
+          "loc": {
+            "title": "Location",
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            }
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT token obtained from /auth/login endpoint"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "User authentication and authorization endpoints"
+    },
+    {
+      "name": "Activities",
+      "description": "Learning activity management endpoints"
+    },
+    {
+      "name": "Contacts",
+      "description": "Contact form submission and management endpoints"
+    }
+  ]
+}
