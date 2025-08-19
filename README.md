@@ -1,23 +1,213 @@
-# La Vida Luca - Documentation
+# La Vida Luca App
 
-## Vue d'ensemble
-La Vida Luca est une plateforme collaborative dédiée à la formation des jeunes en MFR (Maisons Familiales Rurales) et au développement d'une agriculture nouvelle. Cette documentation couvre l'architecture technique, le déploiement et l'utilisation de la plateforme.
+[![CI/CD Pipeline](https://github.com/vidaluca77-cloud/LaVidaLuca-App/actions/workflows/ci.yml/badge.svg)](https://github.com/vidaluca77-cloud/LaVidaLuca-App/actions/workflows/ci.yml)
+[![Deploy](https://github.com/vidaluca77-cloud/LaVidaLuca-App/actions/workflows/deploy.yml/badge.svg)](https://github.com/vidaluca77-cloud/LaVidaLuca-App/actions/workflows/deploy.yml)
 
-## Architecture
+Plateforme collaborative pour l'entraide et les échanges locaux, axée sur le jardinage, la permaculture et la vie durable.
 
-### Composants
-- **Frontend**: Next.js + React + TypeScript
-- **Backend**: FastAPI + Python
-- **Base de données**: PostgreSQL
-- **Authentification**: JWT 
-- **IA**: OpenAI integration
+## 🏗️ Architecture
+
+- **Frontend**: Next.js 15 + React 19 + TypeScript
+- **Backend**: FastAPI + Python 3.12
+- **Base de données**: PostgreSQL avec AsyncPG
+- **Authentification**: JWT
+- **IA**: OpenAI Integration pour conseils personnalisés
 - **Déploiement**: Vercel (frontend) + Render (backend)
-- **Monitoring**: Sentry (erreurs) + métriques personnalisées
+- **Monitoring**: Sentry + Prometheus metrics
 
-### Schéma d'architecture
-```mermaid
-graph TB
-    Client[Client Browser] --> Frontend[Next.js Frontend]
+## 🚀 Lancement Local
+
+### Prérequis
+
+- Node.js 20+
+- Python 3.12+
+- PostgreSQL 15+
+- Git
+
+### Installation rapide
+
+```bash
+# 1. Cloner le repository
+git clone https://github.com/vidaluca77-cloud/LaVidaLuca-App.git
+cd LaVidaLuca-App
+
+# 2. Configuration environnement
+cp .env.example .env
+cp apps/backend/.env.example apps/backend/.env
+cp apps/web/.env.local.example apps/web/.env.local
+
+# 3. Installer les dépendances
+npm run setup
+
+# 4. Configurer la base de données
+createdb lavidaluca_dev
+cd apps/backend
+python -m alembic upgrade head
+
+# 5. Lancer l'application complète
+npm run dev:full
+```
+
+### Lancement séparé
+
+#### Backend (port 8000)
+```bash
+cd apps/backend
+pip install -r requirements.txt
+cp .env.example .env
+# Configurer DATABASE_URL dans .env
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+#### Frontend (port 3000)
+```bash
+cd apps/web
+npm install
+cp .env.local.example .env.local
+# Configurer NEXT_PUBLIC_API_URL dans .env.local
+npm run dev
+```
+
+## 📡 API Endpoints
+
+### Endpoints principaux
+
+- `GET /` - Informations de l'API
+- `GET /health` - Health check (base de données + statut)
+- `GET /docs` - Documentation Swagger (développement uniquement)
+
+### Authentification
+- `POST /api/v1/auth/register` - Inscription utilisateur
+- `POST /api/v1/auth/login` - Connexion
+- `POST /api/v1/auth/refresh` - Renouvellement token
+
+### Guide IA
+- `POST /api/v1/guide` - Conseils personnalisés IA
+- `GET /api/v1/guide/health` - Statut service guide
+
+### Utilisateurs
+- `GET /api/v1/users/me` - Profil utilisateur
+- `PUT /api/v1/users/me` - Mise à jour profil
+
+### Activités
+- `GET /api/v1/activities` - Liste des activités
+- `POST /api/v1/activities` - Créer une activité
+- `GET /api/v1/activities/{id}` - Détails activité
+
+### Contacts & Suggestions
+- `POST /api/v1/contacts` - Formulaire de contact
+- `POST /api/v1/suggestions` - Proposer une amélioration
+
+## 🧪 Tests
+
+### Backend
+```bash
+cd apps/backend
+pytest tests/ -v
+pytest tests/ --cov=. --cov-report=html  # Avec couverture
+```
+
+### Frontend
+```bash
+cd apps/web
+npm run test
+npm run test:coverage
+```
+
+### Test de l'API Guide
+Visitez `http://localhost:3000/test-ia` pour tester l'endpoint `/guide` avec une interface utilisateur.
+
+## 🚀 Déploiement Automatique
+
+Le déploiement est automatisé via GitHub Actions :
+
+### Configuration des secrets
+
+Dans les settings GitHub du repository, configurer :
+
+#### Backend (Render)
+- `RENDER_DEPLOY_HOOK_IA` : URL de déploiement Render
+
+#### Frontend (Vercel)
+- `VERCEL_TOKEN` : Token d'authentification Vercel
+- `VERCEL_PROJECT_ID` : ID du projet Vercel  
+- `VERCEL_ORG_ID` : ID de l'organisation Vercel
+
+### Processus de déploiement
+
+1. **Push sur `main`** déclenche automatiquement :
+   - Tests backend avec PostgreSQL
+   - Build frontend
+   - Tests d'intégration
+   - Déploiement backend sur Render
+   - Déploiement frontend sur Vercel
+
+2. **Pull Requests** exécutent les tests CI sans déploiement
+
+## 🔧 Configuration Environnement
+
+### Variables Backend (.env)
+```bash
+ENVIRONMENT=development|production
+DATABASE_URL=postgresql+asyncpg://user:pass@host:port/db
+JWT_SECRET_KEY=your-secret-key
+OPENAI_API_KEY=your-openai-key
+CORS_ORIGINS=http://localhost:3000,https://yourdomain.com
+```
+
+### Variables Frontend (.env.local)
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+NEXT_PUBLIC_APP_NAME=La Vida Luca
+SENTRY_DSN=your-sentry-dsn
+```
+
+## 📁 Structure du Projet
+
+```
+LaVidaLuca-App/
+├── .github/workflows/     # GitHub Actions CI/CD
+├── apps/
+│   ├── backend/          # API FastAPI
+│   │   ├── routes/       # Endpoints API
+│   │   ├── tests/        # Tests backend
+│   │   ├── models/       # Modèles SQLAlchemy
+│   │   └── main.py       # Application principale
+│   └── web/              # Frontend Next.js
+│       ├── app/          # Pages et composants
+│       ├── public/       # Assets statiques
+│       └── src/          # Code source
+├── .env.example          # Configuration globale
+└── package.json          # Scripts npm globaux
+```
+
+## 🤝 Contribution
+
+1. Fork le projet
+2. Créer une branche (`git checkout -b feature/AmazingFeature`)
+3. Commit (`git commit -m 'Add AmazingFeature'`)
+4. Push (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
+
+### Standards de code
+- **Backend**: Black (formatage) + isort + flake8
+- **Frontend**: ESLint + Prettier + TypeScript strict
+- **Tests**: Coverage minimum 80%
+- **Commits**: Convention Conventional Commits
+
+## 📄 License
+
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+
+## 📞 Support
+
+- **Issues GitHub**: [github.com/vidaluca77-cloud/LaVidaLuca-App/issues](https://github.com/vidaluca77-cloud/LaVidaLuca-App/issues)
+- **Email**: support@lavidaluca.fr
+- **Documentation**: Disponible à `/docs` en mode développement
+
+---
+
+Développé avec ❤️ pour promouvoir l'entraide locale et la vie durable.
     Frontend --> Backend[FastAPI Backend]
     Backend --> Database[(PostgreSQL)]
     Backend --> OpenAI[OpenAI API]
