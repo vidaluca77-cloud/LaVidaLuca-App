@@ -11,3 +11,4 @@ apps/backend/__pycache__/
 apps/backend/**/__pycache__/
 apps/backend/test.db
 apps/backend/.pytest_cache/
+apps/backend/venv/
