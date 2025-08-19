@@ -8,28 +8,38 @@ interface LogEntry {
 
 class Logger {
   private serviceName = 'la-vida-luca-frontend';
-  
-  private log(level: LogEntry['level'], message: string, metadata?: Record<string, any>, component?: string) {
+
+  private log(
+    level: LogEntry['level'],
+    message: string,
+    metadata?: Record<string, any>,
+    component?: string
+  ) {
     const entry: LogEntry = {
       timestamp: new Date(),
       level,
       message,
       metadata,
-      component
+      component,
     };
 
     // Structured logging in production
     if (process.env.NODE_ENV === 'production') {
-      console.log(JSON.stringify({
-        service: this.serviceName,
-        ...entry,
-        timestamp: entry.timestamp.toISOString()
-      }));
+      console.log(
+        JSON.stringify({
+          service: this.serviceName,
+          ...entry,
+          timestamp: entry.timestamp.toISOString(),
+        })
+      );
     } else {
       // Readable logging in development
       const timestamp = entry.timestamp.toISOString();
       const componentStr = component ? `[${component}] ` : '';
-      console.log(`${timestamp} [${level.toUpperCase()}] ${componentStr}${message}`, metadata || '');
+      console.log(
+        `${timestamp} [${level.toUpperCase()}] ${componentStr}${message}`,
+        metadata || ''
+      );
     }
   }
 
@@ -51,10 +61,14 @@ class Logger {
 
   // Performance logging
   timing(name: string, duration: number, metadata?: Record<string, any>) {
-    this.info(`Performance: ${name}`, {
-      duration_ms: duration,
-      ...metadata
-    }, 'performance');
+    this.info(
+      `Performance: ${name}`,
+      {
+        duration_ms: duration,
+        ...metadata,
+      },
+      'performance'
+    );
   }
 
   // User action logging
@@ -63,12 +77,22 @@ class Logger {
   }
 
   // API call logging
-  apiCall(url: string, method: string, duration: number, status: number, metadata?: Record<string, any>) {
-    this.info(`API call: ${method} ${url}`, {
-      duration_ms: duration,
-      status_code: status,
-      ...metadata
-    }, 'api');
+  apiCall(
+    url: string,
+    method: string,
+    duration: number,
+    status: number,
+    metadata?: Record<string, any>
+  ) {
+    this.info(
+      `API call: ${method} ${url}`,
+      {
+        duration_ms: duration,
+        status_code: status,
+        ...metadata,
+      },
+      'api'
+    );
   }
 }
 

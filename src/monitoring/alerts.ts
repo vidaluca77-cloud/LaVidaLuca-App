@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/nextjs";
+import * as Sentry from '@sentry/nextjs';
 
 interface Alert {
   type: 'error' | 'warning' | 'info';
@@ -24,17 +24,21 @@ export class AlertManager {
     return AlertManager.instance;
   }
 
-  addAlert(type: Alert['type'], message: string, metadata?: Record<string, any>) {
+  addAlert(
+    type: Alert['type'],
+    message: string,
+    metadata?: Record<string, any>
+  ) {
     const alert: Alert = {
       type,
       message,
       timestamp: new Date(),
-      metadata
+      metadata,
     };
 
     // Add to alerts array
     this.alerts.push(alert);
-    
+
     // Keep only recent alerts
     if (this.alerts.length > this.maxAlerts) {
       this.alerts.shift();
@@ -66,7 +70,10 @@ export class AlertManager {
 
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[${alert.type.toUpperCase()}] ${alert.message}`, alert.metadata);
+      console.log(
+        `[${alert.type.toUpperCase()}] ${alert.message}`,
+        alert.metadata
+      );
     }
   }
 

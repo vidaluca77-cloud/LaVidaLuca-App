@@ -46,9 +46,11 @@ export class MonitoringDashboard {
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
 
     // Calculate performance metrics
-    const webVitalMetrics = metrics.filter(m => m.metadata?.type === 'web-vital');
+    const webVitalMetrics = metrics.filter(
+      m => m.metadata?.type === 'web-vital'
+    );
     const apiMetrics = metrics.filter(m => m.name === 'api_call');
-    
+
     const webVitals = {
       fcp: this.getLatestMetricValue(webVitalMetrics, 'fcp') || 0,
       lcp: this.getLatestMetricValue(webVitalMetrics, 'lcp') || 0,
@@ -58,9 +60,10 @@ export class MonitoringDashboard {
 
     const successfulAPICalls = apiMetrics.filter(m => !m.metadata?.error);
     const failedAPICalls = apiMetrics.filter(m => m.metadata?.error);
-    const avgApiLatency = apiMetrics.length > 0 
-      ? apiMetrics.reduce((sum, m) => sum + m.value, 0) / apiMetrics.length 
-      : 0;
+    const avgApiLatency =
+      apiMetrics.length > 0
+        ? apiMetrics.reduce((sum, m) => sum + m.value, 0) / apiMetrics.length
+        : 0;
 
     // Calculate alert metrics
     const recentAlerts = alerts.filter(alert => alert.timestamp > oneHourAgo);
@@ -68,7 +71,11 @@ export class MonitoringDashboard {
     const warningAlerts = alerts.filter(alert => alert.type === 'warning');
 
     // Determine health status
-    const health = this.calculateHealthStatus(webVitals, errorAlerts.length, failedAPICalls.length);
+    const health = this.calculateHealthStatus(
+      webVitals,
+      errorAlerts.length,
+      failedAPICalls.length
+    );
 
     return {
       performance: {
@@ -99,9 +106,11 @@ export class MonitoringDashboard {
 
   private getAveragePageLoadTime(): number {
     if (typeof window === 'undefined') return 0;
-    
+
     try {
-      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      const navigation = performance.getEntriesByType(
+        'navigation'
+      )[0] as PerformanceNavigationTiming;
       if (navigation.loadEventEnd && navigation.fetchStart) {
         return navigation.loadEventEnd - navigation.fetchStart;
       }
@@ -112,8 +121,8 @@ export class MonitoringDashboard {
   }
 
   private calculateHealthStatus(
-    webVitals: any, 
-    errorCount: number, 
+    webVitals: any,
+    errorCount: number,
     failedAPICount: number
   ): { status: 'healthy' | 'warning' | 'critical'; issues: string[] } {
     const issues: string[] = [];
@@ -156,7 +165,10 @@ export class MonitoringDashboard {
   }
 
   // Real-time monitoring
-  startRealTimeMonitoring(callback: (metrics: DashboardMetrics) => void, interval: number = 30000) {
+  startRealTimeMonitoring(
+    callback: (metrics: DashboardMetrics) => void,
+    interval: number = 30000
+  ) {
     return setInterval(() => {
       callback(this.getMetrics());
     }, interval);

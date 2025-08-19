@@ -28,13 +28,13 @@ Object.defineProperty(global, 'PerformanceObserver', {
   writable: true,
 });
 
-import { performanceMonitor } from '../../src/monitoring/performance';
+import { performanceMonitor } from '@/monitoring/performance';
 
 describe('PerformanceMonitor', () => {
   beforeEach(() => {
     performanceMonitor.clearMetrics();
     jest.clearAllMocks();
-    
+
     // Reset mock performance timer
     let time = 0;
     mockPerformance.now.mockImplementation(() => {
@@ -55,14 +55,16 @@ describe('PerformanceMonitor', () => {
 
   test('should handle ending timing without start', () => {
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-    
+
     performanceMonitor.end('non-existent-timer');
-    
+
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Performance timing 'non-existent-timer' was ended without being started"),
-      ""
+      expect.stringContaining(
+        "Performance timing 'non-existent-timer' was ended without being started"
+      ),
+      ''
     );
-    
+
     consoleSpy.mockRestore();
   });
 
@@ -103,7 +105,7 @@ describe('PerformanceMonitor', () => {
       ok: true,
       status: 200,
     });
-    
+
     Object.defineProperty(global, 'window', {
       value: { fetch: mockFetch },
       writable: true,
@@ -117,7 +119,7 @@ describe('PerformanceMonitor', () => {
     // Check that metrics were recorded
     const metrics = performanceMonitor.getMetrics();
     const apiMetrics = metrics.filter(m => m.name === 'api_call');
-    
+
     expect(apiMetrics).toHaveLength(1);
     expect(apiMetrics[0].metadata).toMatchObject({
       url: '/api/test',
@@ -129,7 +131,7 @@ describe('PerformanceMonitor', () => {
 
   test('should handle fetch errors', async () => {
     const mockFetch = jest.fn().mockRejectedValue(new Error('Network error'));
-    
+
     Object.defineProperty(global, 'window', {
       value: { fetch: mockFetch },
       writable: true,
@@ -145,7 +147,7 @@ describe('PerformanceMonitor', () => {
 
     const metrics = performanceMonitor.getMetrics();
     const apiMetrics = metrics.filter(m => m.name === 'api_call');
-    
+
     expect(apiMetrics).toHaveLength(1);
     expect(apiMetrics[0].metadata).toMatchObject({
       url: '/api/test',
@@ -158,7 +160,7 @@ describe('PerformanceMonitor', () => {
   test('should clear metrics', () => {
     performanceMonitor.recordMetric('test', 100);
     expect(performanceMonitor.getMetrics()).toHaveLength(1);
-    
+
     performanceMonitor.clearMetrics();
     expect(performanceMonitor.getMetrics()).toHaveLength(0);
   });

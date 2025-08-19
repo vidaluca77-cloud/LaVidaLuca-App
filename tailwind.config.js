@@ -10,12 +10,12 @@ module.exports = {
       colors: {
         vida: {
           green: '#22c55e',
-          earth: '#a3744e', 
+          earth: '#a3744e',
           sky: '#7dd3fc',
-          warm: '#fbbf24'
-        }
-      }
+          warm: '#fbbf24',
+        },
+      },
     },
   },
   plugins: [],
-}
+};
