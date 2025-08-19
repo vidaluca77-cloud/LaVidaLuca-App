@@ -6,3 +6,15 @@ apps/web/.next/
 .next/
 /out/
 .DS_Store
+# Python virtual environments
+apps/backend/venv/
+apps/backend/__pycache__/
+apps/backend/src/__pycache__/
+apps/backend/tests/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+# Jest and build outputs
+apps/frontend/out/
+apps/frontend/.next/
