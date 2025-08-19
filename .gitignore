@@ -1,5 +1,13 @@
 .venv/
 apps/ia/.env
+apps/backend/venv/
+apps/backend/.env
+apps/backend/*.db
+apps/backend/__pycache__/
+apps/backend/src/__pycache__/
+apps/backend/src/**/__pycache__/
+apps/backend/tests/__pycache__/
+apps/backend/.pytest_cache/
 node_modules/
 apps/web/node_modules/
 apps/web/.next/
