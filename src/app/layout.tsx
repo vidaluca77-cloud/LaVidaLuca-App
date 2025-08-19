@@ -51,11 +51,19 @@ export default function RootLayout({
             <a href="/" className="font-semibold">La Vida Luca</a>
             <nav className="flex gap-6 text-sm">
               <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
+              <a href="/catalogue" className="opacity-80 hover:opacity-100">Catalogue</a>
+              <a href="/farms" className="opacity-80 hover:opacity-100">Fermes</a>
+              <a href="/booking" className="opacity-80 hover:opacity-100">Réserver</a>
+              <a href="/dashboard" className="opacity-80 hover:opacity-100">Tableau de bord</a>
+              <a href="/profile" className="opacity-80 hover:opacity-100">Profil</a>
               <a href="/rejoindre" className="opacity-80 hover:opacity-100">
                 Rejoindre
               </a>
               <a href="/contact" className="opacity-80 hover:opacity-100">
                 Contact
+              </a>
+              <a href="/auth/login" className="text-vida-green hover:opacity-100">
+                Connexion
               </a>
             </nav>
           </div>
