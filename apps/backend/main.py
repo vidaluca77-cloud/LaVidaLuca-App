@@ -14,6 +14,8 @@ from .database import database
 from .routes import auth, users, activities, contacts, suggestions
 from .middleware import setup_middleware
 from .exceptions import setup_exception_handlers
+from .schemas.errors import COMMON_ERROR_RESPONSES
+from .schemas.rate_limits import RATE_LIMIT_DOCUMENTATION
 
 
 # Configure logging
@@ -60,23 +62,129 @@ def create_app() -> FastAPI:
         openapi_schema = get_openapi(
             title="La Vida Luca API",
             version="1.0.0",
-            description="Complete API documentation for La Vida Luca platform",
+            description="""
+# La Vida Luca API
+
+Complete API documentation for La Vida Luca platform - a farm network and educational platform connecting people with sustainable agriculture and rural life learning experiences.
+
+## Features
+
+- **User Authentication**: JWT-based authentication system
+- **Educational Activities**: Create, discover, and participate in learning activities
+- **AI-Powered Suggestions**: Personalized activity recommendations using OpenAI
+- **Contact Management**: Public contact forms and admin management
+- **User Profiles**: Comprehensive user management and profiles
+
+## Authentication
+
+Most endpoints require authentication using JWT Bearer tokens. Include your token in the Authorization header:
+
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+Get your token by calling the `/api/v1/auth/login` endpoint with valid credentials.
+
+## Rate Limiting
+
+This API implements comprehensive rate limiting. See the Rate Limiting section below for details.
+
+## Error Handling
+
+All errors follow a consistent format with appropriate HTTP status codes and descriptive messages.
+            """,
             routes=app.routes,
         )
+        
+        # Add logo
         openapi_schema["info"]["x-logo"] = {
             "url": "https://la-vida-luca.vercel.app/logo.png"
         }
+        
+        # Add contact information
+        openapi_schema["info"]["contact"] = {
+            "name": "La Vida Luca Support",
+            "email": "support@lavidaluca.com",
+            "url": "https://la-vida-luca.vercel.app"
+        }
+        
+        # Add license information
+        openapi_schema["info"]["license"] = {
+            "name": "MIT License",
+            "url": "https://opensource.org/licenses/MIT"
+        }
+        
+        # Add server information
+        openapi_schema["servers"] = [
+            {
+                "url": "https://api.lavidaluca.com",
+                "description": "Production server"
+            },
+            {
+                "url": "https://staging-api.lavidaluca.com",
+                "description": "Staging server"
+            },
+            {
+                "url": "http://localhost:8000",
+                "description": "Development server"
+            }
+        ]
+        
         # Add security schemes
         openapi_schema["components"]["securitySchemes"] = {
             "bearerAuth": {
                 "type": "http",
                 "scheme": "bearer",
                 "bearerFormat": "JWT",
-                "description": "JWT token for API authentication"
+                "description": "JWT token for API authentication. Include 'Bearer ' prefix."
             }
         }
-        # Add global security requirement
-        openapi_schema["security"] = [{"bearerAuth": []}]
+        
+        # Add common error response schemas
+        if "components" not in openapi_schema:
+            openapi_schema["components"] = {}
+        if "responses" not in openapi_schema["components"]:
+            openapi_schema["components"]["responses"] = {}
+            
+        # Add error response schemas
+        openapi_schema["components"]["responses"].update({
+            "BadRequest": COMMON_ERROR_RESPONSES[400],
+            "Unauthorized": COMMON_ERROR_RESPONSES[401],
+            "Forbidden": COMMON_ERROR_RESPONSES[403],
+            "NotFound": COMMON_ERROR_RESPONSES[404],
+            "Conflict": COMMON_ERROR_RESPONSES[409],
+            "ValidationError": COMMON_ERROR_RESPONSES[422],
+            "TooManyRequests": COMMON_ERROR_RESPONSES[429],
+            "InternalServerError": COMMON_ERROR_RESPONSES[500],
+            "ServiceUnavailable": COMMON_ERROR_RESPONSES[503]
+        })
+        
+        # Add tags for organization
+        openapi_schema["tags"] = [
+            {
+                "name": "Authentication",
+                "description": "User authentication and token management"
+            },
+            {
+                "name": "User Management", 
+                "description": "User profile and account management"
+            },
+            {
+                "name": "Activities",
+                "description": "Educational activities and learning experiences"
+            },
+            {
+                "name": "Contact",
+                "description": "Contact forms and communication"
+            },
+            {
+                "name": "AI Suggestions",
+                "description": "AI-powered activity recommendations"
+            }
+        ]
+        
+        # Add rate limiting documentation as extension
+        openapi_schema["x-rate-limiting"] = RATE_LIMIT_DOCUMENTATION
         
         app.openapi_schema = openapi_schema
         return app.openapi_schema
