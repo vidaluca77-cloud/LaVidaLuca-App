@@ -1,0 +1,159 @@
+name: CI/CD Pipeline - La Vida Luca
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Tests Frontend Next.js
+  frontend-tests:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Lint code
+      run: npm run lint
+      
+    - name: Build application
+      run: npm run build
+      env:
+        NEXT_PUBLIC_IA_API_URL: http://localhost:8000
+        
+    - name: Run tests (if any)
+      run: |
+        if [ -f "package.json" ] && npm run | grep -q "test"; then
+          npm test
+        else
+          echo "No tests configured"
+        fi
+
+  # Tests Backend FastAPI
+  backend-tests:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: [3.11, 3.12]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('apps/ia/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Install dependencies
+      run: |
+        cd apps/ia
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Run FastAPI tests
+      run: |
+        cd apps/ia
+        pytest tests/ -v --tb=short
+        
+    - name: Test API startup
+      run: |
+        cd apps/ia
+        timeout 10s python main.py &
+        sleep 5
+        curl -f http://localhost:8000/health || exit 1
+
+  # Security audit
+  security-audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run npm audit
+      run: npm audit --audit-level=moderate
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install safety
+      run: pip install safety
+      
+    - name: Run Python security audit
+      run: |
+        cd apps/ia
+        pip install -r requirements.txt
+        safety check
+
+  # Build et déploiement (conditionnel)
+  deploy:
+    needs: [frontend-tests, backend-tests]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Deploy to Render
+      run: |
+        echo "Déploiement automatique configuré via Render.yaml"
+        echo "L'API sera déployée automatiquement sur Render"
+        
+    - name: Notify deployment
+      run: |
+        echo "✅ Tests passés avec succès"
+        echo "🚀 Déploiement en cours sur Render"
+        echo "📊 Frontend: Vercel (manuel)"
+        echo "🤖 API IA: Render (automatique)"
+
+  # Notification des résultats
+  notify:
+    needs: [frontend-tests, backend-tests, security-audit]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Notify results
+      run: |
+        if [ "${{ needs.frontend-tests.result }}" == "success" ] && [ "${{ needs.backend-tests.result }}" == "success" ]; then
+          echo "✅ Tous les tests sont passés avec succès"
+        else
+          echo "❌ Certains tests ont échoué"
+          exit 1
+        fi

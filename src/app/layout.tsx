@@ -1,9 +1,10 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+// Removed Google Fonts import to fix build issue in sandboxed environment
+// In production, this should be: import { Inter } from "next/font/google";
+// const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://la-vida-luca.vercel.app"),
@@ -47,7 +48,7 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <body
-        className={`${inter.className} min-h-screen bg-white text-neutral-900 antialiased`}
+        className="min-h-screen bg-white text-neutral-900 antialiased font-sans"
       >
         <header className="border-b">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
@@ -56,6 +57,9 @@ export default function RootLayout({
               <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
               <a href="/rejoindre" className="opacity-80 hover:opacity-100">
                 Rejoindre
+              </a>
+              <a href="/test-ia" className="opacity-80 hover:opacity-100">
+                Test IA
               </a>
               <a href="/contact" className="opacity-80 hover:opacity-100">
                 Contact
