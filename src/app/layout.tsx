@@ -1,9 +1,10 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/contexts/AuthContext";
 
-const inter = Inter({ subsets: ["latin"] });
+// Using local font fallback instead of Google Fonts for sandbox compatibility
+const inter = { className: "font-sans" };
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://la-vida-luca.vercel.app"),
@@ -49,28 +50,28 @@ export default function RootLayout({
       <body
         className={`${inter.className} min-h-screen bg-white text-neutral-900 antialiased`}
       >
-        <header className="border-b">
-          <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-            <a href="/" className="font-semibold">La Vida Luca</a>
-            <nav className="flex gap-6 text-sm">
-              <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
-              <a href="/rejoindre" className="opacity-80 hover:opacity-100">
-                Rejoindre
-              </a>
-              <a href="/contact" className="opacity-80 hover:opacity-100">
-                Contact
-              </a>
-            </nav>
-          </div>
-        </header>
+        <AuthProvider>
+          <header className="border-b">
+            <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+              <a href="/" className="font-semibold">La Vida Luca</a>
+              <nav className="flex gap-6 text-sm">
+                <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
+                <a href="/activities" className="opacity-80 hover:opacity-100">Activités</a>
+                <a href="/dashboard" className="opacity-80 hover:opacity-100">Dashboard</a>
+                <a href="/auth" className="opacity-80 hover:opacity-100">Connexion</a>
+                <a href="/contact" className="opacity-80 hover:opacity-100">Contact</a>
+              </nav>
+            </div>
+          </header>
 
-        <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
+          <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
 
-        <footer className="border-t">
-          <div className="mx-auto max-w-6xl px-4 py-8 text-sm opacity-70">
-            © {new Date().getFullYear()} La Vida Luca — Tous droits réservés
-          </div>
-        </footer>
+          <footer className="border-t">
+            <div className="mx-auto max-w-6xl px-4 py-8 text-sm opacity-70">
+              © {new Date().getFullYear()} La Vida Luca — Tous droits réservés
+            </div>
+          </footer>
+        </AuthProvider>
       </body>
     </html>
   );

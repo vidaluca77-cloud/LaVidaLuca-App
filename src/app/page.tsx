@@ -170,12 +170,18 @@ const HomePage = () => (
             et au développement d'une agriculture vivante et respectueuse.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-green-500 text-white px-8 py-4 rounded-lg font-medium hover:bg-green-600 transition-colors">
+            <a 
+              href="/auth"
+              className="bg-green-500 text-white px-8 py-4 rounded-lg font-medium hover:bg-green-600 transition-colors text-center"
+            >
               Proposer mon aide
-            </button>
-            <button className="bg-white text-green-500 border-2 border-green-500 px-8 py-4 rounded-lg font-medium hover:bg-green-50 transition-colors">
+            </a>
+            <a
+              href="/activities"
+              className="bg-white text-green-500 border-2 border-green-500 px-8 py-4 rounded-lg font-medium hover:bg-green-50 transition-colors text-center"
+            >
               Découvrir nos activités
-            </button>
+            </a>
           </div>
         </div>
       </div>
