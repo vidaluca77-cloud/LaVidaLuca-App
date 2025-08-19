@@ -1,9 +1,10 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
+import { DarkModeToggle } from "@/components/DarkModeToggle";
 
-const inter = Inter({ subsets: ["latin"] });
+// Use fallback for Inter font to avoid network dependency issues
+const inter = { className: "font-sans" };
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://la-vida-luca.vercel.app"),
@@ -47,26 +48,29 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <body
-        className={`${inter.className} min-h-screen bg-white text-neutral-900 antialiased`}
+        className={`${inter.className} min-h-screen bg-white dark:bg-gray-900 text-neutral-900 dark:text-neutral-100 antialiased transition-colors`}
       >
-        <header className="border-b">
+        <header className="border-b border-gray-200 dark:border-gray-700">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-            <a href="/" className="font-semibold">La Vida Luca</a>
-            <nav className="flex gap-6 text-sm">
-              <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
-              <a href="/rejoindre" className="opacity-80 hover:opacity-100">
-                Rejoindre
-              </a>
-              <a href="/contact" className="opacity-80 hover:opacity-100">
-                Contact
-              </a>
-            </nav>
+            <a href="/" className="font-semibold text-lg">La Vida Luca</a>
+            <div className="flex items-center gap-6">
+              <nav className="flex gap-6 text-sm">
+                <a href="/" className="opacity-80 hover:opacity-100 transition-opacity">Accueil</a>
+                <a href="/rejoindre" className="opacity-80 hover:opacity-100 transition-opacity">
+                  Rejoindre
+                </a>
+                <a href="/contact" className="opacity-80 hover:opacity-100 transition-opacity">
+                  Contact
+                </a>
+              </nav>
+              <DarkModeToggle />
+            </div>
           </div>
         </header>
 
         <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
 
-        <footer className="border-t">
+        <footer className="border-t border-gray-200 dark:border-gray-700">
           <div className="mx-auto max-w-6xl px-4 py-8 text-sm opacity-70">
             © {new Date().getFullYear()} La Vida Luca — Tous droits réservés
           </div>
