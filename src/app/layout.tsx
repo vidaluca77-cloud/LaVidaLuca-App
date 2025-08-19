@@ -1,6 +1,7 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { ReduxProvider } from "../lib/providers/ReduxProvider";
 
 // Import monitoring setup
 import '../monitoring/performance';
@@ -52,28 +53,30 @@ export default function RootLayout({
       <body
         className={`${fontClass} min-h-screen bg-white text-neutral-900 antialiased`}
       >
-        <header className="border-b">
-          <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-            <a href="/" className="font-semibold">La Vida Luca</a>
-            <nav className="flex gap-6 text-sm">
-              <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
-              <a href="/rejoindre" className="opacity-80 hover:opacity-100">
-                Rejoindre
-              </a>
-              <a href="/contact" className="opacity-80 hover:opacity-100">
-                Contact
-              </a>
-            </nav>
-          </div>
-        </header>
+        <ReduxProvider>
+          <header className="border-b">
+            <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+              <a href="/" className="font-semibold">La Vida Luca</a>
+              <nav className="flex gap-6 text-sm">
+                <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
+                <a href="/rejoindre" className="opacity-80 hover:opacity-100">
+                  Rejoindre
+                </a>
+                <a href="/contact" className="opacity-80 hover:opacity-100">
+                  Contact
+                </a>
+              </nav>
+            </div>
+          </header>
 
-        <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
+          <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
 
-        <footer className="border-t">
-          <div className="mx-auto max-w-6xl px-4 py-8 text-sm opacity-70">
-            © {new Date().getFullYear()} La Vida Luca — Tous droits réservés
-          </div>
-        </footer>
+          <footer className="border-t">
+            <div className="mx-auto max-w-6xl px-4 py-8 text-sm opacity-70">
+              © {new Date().getFullYear()} La Vida Luca — Tous droits réservés
+            </div>
+          </footer>
+        </ReduxProvider>
       </body>
     </html>
   );
