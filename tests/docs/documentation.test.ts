@@ -42,7 +42,7 @@ describe('Documentation Tests', () => {
   });
 
   test('README should contain environment variables documentation', () => {
-    expect(readmeContent).toContain('NEXT_PUBLIC_SUPABASE_URL');
+    expect(readmeContent).toContain('NEXT_PUBLIC_API_URL');
     expect(readmeContent).toContain('NEXT_PUBLIC_SENTRY_DSN');
     expect(readmeContent).toContain('.env.local');
   });
@@ -51,14 +51,14 @@ describe('Documentation Tests', () => {
     expect(readmeContent).toContain('```mermaid');
     expect(readmeContent).toContain('graph TB');
     expect(readmeContent).toContain('Next.js Frontend');
-    expect(readmeContent).toContain('Supabase');
+    expect(readmeContent).toContain('PostgreSQL');
     expect(readmeContent).toContain('Sentry');
   });
 
   test('README should contain deployment instructions', () => {
     expect(readmeContent).toContain('Vercel');
     expect(readmeContent).toContain('git push origin main');
-    expect(readmeContent).toContain('npx vercel --prod');
+    expect(readmeContent).toContain('vercel --prod');
   });
 
   test('README should contain monitoring information', () => {

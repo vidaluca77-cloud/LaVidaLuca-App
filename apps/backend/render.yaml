@@ -1,34 +1,85 @@
-# Render.com deployment configuration
+# Render.com deployment configuration for La Vida Luca Backend
 version: "1"
 
 services:
   - type: web
     name: lavidaluca-backend
     runtime: python3
-    buildCommand: cd apps/backend && pip install -r requirements.txt
-    startCommand: cd apps/backend && gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT
+    buildCommand: cd apps/backend && pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: cd apps/backend && gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT --timeout 120 --keep-alive 5
     plan: starter
     region: oregon
     branch: main
     healthCheckPath: /health
+    autoDeploy: true
     envVars:
       - key: ENVIRONMENT
         value: production
+      - key: DEBUG
+        value: false
       - key: DATABASE_URL
         fromDatabase:
           name: lavidaluca-db
           property: connectionString
+      - key: POSTGRES_SERVER
+        fromDatabase:
+          name: lavidaluca-db
+          property: host
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: lavidaluca-db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: lavidaluca-db
+          property: password
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: lavidaluca-db
+          property: database
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: lavidaluca-db
+          property: port
       - key: JWT_SECRET_KEY
         generateValue: true
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_EXPIRATION_HOURS
+        value: "24"
       - key: OPENAI_API_KEY
-        sync: false  # Set this manually in Render dashboard
+        sync: false  # Set this manually in Render dashboard for security
+      - key: OPENAI_MODEL
+        value: gpt-3.5-turbo
+      - key: OPENAI_MAX_TOKENS
+        value: "500"
       - key: CORS_ORIGINS
-        value: '["https://lavidaluca.fr","https://www.lavidaluca.fr"]'
+        value: '["https://lavidaluca.fr","https://www.lavidaluca.fr","https://lavidaluca.vercel.app"]'
+      - key: CORS_ALLOW_CREDENTIALS
+        value: "true"
+      - key: TRUSTED_HOSTS
+        value: '["lavidaluca.fr","*.lavidaluca.fr","lavidaluca.vercel.app","*.onrender.com"]'
+      - key: RATE_LIMIT_REQUESTS_PER_MINUTE
+        value: "100"
+      - key: RATE_LIMIT_REQUESTS_PER_MINUTE_ANONYMOUS
+        value: "20"
       - key: LOG_LEVEL
         value: INFO
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USERNAME
+        sync: false  # Set manually for security
+      - key: SMTP_PASSWORD
+        sync: false  # Set manually for security
+      - key: SMTP_FROM_EMAIL
+        value: noreply@lavidaluca.fr
 
 databases:
   - name: lavidaluca-db
     plan: starter
     region: oregon
     postgresMajorVersion: 15
+    databaseName: lavidaluca_prod
+    user: lavidaluca_user

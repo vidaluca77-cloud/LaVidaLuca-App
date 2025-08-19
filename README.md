@@ -185,30 +185,300 @@ L'application sera accessible sur :
 
 ## Déploiement
 
-### Production sur Vercel
+### Architecture de déploiement
+
+L'application La Vida Luca est déployée selon une architecture moderne et sécurisée :
+
+- **Frontend** : Vercel (Next.js) - `https://lavidaluca.fr`
+- **Backend** : Render (FastAPI) - `https://lavidaluca-backend.onrender.com`
+- **Base de données** : PostgreSQL sur Render
+- **Monitoring** : Sentry pour la surveillance des erreurs
+
+### Configuration des variables d'environnement
+
+#### Frontend (.env.local)
+
+Copiez le fichier `.env.example` vers `.env.local` et configurez les variables :
+
+```bash
+cp .env.example .env.local
+```
+
+Variables principales :
+```env
+# Backend API
+NEXT_PUBLIC_API_URL=https://lavidaluca-backend.onrender.com
+
+# Sentry (monitoring)
+NEXT_PUBLIC_SENTRY_DSN=your_sentry_dsn
+SENTRY_ORG=your_sentry_org
+SENTRY_PROJECT=your_sentry_project
+
+# Contact
+NEXT_PUBLIC_CONTACT_EMAIL=contact@lavidaluca.fr
+NEXT_PUBLIC_CONTACT_PHONE=+33123456789
+```
+
+#### Backend (apps/backend/.env)
+
+Copiez le fichier d'exemple et configurez :
+```bash
+cd apps/backend
+cp .env.example .env
+```
+
+Variables principales :
+```env
+ENVIRONMENT=production
+DATABASE_URL=postgresql://user:password@host:port/database
+JWT_SECRET_KEY=your-super-secret-jwt-key
+OPENAI_API_KEY=your-openai-api-key
+CORS_ORIGINS=["https://lavidaluca.fr","https://www.lavidaluca.fr"]
+```
+
+### Déploiement Frontend sur Vercel
+
+#### Configuration automatique
+
+Le déploiement se fait automatiquement via GitHub :
 
 1. **Connexion du repository**
    - Connecter le repository GitHub à Vercel
    - Sélectionner la branche `main` pour les déploiements automatiques
 
 2. **Configuration des variables d'environnement**
-   Dans le dashboard Vercel, ajouter toutes les variables du fichier `.env.local`
-
-3. **Déploiement**
-   ```bash
-   # Déploiement automatique via Git
-   git push origin main
+   Dans le dashboard Vercel, ajouter les variables du fichier `.env.example` :
    
-   # Ou déploiement manuel via CLI
-   npx vercel --prod
+   ```
+   NEXT_PUBLIC_API_URL=https://lavidaluca-backend.onrender.com
+   NEXT_PUBLIC_SENTRY_DSN=your_sentry_dsn
+   SENTRY_ORG=your_sentry_org
+   SENTRY_PROJECT=your_sentry_project
+   NEXT_PUBLIC_CONTACT_EMAIL=contact@lavidaluca.fr
+   NEXT_PUBLIC_CONTACT_PHONE=+33123456789
    ```
 
-### Optimisations de production
+3. **Configuration du domaine**
+   - Ajouter le domaine `lavidaluca.fr` dans les settings Vercel
+   - Configurer les DNS pour pointer vers Vercel
+
+#### Configuration avancée
+
+Le fichier `vercel.json` configure automatiquement :
+
+- **Redirections API** : `/api/*` → Backend Render
+- **En-têtes de sécurité** : CSP, XSS Protection, etc.
+- **Cache optimisé** : Ressources statiques avec cache long terme
 - **Compression** : Gzip automatique
-- **Images** : Optimisation via Next.js
-- **Fonts** : Optimisation automatique des Google Fonts
-- **Bundle** : Tree-shaking et minification
+- **Temps d'exécution** : Optimisé pour les API routes
+
+#### Déploiement manuel
+
+```bash
+# Installation CLI Vercel
+npm i -g vercel
+
+# Déploiement
+vercel --prod
+
+# Ou avec configuration
+vercel --prod --env NEXT_PUBLIC_API_URL=https://lavidaluca-backend.onrender.com
+```
+
+### Déploiement Backend sur Render
+
+#### Configuration automatique
+
+Le fichier `render.yaml` configure le déploiement automatique :
+
+1. **Service Web**
+   - Runtime : Python 3
+   - Build : `pip install -r requirements.txt`
+   - Start : `gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker`
+   - Health check : `/health`
+
+2. **Base de données PostgreSQL**
+   - Version : PostgreSQL 15
+   - Plan : Starter (extensible)
+   - Région : Oregon (performance optimale)
+
+#### Variables d'environnement automatiques
+
+Configurées automatiquement via `render.yaml` :
+- `DATABASE_URL` : Connexion PostgreSQL
+- `JWT_SECRET_KEY` : Généré automatiquement
+- `CORS_ORIGINS` : Domaines autorisés
+- Variables backend complètes
+
+#### Variables manuelles à configurer
+
+Dans le dashboard Render, configurer manuellement :
+```
+OPENAI_API_KEY=your-openai-api-key
+SMTP_USERNAME=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+```
+
+#### Déploiement manuel
+
+```bash
+# Via Git
+git push origin main  # Déploiement automatique
+
+# Via Render CLI
+render deploy --service-id your-service-id
+```
+
+### Optimisations de production
+
+#### Frontend (Vercel)
+
+✅ **Déjà configuré** :
+- **Compression Gzip** : Activée automatiquement
+- **Optimisation d'images** : Next.js Image Optimization
+- **Code splitting** : Automatique par Next.js
+- **Cache optimisé** : Headers configurés dans `vercel.json`
 - **PWA** : Manifest et service worker
+- **Bundle analysis** : Webpack optimisé
+
+#### Backend (Render)
+
+✅ **Déjà configuré** :
+- **Gunicorn** : 4 workers pour performance
+- **Keep-alive** : Connexions optimisées
+- **Timeout** : 120s pour opérations longues
+- **Health checks** : Monitoring automatique
+- **Auto-scaling** : Selon la charge
+
+### Monitoring et observabilité
+
+#### Sentry (Erreurs)
+
+Configuration automatique avec :
+- Capture d'erreurs frontend/backend
+- Performance monitoring
+- Release tracking
+- Session replay
+
+#### Métriques de performance
+
+- **Web Vitals** : FCP, LCP, FID, CLS
+- **API Performance** : Latence, taux d'erreur
+- **Base de données** : Connexions, queries lentes
+
+#### Logs structurés
+
+- **Frontend** : Console structurée + Sentry
+- **Backend** : FastAPI logs + monitoring custom
+
+### Processus de déploiement
+
+#### Workflow standard
+
+1. **Développement**
+   ```bash
+   git checkout -b feature/ma-fonctionnalite
+   # Développement + tests
+   npm run build && npm test
+   ```
+
+2. **Test local**
+   ```bash
+   npm run dev:full  # Frontend + Backend
+   # Tests manuels et automatisés
+   ```
+
+3. **Pull Request**
+   - Création PR sur GitHub
+   - Tests automatiques (CI/CD)
+   - Review code + validation
+
+4. **Déploiement**
+   ```bash
+   git checkout main
+   git merge feature/ma-fonctionnalite
+   git push origin main
+   # → Déploiement automatique Vercel + Render
+   ```
+
+#### Rollback en cas de problème
+
+```bash
+# Vercel - Rollback via dashboard ou CLI
+vercel rollback [deployment-url]
+
+# Render - Rollback via dashboard
+# Ou redéploiement du commit précédent
+```
+
+### Troubleshooting déploiement
+
+#### Erreurs communes
+
+**Build Frontend échoue** :
+```bash
+# Vérifier les variables d'environnement
+npm run build
+# Vérifier les dépendances
+npm install
+```
+
+**Backend ne démarre pas** :
+```bash
+# Vérifier la base de données
+cd apps/backend && python -c "from database import engine; print('DB OK')"
+# Vérifier les migrations
+alembic upgrade head
+```
+
+**API non accessible** :
+- Vérifier les CORS dans `render.yaml`
+- Vérifier les redirections dans `vercel.json`
+- Vérifier les variables d'environnement
+
+#### Logs de débogage
+
+```bash
+# Vercel logs
+vercel logs [deployment-url]
+
+# Render logs
+# Via dashboard Render ou
+render logs --service-id your-service-id
+
+# Local debugging
+npm run dev:full
+```
+
+#### Performance
+
+```bash
+# Analyse du bundle
+npx @next/bundle-analyzer
+
+# Test de performance
+lighthouse https://lavidaluca.fr
+
+# API performance
+curl -w "@curl-format.txt" https://lavidaluca-backend.onrender.com/health
+```
+
+### Domaines et DNS
+
+#### Configuration DNS
+
+Pour `lavidaluca.fr` :
+```
+A    @     76.76.21.21     (Vercel)
+CNAME www   lavidaluca.fr  (Alias)
+```
+
+#### Certificats SSL
+
+- **Vercel** : Certificats automatiques (Let's Encrypt)
+- **Render** : Certificats automatiques pour `*.onrender.com`
+
+---
 
 ## Monitoring et Observabilité
 
