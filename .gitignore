@@ -6,3 +6,6 @@ apps/web/.next/
 .next/
 dist/
 out/
+__pycache__/
+*.pyc
+*.pyo
