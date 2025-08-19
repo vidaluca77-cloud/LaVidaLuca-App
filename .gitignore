@@ -4,3 +4,7 @@ node_modules/
 apps/web/node_modules/
 apps/web/.next/
 .next/
+
+# Next.js generated files
+next-env.d.ts
+out/
