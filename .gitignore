@@ -3,3 +3,15 @@ apps/ia/.env
 node_modules/
 apps/web/node_modules/
 apps/web/.next/
+
+# Python cache
+apps/ia/__pycache__/
+apps/ia/app/__pycache__/
+apps/ia/tests/__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Database files
+apps/ia/test.db
+apps/ia/*.db
