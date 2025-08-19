@@ -1,67 +1,189 @@
 # LaVidaLuca-App
-Plateforme interactive pour le projet La Vida Luca : formation des jeunes en MFR, développement d’une agriculture nouvelle et insertion sociale.
-La Vida Luca – Application IA interactive
 
-Plateforme collaborative basée sur IA pour le projet La Vida Luca, dédiée à la formation des jeunes en MFR, au développement d’une agriculture nouvelle et à l’insertion sociale.
-Objectif : permettre à chacun de contribuer à sa manière au projet, dans le respect du pacte initial.
+Plateforme interactive pour le projet La Vida Luca : formation des jeunes en MFR, développement d'une agriculture nouvelle et insertion sociale.
 
-⸻
+## 📦 Structure du projet
 
-🎯 Vision
-	•	Former et accompagner les jeunes en MFR via un catalogue de 30 activités agricoles, artisanales et environnementales.
-	•	Développer une agriculture nouvelle : durable, autonome, innovante.
-	•	Favoriser l’insertion sociale par la pratique et la responsabilité.
-	•	Créer un outil numérique qui connecte les lieux d’action et les participants.
+```
+LaVidaLuca-App/
+├── apps/
+│   ├── web/                    # Frontend Next.js (Vercel)
+│   │   ├── src/
+│   │   │   ├── app/           # Pages et routes App Router
+│   │   │   └── types/         # Types TypeScript
+│   │   ├── public/            # Assets statiques
+│   │   └── package.json
+│   └── ia/                     # Backend FastAPI (Render)
+│       ├── app/
+│       │   ├── models/        # Modèles SQLAlchemy
+│       │   ├── schemas/       # Schémas Pydantic
+│       │   ├── routes/        # Routes API
+│       │   └── core/          # Configuration
+│       ├── alembic/           # Migrations de base de données
+│       ├── tests/             # Tests unitaires
+│       ├── main.py            # Point d'entrée FastAPI
+│       └── requirements.txt
+├── infra/
+│   ├── supabase/              # Configuration base de données
+│   │   ├── schema.sql         # Schéma de base de données
+│   │   └── seeds.sql          # Données initiales
+│   ├── deploy/                # Scripts de déploiement
+│   │   └── deploy.sh          # Script de déploiement principal
+│   └── monitoring/            # Configuration monitoring
+│       ├── health-check.sh    # Script de vérification santé
+│       └── README.md
+├── assets/                    # Médias (logos, visuels, documents)
+├── .github/workflows/         # CI/CD GitHub Actions
+└── README.md                  # Documentation principale
+```
 
-⸻
+## 🚀 Déploiement
 
-📦 Structure du projet
-	•	/apps/web → Site Next.js (Vercel)
-	•	/apps/ia → API FastAPI pour l’IA (Render)
-	•	/infra/supabase → Base de données et schéma SQL
-	•	/assets → Médias (logos, visuels, documents)
-	•	README.md → Documentation
+### Prérequis
+- Node.js 18+
+- Python 3.11+
+- Base de données PostgreSQL (Supabase recommandé)
 
-⸻
+### Installation
 
-🚀 Déploiement prévu
-	1.	Vercel – héberge le site web (Next.js)
-	2.	Render – héberge l’IA et l’API
-	3.	Supabase – base de données et authentification
+1. **Cloner le repository**
+   ```bash
+   git clone https://github.com/vidaluca77-cloud/LaVidaLuca-App.git
+   cd LaVidaLuca-App
+   ```
 
-⸻
+2. **Frontend (Next.js)**
+   ```bash
+   cd apps/web
+   npm install
+   npm run dev
+   ```
 
-🔑 Variables d’environnement
+3. **Backend (FastAPI)**
+   ```bash
+   cd apps/ia
+   python -m venv .venv
+   source .venv/bin/activate  # ou .venv\Scripts\activate sur Windows
+   pip install -r requirements.txt
+   uvicorn main:app --reload
+   ```
 
-À configurer pour le déploiement :NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-NEXT_PUBLIC_IA_API_URL=
-NEXT_PUBLIC_CONTACT_EMAIL=
-NEXT_PUBLIC_CONTACT_PHONE=
-ALLOWED_ORIGINS=https://<site-vercel>.vercel.app
+4. **Base de données**
+   - Créer un projet Supabase
+   - Exécuter `infra/supabase/schema.sql`
+   - Exécuter `infra/supabase/seeds.sql`
 
+### Déploiement automatisé
 
-⸻
+```bash
+./infra/deploy/deploy.sh
+```
 
-🛡️ Règles & Pacte
-	•	Pas de vente directe sur la plateforme
-	•	Page “Nos lieux d’action” au lieu de “Localisation”
-	•	Section “Catalogue d’activités” réservée aux élèves MFR
-	•	Ton et design orientés cœur et mission, pas argent
+### Variables d'environnement
 
-⸻
+**Frontend (apps/web/.env.local)**
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_IA_API_URL=your_render_api_url
+NEXT_PUBLIC_CONTACT_EMAIL=vidaluca77@gmail.com
+NEXT_PUBLIC_CONTACT_PHONE=@lavidaluca77
+```
 
-📋 Catalogue des 30 activités MFR
+**Backend (apps/ia/.env)**
+```env
+DATABASE_URL=postgresql://user:password@host:port/database
+SECRET_KEY=your-secret-key-here
+ALLOWED_ORIGINS=https://your-frontend.vercel.app,http://localhost:3000
+ENVIRONMENT=production
+```
 
-Voir /apps/web/pages/catalogue-activites.tsx pour la liste complète et la présentation des activités.
+## 🧪 Tests
 
-⸻
+**Frontend**
+```bash
+cd apps/web
+npm test
+```
 
-👨‍💻 Instructions pour Claude
-	1.	Déployer l’app web (Vercel)
-	2.	Déployer l’IA (Render)
-	3.	Créer et connecter la base Supabase
-	4.	Importer schema.sql puis seeds.sql
-	5.	Configurer les variables d’environnement
-	6.	Tester l’accès aux pages protégées
- 
+**Backend**
+```bash
+cd apps/ia
+python -m pytest tests/ -v
+```
+
+## 📊 Monitoring
+
+Le système inclut un monitoring automatique :
+
+```bash
+./infra/monitoring/health-check.sh
+```
+
+Pour un monitoring continu, ajouter à crontab :
+```bash
+*/5 * * * * /path/to/infra/monitoring/health-check.sh
+```
+
+## 🎯 Fonctionnalités
+
+### Frontend (Next.js)
+- ✅ Page d'accueil avec présentation du projet
+- ✅ Catalogue d'activités MFR interactif
+- ✅ Système de contact et candidature
+- ✅ Design responsive et accessible
+- ✅ Types TypeScript complets
+- ✅ Tests unitaires
+
+### Backend (FastAPI)
+- ✅ API REST complète
+- ✅ Système de matching IA pour activités
+- ✅ Modèles de données structurés
+- ✅ Migrations Alembic
+- ✅ Tests unitaires
+- ✅ Documentation API automatique
+
+### Infrastructure
+- ✅ Configuration CI/CD GitHub Actions
+- ✅ Scripts de déploiement automatisés
+- ✅ Monitoring et health checks
+- ✅ Configuration Supabase
+- ✅ Security scanning
+
+## 🏗️ Architecture
+
+- **Frontend** : Next.js 14 avec App Router, TypeScript, Tailwind CSS
+- **Backend** : FastAPI avec SQLAlchemy, Alembic, PostgreSQL
+- **Base de données** : Supabase (PostgreSQL)
+- **Déploiement** : Vercel (frontend) + Render (backend)
+- **Monitoring** : Scripts personnalisés + intégrations natives
+
+## 🤝 Contribution
+
+1. Fork le projet
+2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
+3. Commit les changements (`git commit -m 'Add: AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
+
+## 📝 Documentation API
+
+Une fois le backend démarré, la documentation API est disponible à :
+- Swagger UI : `http://localhost:8000/docs`
+- ReDoc : `http://localhost:8000/redoc`
+
+## 🛡️ Sécurité
+
+- Scan automatique de vulnérabilités avec Trivy
+- Variables d'environnement sécurisées
+- CORS configuré
+- Validation des données avec Pydantic
+
+## 📞 Contact
+
+- **Email** : vidaluca77@gmail.com
+- **Snapchat** : @lavidaluca77
+
+## 📄 License
+
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.

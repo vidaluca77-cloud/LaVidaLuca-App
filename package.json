@@ -1,28 +1,36 @@
 {
-  "name": "la-vida-luca",
+  "name": "la-vida-luca-monorepo",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "apps/web",
+    "apps/ia"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "next": "14.0.4",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "@heroicons/react": "^2.0.18"
+    "dev": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspace=apps/web",
+    "start": "npm run start --workspace=apps/web",
+    "lint": "npm run lint --workspace=apps/web",
+    "test": "npm run test --workspace=apps/web && cd apps/ia && python -m pytest",
+    "deploy": "./infra/deploy/deploy.sh",
+    "health-check": "./infra/monitoring/health-check.sh"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
-    "@types/node": "^20.10.5",
-    "@types/react": "^18.2.45",
-    "@types/react-dom": "^18.2.18",
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.32",
-    "tailwindcss": "^3.4.0",
-    "eslint": "^8.56.0",
-    "eslint-config-next": "14.0.4"
-  }
+    "typescript": "^5.3.3"
+  },
+  "description": "Plateforme interactive pour le projet La Vida Luca : formation des jeunes en MFR, développement d'une agriculture nouvelle et insertion sociale.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vidaluca77-cloud/LaVidaLuca-App.git"
+  },
+  "keywords": [
+    "agriculture",
+    "formation",
+    "mfr",
+    "nextjs",
+    "fastapi",
+    "ia"
+  ],
+  "author": "La Vida Luca",
+  "license": "MIT"
 }
