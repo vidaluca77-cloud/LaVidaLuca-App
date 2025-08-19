@@ -1,5 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
+import { Button, Input, Card } from '@/components/ui';
 
 type Item = {
   id: string;
@@ -37,49 +38,70 @@ export default function Catalogue() {
 
   return (
     <div className="space-y-8">
-      <header>
-        <h1 className="text-3xl font-bold">Catalogue</h1>
-        <p className="opacity-80">Sélectionne une catégorie ou cherche un mot-clé.</p>
+      <header className="text-center">
+        <h1 className="text-3xl font-bold text-gray-900">Catalogue</h1>
+        <p className="text-gray-600 mt-2">Découvrez nos produits, services et opportunités de partenariat.</p>
       </header>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <input
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <Input
           value={q}
-          onChange={e=>setQ(e.target.value)}
+          onChange={setQ}
           placeholder="Rechercher…"
-          className="w-full rounded border px-3 py-2"
+          className="flex-1"
         />
         <select
           value={cat}
-          onChange={e=>setCat(e.target.value as any)}
-          className="rounded border px-3 py-2"
+          onChange={e => setCat(e.target.value as typeof CATEGORIES[number])}
+          className="px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-vida-green focus:border-transparent"
         >
-          {CATEGORIES.map(c=><option key={c} value={c}>{c}</option>)}
+          {CATEGORIES.map(c => (
+            <option key={c} value={c}>{c}</option>
+          ))}
         </select>
       </div>
 
+      <div className="text-sm text-gray-600">
+        {items.length} résultat{items.length > 1 ? 's' : ''} trouvé{items.length > 1 ? 's' : ''}
+      </div>
+
       {items.length === 0 ? (
-        <div className="rounded border p-6">Aucun résultat.</div>
+        <Card className="text-center py-12">
+          <p className="text-gray-500">Aucun résultat trouvé pour cette recherche.</p>
+        </Card>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map(it=>(
-            <div key={it.id} className="rounded-lg border p-5 flex flex-col">
-              <div className="h-40 w-full rounded bg-gray-100 mb-4 flex items-center justify-center text-sm opacity-60">
-                Image
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {items.map(item => (
+            <Card key={item.id} hover>
+              <div className="space-y-4">
+                <div className="flex items-start justify-between">
+                  <span className="bg-vida-green/10 text-vida-green px-2 py-1 rounded-full text-xs font-medium">
+                    {item.category}
+                  </span>
+                  <span className="text-sm text-gray-500">{item.departement}</span>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.title}</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">{item.description}</p>
+                </div>
+
+                <div className="flex flex-wrap gap-1">
+                  {item.tags.map((tag, i) => (
+                    <span key={i} className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex items-center justify-between pt-4 border-t">
+                  <span className="font-semibold text-vida-green">{item.price}</span>
+                  <Button size="sm">
+                    {item.category === 'Dons en nature' ? 'Proposer' : 'Commander'}
+                  </Button>
+                </div>
               </div>
-              <h3 className="font-semibold">{it.title}</h3>
-              <p className="mt-1 text-sm opacity-80">{it.description}</p>
-              <div className="mt-3 text-sm font-medium">{it.price}</div>
-              <div className="mt-2 text-xs opacity-70">{it.departement}</div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {it.tags.map(t=>(
-                  <span key={t} className="rounded border px-2 py-1 text-xs">{t}</span>
-                ))}
-              </div>
-              <a href="/contact" className="mt-4 inline-block rounded bg-emerald-500 px-4 py-2 text-white text-center">
-                Contacter
-              </a>
-            </div>
+            </Card>
           ))}
         </div>
       )}

@@ -1,9 +1,6 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://la-vida-luca.vercel.app"),
@@ -47,18 +44,28 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <body
-        className={`${inter.className} min-h-screen bg-white text-neutral-900 antialiased`}
+        className="min-h-screen bg-white text-neutral-900 antialiased font-sans"
       >
         <header className="border-b">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
             <a href="/" className="font-semibold">La Vida Luca</a>
-            <nav className="flex gap-6 text-sm">
+            <nav className="flex gap-4 text-sm">
               <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
+              <a href="/catalogue" className="opacity-80 hover:opacity-100">Catalogue</a>
+              <a href="/farms" className="opacity-80 hover:opacity-100">Fermes</a>
+              <a href="/booking" className="opacity-80 hover:opacity-100">Réserver</a>
+              <a href="/dashboard" className="opacity-80 hover:opacity-100">Tableau de bord</a>
+              <a href="/progress" className="opacity-80 hover:opacity-100">Progression</a>
+              <a href="/messaging" className="opacity-80 hover:opacity-100">Messages</a>
+              <a href="/profile" className="opacity-80 hover:opacity-100">Profil</a>
               <a href="/rejoindre" className="opacity-80 hover:opacity-100">
                 Rejoindre
               </a>
               <a href="/contact" className="opacity-80 hover:opacity-100">
                 Contact
+              </a>
+              <a href="/auth/login" className="text-vida-green hover:opacity-100">
+                Connexion
               </a>
             </nav>
           </div>
