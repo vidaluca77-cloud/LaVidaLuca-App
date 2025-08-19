@@ -3,6 +3,7 @@ User management routes for profile and user operations.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
@@ -16,12 +17,54 @@ from ..auth.dependencies import get_current_active_user, require_admin
 router = APIRouter()
 
 
-@router.get("/me", response_model=ApiResponse[UserResponse])
+@router.get(
+    "/me", 
+    response_model=ApiResponse[UserResponse],
+    summary="Get current user profile",
+    description="Retrieve the authenticated user's profile information.",
+    responses={
+        200: {
+            "description": "User profile retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": {
+                            "id": "uuid-string",
+                            "email": "user@example.com",
+                            "first_name": "John",
+                            "last_name": "Doe",
+                            "is_active": True,
+                            "created_at": "2024-01-01T00:00:00Z"
+                        },
+                        "message": "User profile retrieved successfully"
+                    }
+                }
+            }
+        },
+        401: {
+            "description": "Authentication required",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Not authenticated"
+                    }
+                }
+            }
+        }
+    },
+    tags=["User Management"]
+)
 async def get_current_user_profile(
     current_user: User = Depends(get_current_active_user)
 ):
     """
     Get current user's profile information.
+    
+    Returns the complete profile information for the authenticated user.
+    
+    **Authentication Required:** Bearer Token
+    **Rate Limit:** 100 requests per minute per user
     """
     return ApiResponse(
         success=True,

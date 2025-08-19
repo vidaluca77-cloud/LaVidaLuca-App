@@ -5,6 +5,7 @@ Main FastAPI application for La Vida Luca.
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.openapi.utils import get_openapi
 from contextlib import asynccontextmanager
 import logging
 
@@ -45,12 +46,42 @@ def create_app() -> FastAPI:
     
     app = FastAPI(
         title="La Vida Luca API",
-        description="API pour la plateforme collaborative La Vida Luca",
+        description="API for La Vida Luca platform - farm network and educational platform",
         version="1.0.0",
         lifespan=lifespan,
+        openapi_url="/openapi.json",
         docs_url="/docs" if settings.ENVIRONMENT != "production" else None,
         redoc_url="/redoc" if settings.ENVIRONMENT != "production" else None,
     )
+    
+    def custom_openapi():
+        if app.openapi_schema:
+            return app.openapi_schema
+        openapi_schema = get_openapi(
+            title="La Vida Luca API",
+            version="1.0.0",
+            description="Complete API documentation for La Vida Luca platform",
+            routes=app.routes,
+        )
+        openapi_schema["info"]["x-logo"] = {
+            "url": "https://la-vida-luca.vercel.app/logo.png"
+        }
+        # Add security schemes
+        openapi_schema["components"]["securitySchemes"] = {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": "JWT token for API authentication"
+            }
+        }
+        # Add global security requirement
+        openapi_schema["security"] = [{"bearerAuth": []}]
+        
+        app.openapi_schema = openapi_schema
+        return app.openapi_schema
+
+    app.openapi = custom_openapi
     
     # Setup middleware
     setup_middleware(app)

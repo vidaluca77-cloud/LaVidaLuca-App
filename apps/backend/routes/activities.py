@@ -4,6 +4,7 @@ Activity management routes for educational activities and learning experiences.
 
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from pydantic import Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_, and_
 
@@ -21,14 +22,89 @@ from ..auth.dependencies import get_current_active_user
 router = APIRouter()
 
 
-@router.post("/", response_model=ApiResponse[ActivityResponse])
+@router.post(
+    "/", 
+    response_model=ApiResponse[ActivityResponse],
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new educational activity",
+    description="Create a new learning activity with educational content, difficulty level, and resource requirements.",
+    responses={
+        201: {
+            "description": "Activity successfully created",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": {
+                            "id": "uuid-string",
+                            "title": "Planting Seeds Workshop",
+                            "summary": "Learn how to plant and care for seeds",
+                            "description": "A comprehensive workshop on seed planting...",
+                            "category": "agriculture",
+                            "difficulty_level": "beginner",
+                            "duration_min": 60,
+                            "is_published": True,
+                            "created_at": "2024-01-01T00:00:00Z"
+                        },
+                        "message": "Activity created successfully"
+                    }
+                }
+            }
+        },
+        401: {
+            "description": "Authentication required",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Not authenticated"
+                    }
+                }
+            }
+        },
+        422: {
+            "description": "Validation error",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": [
+                            {
+                                "loc": ["body", "title"],
+                                "msg": "field required",
+                                "type": "value_error.missing"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    tags=["Activities"]
+)
 async def create_activity(
-    activity_data: ActivityCreate,
+    activity_data: ActivityCreate = Field(
+        ...,
+        example={
+            "title": "Planting Seeds Workshop",
+            "summary": "Learn how to plant and care for seeds",
+            "description": "A comprehensive workshop covering seed selection, planting techniques, and care instructions.",
+            "category": "agriculture",
+            "difficulty_level": "beginner",
+            "duration_min": 60,
+            "is_published": True
+        }
+    ),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db_session)
 ):
     """
     Create a new educational activity.
+    
+    This endpoint allows authenticated users to create new learning activities
+    for the La Vida Luca educational platform. Activities can include workshops,
+    tutorials, or other educational experiences.
+    
+    **Authentication Required:** Bearer Token
+    **Rate Limit:** 20 activities per hour per user
     """
     new_activity = Activity(
         **activity_data.dict(),
@@ -46,7 +122,43 @@ async def create_activity(
     )
 
 
-@router.get("/", response_model=ApiResponse[PaginatedResponse[ActivityListResponse]])
+@router.get(
+    "/", 
+    response_model=ApiResponse[PaginatedResponse[ActivityListResponse]],
+    summary="List educational activities",
+    description="Retrieve a paginated list of published educational activities with optional filtering by category, difficulty, duration, and other criteria.",
+    responses={
+        200: {
+            "description": "Activities retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": {
+                            "items": [
+                                {
+                                    "id": "uuid-string",
+                                    "title": "Planting Seeds Workshop",
+                                    "summary": "Learn how to plant and care for seeds",
+                                    "category": "agriculture",
+                                    "difficulty_level": "beginner",
+                                    "duration_min": 60,
+                                    "is_featured": False
+                                }
+                            ],
+                            "total": 1,
+                            "page": 1,
+                            "size": 20,
+                            "pages": 1
+                        },
+                        "message": "Activities retrieved successfully"
+                    }
+                }
+            }
+        }
+    },
+    tags=["Activities"]
+)
 async def list_activities(
     pagination: PaginationParams = Depends(),
     filters: ActivitySearchFilters = Depends(),
@@ -54,6 +166,16 @@ async def list_activities(
 ):
     """
     List activities with optional filtering and pagination.
+    
+    This endpoint returns published educational activities with support for:
+    - Pagination (page, size)
+    - Category filtering
+    - Difficulty level filtering
+    - Duration range filtering
+    - Keyword search
+    - Featured activities
+    
+    **Rate Limit:** 100 requests per minute per IP
     """
     # Build query with filters
     query = select(Activity).where(Activity.is_published == True)
