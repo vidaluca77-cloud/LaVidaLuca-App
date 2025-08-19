@@ -1,45 +1,28 @@
 """
-Main FastAPI application for La Vida Luca.
+Main FastAPI application for La Vida Luca with enhanced monitoring and security.
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from contextlib import asynccontextmanager
 import logging
 import os
 
-from config import settings
-from database import database
-from routes import auth, users, activities, contacts, suggestions, guide
-from middleware import setup_middleware
-from exceptions import setup_exception_handlers
-from monitoring import (
-    init_sentry, setup_logging, context_logger, set_app_info, 
-    update_system_metrics, APP_INFO
+from app.core.config import settings
+from app.core.database import connect_database, disconnect_database, check_database_health
+from app.core.monitoring import (
+    init_sentry, MetricsMiddleware, get_health_metrics, 
+    create_metrics_response, record_custom_metric
 )
 
-# Initialize monitoring
-init_sentry(
-    environment=settings.ENVIRONMENT,
-    release=os.getenv("RELEASE_VERSION", "1.0.0")
-)
-
-# Setup structured logging
-app_logger = setup_logging("la-vida-luca-backend")
-
-# Set application info for metrics
-set_app_info(
-    version="1.0.0",
-    environment=settings.ENVIRONMENT,
-    build_date=os.getenv("BUILD_DATE", "unknown")
-)
-
+# Initialize Sentry
+init_sentry()
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=getattr(logging, settings.LOG_LEVEL.upper()),
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s" if settings.LOG_FORMAT != "json" else None
 )
 logger = logging.getLogger(__name__)
 
@@ -47,97 +30,120 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
-    context_logger.info("Starting La Vida Luca API...")
+    logger.info("Starting La Vida Luca API...")
     
-    # Try to connect to database
+    # Connect to database
     try:
-        await database.connect()
-        context_logger.info("Database connected")
+        await connect_database()
+        logger.info("Database connected successfully")
+        record_custom_metric("app_startup", 1, {"component": "database"})
     except Exception as e:
-        context_logger.warning(f"Database connection failed: {e}")
-        context_logger.info("Starting API without database connection")
+        logger.warning(f"Database connection failed: {e}")
+        logger.info("Starting API without database connection")
     
-    # Update system metrics on startup
-    update_system_metrics()
+    # Record startup metric
+    record_custom_metric("app_startup", 1, {"component": "api"})
     
     yield
     
     # Cleanup
     try:
-        await database.disconnect()
-        context_logger.info("Database disconnected")
+        await disconnect_database()
+        logger.info("Database disconnected successfully")
     except Exception as e:
-        context_logger.warning(f"Database disconnect failed: {e}")
-    context_logger.info("La Vida Luca API shutdown")
+        logger.warning(f"Database disconnect failed: {e}")
+    
+    logger.info("La Vida Luca API shutdown complete")
 
 
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     
     app = FastAPI(
-        title="La Vida Luca API",
-        description="API pour la plateforme collaborative La Vida Luca",
-        version="1.0.0",
+        title=settings.PROJECT_NAME,
+        description=settings.DESCRIPTION,
+        version=settings.VERSION,
         lifespan=lifespan,
-        docs_url="/docs" if settings.ENVIRONMENT != "production" else None,
-        redoc_url="/redoc" if settings.ENVIRONMENT != "production" else None,
+        docs_url="/docs" if not settings.is_production else None,
+        redoc_url="/redoc" if not settings.is_production else None,
+        openapi_url="/openapi.json" if not settings.is_production else None,
     )
     
-    # Setup middleware
-    setup_middleware(app)
+    # Add security middleware
+    if settings.TRUSTED_HOSTS and settings.TRUSTED_HOSTS != ["*"]:
+        app.add_middleware(
+            TrustedHostMiddleware,
+            allowed_hosts=settings.TRUSTED_HOSTS
+        )
     
-    # Setup exception handlers
-    setup_exception_handlers(app)
+    # Add CORS middleware
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.CORS_ORIGINS,
+        allow_credentials=settings.CORS_ALLOW_CREDENTIALS,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+        allow_headers=["*"],
+        expose_headers=["*"],
+    )
     
-    # Include routes
-    app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
-    app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
-    app.include_router(activities.router, prefix="/api/v1/activities", tags=["activities"])
-    app.include_router(contacts.router, prefix="/api/v1/contacts", tags=["contacts"])
-    app.include_router(suggestions.router, prefix="/api/v1/suggestions", tags=["suggestions"])
-    app.include_router(guide.router, prefix="/api/v1", tags=["guide"])
+    # Add metrics middleware
+    if settings.PROMETHEUS_ENABLED:
+        app.add_middleware(MetricsMiddleware)
+    
+    # Include API routes (will be added when they exist)
+    # app.include_router(auth.router, prefix=settings.API_V1_STR + "/auth", tags=["authentication"])
+    # app.include_router(users.router, prefix=settings.API_V1_STR + "/users", tags=["users"])
+    # app.include_router(activities.router, prefix=settings.API_V1_STR + "/activities", tags=["activities"])
+    # app.include_router(contacts.router, prefix=settings.API_V1_STR + "/contacts", tags=["contacts"])
+    # app.include_router(suggestions.router, prefix=settings.API_V1_STR + "/suggestions", tags=["suggestions"])
+    # app.include_router(guide.router, prefix=settings.API_V1_STR, tags=["guide"])
     
     @app.get("/")
     async def root():
         """Root endpoint."""
         return {
             "message": "Welcome to La Vida Luca API",
-            "version": "1.0.0",
-            "docs": "/docs",
+            "version": settings.VERSION,
+            "environment": settings.ENVIRONMENT,
+            "docs": "/docs" if not settings.is_production else "disabled",
             "status": "healthy"
         }
     
     @app.get("/health")
     async def health_check():
-        """Health check endpoint."""
-        try:
-            # Test database connection
-            await database.execute("SELECT 1")
-            db_status = "healthy"
-        except Exception as e:
-            context_logger.error("Database health check failed", error=str(e))
-            db_status = "unhealthy"
+        """Comprehensive health check endpoint."""
+        db_health = await check_database_health()
+        app_health = await get_health_metrics()
+        
+        overall_status = "healthy" if db_health["status"] == "healthy" else "degraded"
         
         return {
-            "status": "healthy" if db_status == "healthy" else "degraded",
-            "database": db_status,
-            "environment": settings.ENVIRONMENT
+            "status": overall_status,
+            "database": db_health,
+            "application": app_health,
+            "timestamp": "2024-01-01T00:00:00Z",  # Will be replaced with actual timestamp
         }
     
     # Add metrics endpoint
     @app.get("/metrics")
     async def metrics():
         """Prometheus metrics endpoint."""
-        from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
-        from fastapi import Response
+        if not settings.PROMETHEUS_ENABLED:
+            raise HTTPException(status_code=404, detail="Metrics not enabled")
         
-        # Update system metrics before serving
-        update_system_metrics()
-        
-        return Response(
-            generate_latest(),
-            media_type=CONTENT_TYPE_LATEST
-        )
+        return create_metrics_response()
+    
+    @app.get("/info")
+    async def app_info():
+        """Application information endpoint."""
+        return {
+            "name": settings.PROJECT_NAME,
+            "version": settings.VERSION,
+            "description": settings.DESCRIPTION,
+            "environment": settings.ENVIRONMENT,
+            "debug": settings.DEBUG,
+            "api_version": settings.API_V1_STR,
+        }
     
     return app
 
