@@ -1,13 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: true,
-  },
-  output: 'export',
-  trailingSlash: true,
   images: {
     unoptimized: true
-  }
+  },
+  // Remove static export for Vercel deployment
+  // output: 'export',
+  // trailingSlash: true,
 }
 
 module.exports = nextConfig
