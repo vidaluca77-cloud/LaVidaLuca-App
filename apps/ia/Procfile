@@ -1,0 +1,9 @@
+# Deployment configuration for Railway/Render
+
+# For Railway
+web: uvicorn main:app --host 0.0.0.0 --port $PORT
+
+# For Render
+# Command: uvicorn main:app --host 0.0.0.0 --port $PORT
+
+# Build command: pip install -r requirements.txt && python seed_data.py

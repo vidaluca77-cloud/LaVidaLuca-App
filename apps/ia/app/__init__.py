@@ -1,0 +1,3 @@
+"""
+LaVidaLuca FastAPI Application.
+"""
