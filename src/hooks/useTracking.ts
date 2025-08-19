@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { performanceMonitor } from '@/monitoring/performance';
 import { alertManager } from '@/monitoring/alerts';
-import { setUserContext, setPageContext, trackUserActivity } from '../../../sentry.client.config';
+import { setUserContext, setPageContext, trackUserActivity } from '../../sentry.client.config';
 import { logger } from '@/lib/logger';
 
 export interface UserInfo {

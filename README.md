@@ -90,8 +90,11 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 # Backend API
 NEXT_PUBLIC_API_URL=http://localhost:8000
 
-# Sentry (monitoring)
+# Sentry (monitoring - requis pour la surveillance des erreurs)
 NEXT_PUBLIC_SENTRY_DSN=votre_dsn_sentry
+
+# Sentry Backend (pour le monitoring backend)
+SENTRY_DSN=votre_dsn_sentry_backend
 
 # Contact
 NEXT_PUBLIC_CONTACT_EMAIL=contact@lavidaluca.fr
@@ -114,6 +117,8 @@ L'application sera accessible sur :
 - **Frontend**: `http://localhost:3000`
 - **Backend API**: `http://localhost:8000`
 - **Documentation API**: `http://localhost:8000/docs`
+- **Monitoring Dashboard**: `http://localhost:3000/monitoring` (développement uniquement)
+- **Métriques Prometheus**: `http://localhost:8000/metrics`
 
 ## Scripts disponibles
 
@@ -298,6 +303,46 @@ npm run test:watch
 - JWT tokens via Supabase
 - Refresh tokens automatiques
 - Logout sécurisé
+
+## Monitoring et Observabilité
+
+### Surveillance des erreurs
+- **Sentry** : Capture et suivi des erreurs frontend et backend
+- **Error Boundaries** : Gestion des erreurs React avec fallback UI
+- **Filtrage intelligent** : Les erreurs sensibles sont automatiquement filtrées
+- **Contexte utilisateur** : Tracking des actions utilisateur pour debugging
+
+### Métriques de performance
+- **Web Vitals** : FCP, LCP, FID, CLS en temps réel
+- **API Performance** : Latence, taux de succès/échec des appels API
+- **Métriques système** : CPU, mémoire, connexions base de données
+- **Métriques métier** : Actions utilisateur, utilisation des fonctionnalités
+
+### Dashboard de monitoring
+- **Interface temps réel** : `/monitoring` (développement uniquement)
+- **Statut de santé** : Aperçu global de l'état de l'application
+- **Alertes** : Système d'alertes configurables pour les problèmes critiques
+- **Export des données** : Téléchargement des métriques au format JSON
+
+### Logging structuré
+- **Frontend** : JSON structuré avec contexte utilisateur
+- **Backend** : Logs contextuels avec request ID unique
+- **Activités utilisateur** : Tracking des interactions pour analytics
+- **API calls** : Log complet des requêtes/réponses avec durée
+
+### Configuration monitoring
+```bash
+# Frontend (.env.local)
+NEXT_PUBLIC_SENTRY_DSN=your_sentry_dsn
+
+# Backend (.env)
+SENTRY_DSN=your_sentry_backend_dsn
+```
+
+### Endpoints de monitoring
+- **Health check** : `GET /health`
+- **Métriques Prometheus** : `GET /metrics`
+- **Dashboard monitoring** : `http://localhost:3000/monitoring`
 
 ## Performance
 
