@@ -8,3 +8,4 @@ apps/web/.next/
 .env.production
 dist/
 build/
+__pycache__/
