@@ -87,13 +87,21 @@ L'application sera accessible sur `http://localhost:3000`
 
 ## Scripts disponibles
 
-| Script               | Description                              |
-| -------------------- | ---------------------------------------- |
-| `npm run dev`        | Lance le serveur de développement        |
-| `npm run build`      | Compile l'application pour la production |
-| `npm run start`      | Lance l'application compilée             |
-| `npm run lint`       | Vérifie la qualité du code               |
-| `npm run type-check` | Vérifie les types TypeScript             |
+| Script               | Description                                         |
+| -------------------- | --------------------------------------------------- |
+| `npm run dev`        | Lance le serveur de développement                   |
+| `npm run build`      | Compile l'application pour la production            |
+| `npm run start`      | Lance l'application compilée                        |
+| `npm run lint`       | Vérifie la qualité du code avec ESLint             |
+| `npm run lint:fix`   | Corrige automatiquement les erreurs ESLint         |
+| `npm run format`     | Formate le code avec Prettier                      |
+| `npm run format:check` | Vérifie le formatage du code                     |
+| `npm run type-check` | Vérifie les types TypeScript                       |
+| `npm run test`       | Lance tous les tests                               |
+| `npm run test:coverage` | Lance les tests avec couverture de code        |
+| `npm run test:watch` | Lance les tests en mode watch                     |
+| `npm run test:ui`    | Lance uniquement les tests des composants UI       |
+| `npm run quality`    | Lance toutes les vérifications (types, lint, format, tests) |
 
 ## Structure du projet
 
@@ -102,7 +110,7 @@ L'application sera accessible sur `http://localhost:3000`
 │   ├── icons/             # Icônes PWA
 │   └── manifest.webmanifest
 ├── src/
-│   ├── app/               # App Router Next.js 13+
+│   ├── app/               # App Router Next.js 15+
 │   │   ├── api/           # Routes API
 │   │   ├── catalogue/     # Page catalogue d'activités
 │   │   ├── contact/       # Page contact
@@ -110,12 +118,16 @@ L'application sera accessible sur `http://localhost:3000`
 │   │   ├── layout.tsx     # Layout principal
 │   │   └── page.tsx       # Page d'accueil
 │   ├── components/        # Composants réutilisables
+│   │   ├── ui/           # Composants UI de base (Button, Card, Badge)
+│   │   ├── layout/       # Composants de mise en page (Header, Footer)
+│   │   └── common/       # Composants communs
+│   ├── hooks/            # Hooks React personnalisés
 │   ├── lib/              # Utilitaires et configurations
-│   ├── monitoring/       # Outils de monitoring
-│   └── types/            # Types TypeScript
-├── monitoring/            # Configuration monitoring backend
-├── docs/                 # Documentation additionnelle
-└── tests/                # Tests
+│   ├── styles/           # Styles globaux et utilitaires CSS
+│   ├── types/            # Types TypeScript
+│   └── monitoring/       # Outils de monitoring
+├── tests/                # Tests d'intégration
+└── docs/                 # Documentation additionnelle
 ```
 
 ## Déploiement
@@ -203,9 +215,39 @@ npm run test:coverage
 
 # Tests en mode watch
 npm run test:watch
+
+# Tests des composants UI uniquement
+npm run test:ui
+
+# Vérification complète de la qualité
+npm run quality
 ```
 
 ### Types de tests
+
+- **Unitaires** : Composants UI avec Testing Library
+- **Intégration** : Fonctions utilitaires et monitoring
+- **E2E** : Tests de bout en bout (à venir)
+
+### Configuration des outils
+
+#### ESLint
+Configuration stricte avec Next.js, Prettier et règles personnalisées :
+- Vérification du formatage avec Prettier
+- Règles d'import et d'ordre des modules
+- Vérifications spécifiques à React et Next.js
+
+#### Prettier
+Formatage automatique du code avec configuration personnalisée :
+- Guillemets simples, point-virgules, trailing commas
+- Largeur de ligne de 80 caractères
+- Configuration spécifique pour JSON et Markdown
+
+#### TypeScript
+Mode strict activé avec configuration optimisée :
+- Strict type checking
+- Path mapping pour les imports (`@/*`)
+- Support complet JSX et Next.js
 
 - **Unitaires** : Composants et fonctions utilitaires
 - **Intégration** : Flux utilisateur complets
