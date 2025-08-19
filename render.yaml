@@ -1,0 +1,43 @@
+services:
+  # API IA FastAPI
+  - type: web
+    name: lavidaluca-ia-api
+    env: python
+    region: frankfurt
+    plan: free
+    buildCommand: cd apps/ia && pip install -r requirements.txt
+    startCommand: cd apps/ia && python main.py
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: HOST
+        value: 0.0.0.0
+      - key: DEBUG
+        value: false
+      - key: ALLOWED_ORIGINS
+        value: https://la-vida-luca.vercel.app,http://localhost:3000
+      # À configurer depuis le dashboard Render
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+
+  # Site web statique (optionnel - peut être déployé sur Vercel)
+  - type: static
+    name: lavidaluca-frontend
+    buildCommand: npm install && npm run build
+    publishPath: ./out
+    pullRequestPreviewsEnabled: true
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+    envVars:
+      - key: NEXT_PUBLIC_IA_API_URL
+        value: https://lavidaluca-ia-api.onrender.com
+      - key: NEXT_PUBLIC_SITE_URL
+        value: https://lavidaluca-frontend.onrender.com

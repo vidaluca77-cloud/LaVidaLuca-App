@@ -60,6 +60,9 @@ export default function RootLayout({
               <a href="/contact" className="opacity-80 hover:opacity-100">
                 Contact
               </a>
+              <a href="/test-ia" className="opacity-80 hover:opacity-100">
+                Test IA
+              </a>
             </nav>
           </div>
         </header>

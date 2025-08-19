@@ -6,7 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "dev:ia": "cd apps/ia && python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000",
+    "test:ia": "cd apps/ia && python -m pytest tests/ -v",
+    "install:ia": "cd apps/ia && pip install -r requirements.txt",
+    "dev:all": "concurrently \"npm run dev\" \"npm run dev:ia\"",
+    "setup": "npm install && npm run install:ia",
+    "test": "npm run lint && npm run test:ia"
   },
   "dependencies": {
     "next": "14.0.4",
@@ -23,6 +29,7 @@
     "postcss": "^8.4.32",
     "tailwindcss": "^3.4.0",
     "eslint": "^8.56.0",
-    "eslint-config-next": "14.0.4"
+    "eslint-config-next": "14.0.4",
+    "concurrently": "^8.2.2"
   }
 }
