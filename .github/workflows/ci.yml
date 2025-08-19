@@ -1,0 +1,127 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-frontend:
+    runs-on: ubuntu-latest
+    name: Test Frontend (Next.js)
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run linter
+      run: npm run lint
+    
+    - name: Build project
+      run: npm run build
+      env:
+        NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder' }}
+        NEXT_PUBLIC_IA_API_URL: ${{ secrets.NEXT_PUBLIC_IA_API_URL || 'https://placeholder.onrender.com' }}
+
+  test-backend:
+    runs-on: ubuntu-latest
+    name: Test Backend (FastAPI)
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install backend dependencies
+      run: |
+        cd apps/ia
+        pip install -r requirements.txt
+        pip install pytest pytest-asyncio httpx
+    
+    - name: Run backend tests
+      run: |
+        cd apps/ia
+        python -m pytest tests/ -v
+      env:
+        DATABASE_URL: sqlite:///./test.db
+        ENVIRONMENT: testing
+        API_SECRET_KEY: test-secret-key
+        JWT_SECRET_KEY: test-jwt-key
+
+  deploy-preview:
+    runs-on: ubuntu-latest
+    name: Deploy Preview
+    if: github.event_name == 'pull_request'
+    needs: [test-frontend, test-backend]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Vercel Preview
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        scope: ${{ secrets.VERCEL_ORG_ID }}
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    name: Deploy Production
+    if: github.ref == 'refs/heads/main'
+    needs: [test-frontend, test-backend]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Vercel Production
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-args: '--prod'
+        scope: ${{ secrets.VERCEL_ORG_ID }}
+    
+    - name: Deploy API to Render
+      uses: johnbeynon/render-deploy-action@v0.0.8
+      with:
+        service-id: ${{ secrets.RENDER_SERVICE_ID }}
+        api-key: ${{ secrets.RENDER_API_KEY }}
+
+  monitor:
+    runs-on: ubuntu-latest
+    name: Health Check
+    if: github.ref == 'refs/heads/main'
+    needs: [deploy-production]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Run monitoring script
+      run: |
+        pip install requests
+        python scripts/monitor.py
+      env:
+        WEB_URL: ${{ secrets.WEB_URL }}
+        API_URL: ${{ secrets.API_URL }}
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
