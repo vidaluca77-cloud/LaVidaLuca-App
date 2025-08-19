@@ -1,4 +1,5 @@
 // Jest setup file for La Vida Luca App
+const React = require('react');
 require('@testing-library/jest-dom');
 
 // Mock console methods in test environment
@@ -48,6 +49,9 @@ jest.mock('@heroicons/react/24/outline', () => ({
   UserGroupIcon: () => React.createElement('svg', { 'data-testid': 'user-group-icon' }),
   StarIcon: () => React.createElement('svg', { 'data-testid': 'star-icon' }),
 }));
+
+// Mock monitoring module
+jest.mock('./src/monitoring/performance', () => ({}));
 
 // Mock environment variables for testing
 process.env.NODE_ENV = 'test';
