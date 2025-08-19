@@ -4,6 +4,9 @@ node_modules/
 apps/web/node_modules/
 apps/web/.next/
 .next/
+out/
+apps/ia/__pycache__/
+*.pyc
 *.log
 .env
 .env.local
