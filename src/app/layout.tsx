@@ -1,9 +1,9 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+// Fallback sans-serif fonts for environments without network access
+const fontClassName = "font-sans";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://la-vida-luca.vercel.app"),
@@ -47,7 +47,7 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <body
-        className={`${inter.className} min-h-screen bg-white text-neutral-900 antialiased`}
+        className={`${fontClassName} min-h-screen bg-white text-neutral-900 antialiased`}
       >
         <header className="border-b">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
