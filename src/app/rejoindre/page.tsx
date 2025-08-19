@@ -9,7 +9,9 @@ export default function Rejoindre() {
         <li>Visite de site</li>
         <li>Signature du kit relais</li>
       </ol>
-      <a className="inline-block border px-4 py-2 rounded" href="/contact">Je candidate →</a>
+      <a className="inline-block border px-4 py-2 rounded" href="/contact">
+        Je candidate →
+      </a>
     </div>
   );
 }
