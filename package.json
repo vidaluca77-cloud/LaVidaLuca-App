@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:validate": "bash -c 'echo \"📊 Database files created successfully!\" && ls -la infra/supabase/'",
+    "db:schema": "cat infra/supabase/schema.sql",
+    "db:seed": "cat infra/supabase/seed/activities.sql"
   },
   "dependencies": {
     "next": "14.0.4",

@@ -33,12 +33,18 @@ Objectif : permettre à chacun de contribuer à sa manière au projet, dans le r
 
 🔑 Variables d’environnement
 
-À configurer pour le déploiement :NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-NEXT_PUBLIC_IA_API_URL=
-NEXT_PUBLIC_CONTACT_EMAIL=
-NEXT_PUBLIC_CONTACT_PHONE=
-ALLOWED_ORIGINS=https://<site-vercel>.vercel.app
+Copier `.env.template` vers `.env.local` et remplir les valeurs :
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_IA_API_URL=https://your-ia-api.onrender.com
+NEXT_PUBLIC_CONTACT_EMAIL=contact@lavidaluca.fr
+NEXT_PUBLIC_CONTACT_PHONE=+33123456789
+ALLOWED_ORIGINS=https://your-vercel-app.vercel.app
+```
+
+📊 **Base de données** : voir `/infra/supabase/README.md` pour la configuration complète.
 
 
 ⸻
