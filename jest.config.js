@@ -1,20 +1,43 @@
 module.exports = {
   preset: 'ts-jest',
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   roots: ['<rootDir>/tests', '<rootDir>/src'],
   testMatch: [
-    '<rootDir>/tests/**/*.(test|spec).ts',
-    '<rootDir>/src/**/__tests__/**/*.(test|spec).ts'
+    '<rootDir>/tests/**/*.(test|spec).{ts,tsx}',
+    '<rootDir>/src/**/__tests__/**/*.(test|spec).{ts,tsx}',
+    '<rootDir>/src/**/*.(test|spec).{ts,tsx}'
   ],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
-    '!src/**/index.ts'
+    '!src/**/index.ts',
+    '!src/app/globals.css',
+    '!src/app/layout.tsx',
+    '!src/monitoring/**/*'
   ],
   coverageReporters: ['text', 'lcov', 'html'],
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 70,
+      lines: 70,
+      statements: 70
+    }
+  },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1'
   },
-  testTimeout: 10000
+  testTimeout: 10000,
+  transform: {
+    '^.+\\.(ts|tsx)$': 'ts-jest'
+  },
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+  globals: {
+    'ts-jest': {
+      tsconfig: {
+        jsx: 'react-jsx'
+      }
+    }
+  }
 };

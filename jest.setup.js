@@ -1,4 +1,5 @@
 // Jest setup file for La Vida Luca App
+require('@testing-library/jest-dom');
 
 // Mock console methods in test environment
 global.console = {
@@ -22,9 +23,51 @@ jest.mock('next/router', () => ({
   }),
 }));
 
+// Mock Next.js navigation
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    refresh: jest.fn(),
+    prefetch: jest.fn(),
+  }),
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+// Mock Heroicons
+jest.mock('@heroicons/react/24/outline', () => ({
+  HeartIcon: () => React.createElement('svg', { 'data-testid': 'heart-icon' }),
+  AcademicCapIcon: () => React.createElement('svg', { 'data-testid': 'academic-cap-icon' }),
+  GlobeAltIcon: () => React.createElement('svg', { 'data-testid': 'globe-alt-icon' }),
+  MapPinIcon: () => React.createElement('svg', { 'data-testid': 'map-pin-icon' }),
+  ClockIcon: () => React.createElement('svg', { 'data-testid': 'clock-icon' }),
+  ShieldCheckIcon: () => React.createElement('svg', { 'data-testid': 'shield-check-icon' }),
+  UserGroupIcon: () => React.createElement('svg', { 'data-testid': 'user-group-icon' }),
+  StarIcon: () => React.createElement('svg', { 'data-testid': 'star-icon' }),
+}));
+
 // Mock environment variables for testing
 process.env.NODE_ENV = 'test';
 process.env.NEXT_PUBLIC_SENTRY_DSN = 'https://test@sentry.io/123456';
 
 // Global test utilities
 global.sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Mock IntersectionObserver
+global.IntersectionObserver = class IntersectionObserver {
+  constructor() {}
+  observe() { return null; }
+  disconnect() { return null; }
+  unobserve() { return null; }
+};
+
+// Mock ResizeObserver
+global.ResizeObserver = class ResizeObserver {
+  constructor() {}
+  observe() { return null; }
+  disconnect() { return null; }
+  unobserve() { return null; }
+};
