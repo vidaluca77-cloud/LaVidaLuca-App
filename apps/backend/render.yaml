@@ -1,34 +1,74 @@
-# Render.com deployment configuration
+# Render.com deployment configuration for La Vida Luca Backend
 version: "1"
 
 services:
   - type: web
     name: lavidaluca-backend
     runtime: python3
-    buildCommand: cd apps/backend && pip install -r requirements.txt
-    startCommand: cd apps/backend && gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT
+    rootDir: apps/backend
+    buildCommand: pip install -r requirements.txt && python -m pytest --maxfail=1
+    startCommand: gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT --timeout 120 --keepalive 5
     plan: starter
     region: oregon
     branch: main
     healthCheckPath: /health
+    autoDeploy: true
+    preDeployCommand: echo "Starting deployment of La Vida Luca Backend..."
     envVars:
       - key: ENVIRONMENT
         value: production
+      - key: DEBUG
+        value: false
       - key: DATABASE_URL
         fromDatabase:
           name: lavidaluca-db
           property: connectionString
+      - key: DATABASE_POOL_SIZE
+        value: 20
+      - key: DATABASE_MAX_OVERFLOW
+        value: 30
       - key: JWT_SECRET_KEY
         generateValue: true
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_EXPIRATION_HOURS
+        value: 24
       - key: OPENAI_API_KEY
         sync: false  # Set this manually in Render dashboard
+      - key: OPENAI_MODEL
+        value: gpt-3.5-turbo
+      - key: OPENAI_MAX_TOKENS
+        value: 500
       - key: CORS_ORIGINS
-        value: '["https://lavidaluca.fr","https://www.lavidaluca.fr"]'
+        value: '["https://lavidaluca.fr","https://www.lavidaluca.fr","https://lavidaluca-frontend.vercel.app"]'
+      - key: CORS_ALLOW_CREDENTIALS
+        value: true
+      - key: TRUSTED_HOSTS
+        value: '["lavidaluca.fr","*.lavidaluca.fr","lavidaluca-backend.onrender.com"]'
+      - key: RATE_LIMIT_REQUESTS_PER_MINUTE
+        value: 100
+      - key: RATE_LIMIT_REQUESTS_PER_MINUTE_ANONYMOUS
+        value: 20
       - key: LOG_LEVEL
         value: INFO
+      - key: SENTRY_DSN
+        sync: false  # Set this manually in Render dashboard
+      - key: SENTRY_ENVIRONMENT
+        value: production
+      - key: SMTP_HOST
+        sync: false  # Set this manually in Render dashboard
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USERNAME
+        sync: false  # Set this manually in Render dashboard
+      - key: SMTP_PASSWORD
+        sync: false  # Set this manually in Render dashboard
+      - key: SMTP_FROM_EMAIL
+        value: noreply@lavidaluca.fr
 
 databases:
   - name: lavidaluca-db
     plan: starter
     region: oregon
     postgresMajorVersion: 15
+    ipAllowList: []  # Open to all IPs (can be restricted later)

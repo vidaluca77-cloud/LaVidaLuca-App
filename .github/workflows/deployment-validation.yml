@@ -1,0 +1,70 @@
+name: Deployment Validation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-deployment-config:
+    runs-on: ubuntu-latest
+    name: Validate deployment configurations
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run deployment configuration tests
+      run: npm test -- tests/deployment/deployment.test.ts
+    
+    - name: Validate vercel.json syntax
+      run: |
+        node -e "JSON.parse(require('fs').readFileSync('vercel.json', 'utf8'))"
+        echo "✅ vercel.json is valid JSON"
+    
+    - name: Validate render.yaml syntax
+      uses: mikefarah/yq@master
+      with:
+        cmd: yq eval '.' apps/backend/render.yaml > /dev/null && echo "✅ render.yaml is valid YAML"
+    
+    - name: Check deployment documentation
+      run: |
+        test -f DEPLOYMENT.md && echo "✅ DEPLOYMENT.md exists"
+        test -f DEPLOYMENT_CHECKLIST.md && echo "✅ DEPLOYMENT_CHECKLIST.md exists"
+        test -x scripts/check-deployment.sh && echo "✅ check-deployment.sh is executable"
+
+  validate-backend:
+    runs-on: ubuntu-latest
+    name: Validate backend configuration
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install backend dependencies
+      run: |
+        cd apps/backend
+        pip install -r requirements.txt
+    
+    - name: Run backend tests
+      run: |
+        cd apps/backend
+        pytest --maxfail=1 -v
+    
+    - name: Validate backend configuration
+      run: |
+        cd apps/backend
+        python -c "from config import settings; print('✅ Backend config loaded successfully')"

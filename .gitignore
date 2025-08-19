@@ -87,6 +87,9 @@ htmlcov/
 # Alembic
 alembic/versions/
 
+# Deployment scripts temp files
+/tmp/response.txt
+
 # System files
 .DS_Store
 **/__pycache__/
