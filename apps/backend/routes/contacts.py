@@ -3,6 +3,7 @@ Contact management routes for contact form submissions and communications.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_
 
@@ -20,13 +21,75 @@ from ..auth.dependencies import get_current_active_user, require_admin
 router = APIRouter()
 
 
-@router.post("/", response_model=ApiResponse[ContactResponse])
+@router.post(
+    "/", 
+    response_model=ApiResponse[ContactResponse],
+    status_code=status.HTTP_201_CREATED,
+    summary="Submit a contact form",
+    description="Submit a contact request or inquiry. This is a public endpoint that doesn't require authentication.",
+    responses={
+        201: {
+            "description": "Contact request submitted successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": {
+                            "id": "uuid-string",
+                            "name": "John Doe",
+                            "email": "john@example.com",
+                            "subject": "Question about activities",
+                            "message": "I would like to know more about...",
+                            "contact_type": "inquiry",
+                            "status": "new",
+                            "created_at": "2024-01-01T00:00:00Z"
+                        },
+                        "message": "Contact request submitted successfully"
+                    }
+                }
+            }
+        },
+        422: {
+            "description": "Validation error",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": [
+                            {
+                                "loc": ["body", "email"],
+                                "msg": "field required",
+                                "type": "value_error.missing"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    tags=["Contact"]
+)
 async def create_contact(
-    contact_data: ContactCreate,
+    contact_data: ContactCreate = Field(
+        ...,
+        example={
+            "name": "John Doe",
+            "email": "john@example.com",
+            "subject": "Question about activities",
+            "message": "I would like to know more about the educational activities available on your platform.",
+            "contact_type": "inquiry"
+        }
+    ),
     db: AsyncSession = Depends(get_db_session)
 ):
     """
     Submit a new contact form (public endpoint).
+    
+    This endpoint allows anyone to submit contact requests, inquiries, or feedback
+    without requiring authentication. All submissions are stored and can be managed
+    by administrators.
+    
+    **Rate Limit:** 5 requests per minute per IP
+    **No Authentication Required**
     """
     new_contact = Contact(**contact_data.dict())
     
