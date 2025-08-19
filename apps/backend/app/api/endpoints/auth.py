@@ -17,6 +17,7 @@ from ...schemas.auth import (
 from ...schemas.user import UserResponse
 from ...core.config import settings
 from ...services.session_service import SessionService
+from ...services.two_factor_service import TwoFactorService
 from ...middleware.rate_limit import create_rate_limit_response
 
 
@@ -309,4 +310,95 @@ def terminate_session(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Session not found"
+        )
+
+
+# 2FA Endpoints
+@router.post("/2fa/setup", response_model=TwoFactorSetup)
+def setup_2fa(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Setup 2FA for the current user."""
+    twofa_service = TwoFactorService(db)
+    
+    try:
+        setup_data = twofa_service.setup_2fa(current_user)
+        return TwoFactorSetup(**setup_data)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+
+@router.post("/2fa/enable")
+def enable_2fa(
+    enable_data: TwoFactorEnable,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Enable 2FA after verifying the setup token."""
+    twofa_service = TwoFactorService(db)
+    
+    try:
+        if twofa_service.enable_2fa(current_user, enable_data.token):
+            return {"message": "2FA enabled successfully"}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid 2FA token"
+            )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+
+@router.post("/2fa/disable")
+def disable_2fa(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Disable 2FA for the current user."""
+    twofa_service = TwoFactorService(db)
+    
+    if twofa_service.disable_2fa(current_user):
+        return {"message": "2FA disabled successfully"}
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="2FA is not enabled"
+        )
+
+
+@router.post("/2fa/verify")
+def verify_2fa(
+    verify_data: TwoFactorVerify,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Verify 2FA token during login (separate endpoint for 2FA flow)."""
+    # This would be called after initial login validation
+    # Implementation depends on your 2FA flow design
+    # For now, return a placeholder
+    return {"message": "2FA verification endpoint"}
+
+
+@router.post("/2fa/backup-codes")
+def regenerate_backup_codes(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Regenerate backup codes for 2FA."""
+    twofa_service = TwoFactorService(db)
+    
+    try:
+        backup_codes = twofa_service.regenerate_backup_codes(current_user)
+        return {"backup_codes": backup_codes}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
         )
