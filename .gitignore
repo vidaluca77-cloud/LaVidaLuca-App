@@ -3,3 +3,17 @@ apps/ia/.env
 node_modules/
 apps/web/node_modules/
 apps/web/.next/
+.next/
+.env
+.env.local
+.env.development
+.env.production
+dist/
+build/
+*.log
+.DS_Store
+.vscode/
+.idea/
+*.pyc
+__pycache__/
+.pytest_cache/
