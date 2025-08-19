@@ -9,3 +9,4 @@ apps/web/.next/
 .vercel/
 dist/
 build/
+out/
