@@ -6,6 +6,14 @@ const nextConfig = {
   trailingSlash: true,
   images: {
     unoptimized: true
+  },
+  // Exclude apps/web from build to avoid conflicts
+  webpack: (config) => {
+    config.watchOptions = {
+      ...config.watchOptions,
+      ignored: ['**/apps/web/**', '**/node_modules/**']
+    };
+    return config;
   }
 }
 
