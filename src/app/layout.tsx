@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ClientProviders from "@/components/ClientProviders";
 
 // Using system fonts instead of Google Fonts for better performance and reliability
 const fontClass = "font-sans";
@@ -51,9 +52,11 @@ export default function RootLayout({
       <body
         className={`${fontClass} min-h-screen bg-white text-neutral-900 antialiased`}
       >
-        <Header />
-        <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
-        <Footer />
+        <ClientProviders>
+          <Header />
+          <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
+          <Footer />
+        </ClientProviders>
       </body>
     </html>
   );
