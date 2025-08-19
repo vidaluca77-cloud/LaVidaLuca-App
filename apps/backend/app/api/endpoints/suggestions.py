@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from ...db.database import get_db
 from ...api.deps import get_current_active_user
@@ -11,23 +11,199 @@ from ...core.config import settings
 router = APIRouter()
 
 
-@router.get("/", response_model=List[ActivitySuggestionSchema])
+@router.get(
+    "/",
+    response_model=List[ActivitySuggestionSchema],
+    summary="Get user's activity suggestions",
+    description="""
+    Retrieve personalized activity suggestions for the current user.
+    
+    This endpoint returns activity recommendations that have been generated
+    specifically for the authenticated user, either by AI or manual curation.
+    
+    **Authentication Required:**
+    - Must be logged in with valid JWT token
+    - Returns suggestions only for the authenticated user
+    
+    **Suggestion Sources:**
+    - AI-powered recommendations based on user profile and preferences
+    - Manual suggestions from educators or administrators
+    - Algorithm-based suggestions using collaborative filtering
+    
+    **Ordering:**
+    - Results are ordered by creation date (newest first)
+    - Limited to the 10 most recent suggestions
+    
+    **Use Cases:**
+    - Show personalized learning recommendations
+    - Display activity suggestions in user dashboard
+    - Provide guided learning paths
+    """,
+    responses={
+        200: {
+            "description": "Suggestions successfully retrieved",
+            "content": {
+                "application/json": {
+                    "example": [
+                        {
+                            "id": 1,
+                            "user_id": 1,
+                            "activity_id": 2,
+                            "suggestion_reason": "Based on your interest in agriculture and beginner skill level",
+                            "ai_generated": True,
+                            "created_at": "2024-01-20T10:30:00Z",
+                            "activity": {
+                                "id": 2,
+                                "title": "Organic Composting Basics",
+                                "description": "Learn how to create nutrient-rich compost...",
+                                "category": "agriculture",
+                                "difficulty_level": "beginner",
+                                "duration_minutes": 90,
+                                "location": "Garden",
+                                "equipment_needed": "Gloves, shovel, organic waste",
+                                "learning_objectives": "Understand composting process...",
+                                "is_published": True,
+                                "creator_id": 2,
+                                "created_at": "2024-01-18T10:30:00Z",
+                                "updated_at": None
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        401: {
+            "description": "Authentication required",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Not authenticated"
+                    }
+                }
+            }
+        }
+    },
+    tags=["suggestions"]
+)
 def get_user_suggestions(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
+    """Get personalized activity suggestions for the current user."""
     suggestions = db.query(ActivitySuggestion).filter(
         ActivitySuggestion.user_id == current_user.id
     ).order_by(ActivitySuggestion.created_at.desc()).limit(10).all()
     return suggestions
 
 
-@router.post("/generate", response_model=List[ActivitySuggestionSchema])
+@router.post(
+    "/generate",
+    response_model=List[ActivitySuggestionSchema],
+    status_code=status.HTTP_201_CREATED,
+    summary="Generate new AI-powered suggestions",
+    description="""
+    Generate new personalized activity suggestions using AI or algorithmic recommendations.
+    
+    This endpoint creates new activity suggestions tailored to the user's profile,
+    preferences, and learning history. The system avoids suggesting activities
+    the user has already created.
+    
+    **Authentication Required:**
+    - Must be logged in with valid JWT token
+    - Suggestions are generated for the authenticated user
+    
+    **AI Integration:**
+    - Uses OpenAI GPT models when API key is configured
+    - Falls back to algorithmic suggestions when AI is unavailable
+    - Considers user's existing activities and preferences
+    
+    **Preference Handling:**
+    - Optional preferences string provides context to AI
+    - Helps refine suggestions based on specific interests
+    - Examples: "interested in sustainable farming", "prefer hands-on activities"
+    
+    **Duplicate Prevention:**
+    - Avoids suggesting activities user has already created
+    - Prevents duplicate suggestions for the same activity
+    - Ensures fresh and relevant recommendations
+    
+    **Response:**
+    - Returns 3-5 new activity suggestions
+    - Each suggestion includes detailed reasoning
+    - Suggestions are immediately saved for future reference
+    """,
+    responses={
+        201: {
+            "description": "Suggestions successfully generated",
+            "content": {
+                "application/json": {
+                    "example": [
+                        {
+                            "id": 1,
+                            "user_id": 1,
+                            "activity_id": 2,
+                            "suggestion_reason": "Perfect for your interest in sustainable practices and matches your beginner skill level",
+                            "ai_generated": True,
+                            "created_at": "2024-01-20T10:30:00Z",
+                            "activity": {
+                                "id": 2,
+                                "title": "Water Conservation Techniques",
+                                "description": "Learn effective water conservation methods for agricultural use...",
+                                "category": "environment",
+                                "difficulty_level": "beginner",
+                                "duration_minutes": 90,
+                                "location": "Field",
+                                "equipment_needed": "Water meter, notebook",
+                                "learning_objectives": "Understand water conservation principles...",
+                                "is_published": True,
+                                "creator_id": 3,
+                                "created_at": "2024-01-19T10:30:00Z",
+                                "updated_at": None
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        401: {
+            "description": "Authentication required",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Not authenticated"
+                    }
+                }
+            }
+        },
+        404: {
+            "description": "No activities available for suggestions",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "No activities available for suggestions"
+                    }
+                }
+            }
+        },
+        500: {
+            "description": "AI integration error or system failure",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Failed to generate AI suggestions: OpenAI API error"
+                    }
+                }
+            }
+        }
+    },
+    tags=["suggestions"]
+)
 def generate_ai_suggestions(
     preferences: Optional[str] = None,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
+    """Generate new AI-powered activity suggestions for the current user."""
     if not settings.OPENAI_API_KEY:
         # Return simple suggestions based on available activities when OpenAI is not configured
         available_activities = db.query(Activity).filter(
