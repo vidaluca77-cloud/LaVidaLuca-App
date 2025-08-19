@@ -1,6 +1,4 @@
 # Render.com deployment configuration
-# Copy this to render.yaml in your repository root for Blueprint deployment
-
 version: "1"
 
 services:
@@ -26,6 +24,8 @@ services:
         sync: false  # Set this manually in Render dashboard
       - key: CORS_ORIGINS
         value: '["https://lavidaluca.fr","https://www.lavidaluca.fr"]'
+      - key: LOG_LEVEL
+        value: INFO
 
 databases:
   - name: lavidaluca-db
