@@ -1,56 +1,52 @@
-from typing import Optional
+from typing import Optional, Dict, Any, List
 import openai
+import json
 from ..core.config import settings
 
 
 class OpenAIService:
     def __init__(self):
         if settings.OPENAI_API_KEY:
-            openai.api_key = settings.OPENAI_API_KEY
+            self.client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
+        else:
+            self.client = None
     
-    async def generate_activity_suggestions(
-        self, 
-        user_profile: str, 
-        user_preferences: Optional[str] = None,
-        available_activities: list = None
-    ) -> list:
+    def generate_activity_suggestions(self, user_preferences: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Generate personalized activity suggestions using OpenAI."""
         
-        if not settings.OPENAI_API_KEY:
-            raise ValueError("OpenAI API key not configured")
-        
-        # Prepare the prompt
-        context = f"User profile: {user_profile}"
-        if user_preferences:
-            context += f"\nUser preferences: {user_preferences}"
-        
-        if available_activities:
-            activities_list = "\n".join([
-                f"- {activity['title']} ({activity['category']}): {activity['description'][:100]}..."
-                for activity in available_activities[:10]
-            ])
-            context += f"\n\nAvailable activities:\n{activities_list}"
-        
-        prompt = f"""
-        {context}
-        
-        Based on the user profile and available activities, suggest 3-5 educational activities 
-        that would be most beneficial for this user's learning in agricultural and rural development.
-        
-        Provide suggestions in JSON format:
-        [
-            {{"activity_title": "Activity Name", "reason": "Brief explanation why this is suitable"}},
-            ...
-        ]
-        """
+        if not self.client:
+            return []
         
         try:
-            response = openai.ChatCompletion.create(
+            # Format user preferences for prompt
+            preferences_text = self._format_user_preferences(user_preferences)
+            
+            prompt = f"""
+            Based on the following user preferences:
+            {preferences_text}
+            
+            Suggest 3-5 educational activities that would be most beneficial for this user's learning.
+            
+            Provide suggestions in JSON format:
+            {{
+                "suggestions": [
+                    {{
+                        "title": "Activity Name",
+                        "description": "Brief description",
+                        "category": "technology|sports|arts|nature|science",
+                        "difficulty_level": "beginner|intermediate|advanced",
+                        "duration_minutes": 60
+                    }}
+                ]
+            }}
+            """
+            
+            response = self.client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {
                         "role": "system", 
-                        "content": "You are an AI assistant specialized in educational recommendations for agricultural and rural training programs."
+                        "content": "You are an AI assistant specialized in educational recommendations."
                     },
                     {"role": "user", "content": prompt}
                 ],
@@ -58,36 +54,51 @@ class OpenAIService:
                 temperature=0.7
             )
             
-            return response.choices[0].message.content
+            content = response.choices[0].message.content
+            parsed_response = json.loads(content)
             
-        except Exception as e:
-            raise Exception(f"OpenAI API error: {str(e)}")
+            # Validate and return suggestions
+            suggestions = parsed_response.get("suggestions", [])
+            validated_suggestions = [
+                suggestion for suggestion in suggestions
+                if self._validate_suggestion_format(suggestion)
+            ]
+            
+            return validated_suggestions
+            
+        except Exception:
+            return []
     
-    async def generate_activity_description(self, title: str, category: str) -> str:
-        """Generate a detailed description for an activity using OpenAI."""
+    def analyze_activity_content(self, activity_content: Dict[str, Any]) -> Dict[str, Any]:
+        """Analyze activity content using OpenAI."""
         
-        if not settings.OPENAI_API_KEY:
-            return f"Description for {title} in {category} category."
-        
-        prompt = f"""
-        Create a detailed description for an educational activity titled "{title}" 
-        in the category "{category}" for students in agricultural and rural training programs (MFR).
-        
-        Include:
-        - Learning objectives
-        - Brief description of activities
-        - Expected outcomes
-        
-        Keep it concise but informative (max 200 words).
-        """
+        if not self.client:
+            return {}
         
         try:
-            response = openai.ChatCompletion.create(
+            prompt = f"""
+            Analyze the following activity:
+            Title: {activity_content.get('title', '')}
+            Description: {activity_content.get('description', '')}
+            Category: {activity_content.get('category', '')}
+            
+            Provide analysis in JSON format:
+            {{
+                "analysis": {{
+                    "difficulty_assessment": "description of difficulty",
+                    "learning_objectives": ["objective1", "objective2"],
+                    "estimated_duration": 45,
+                    "required_skills": ["skill1", "skill2"]
+                }}
+            }}
+            """
+            
+            response = self.client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are an educational content creator for agricultural and rural training programs."
+                        "content": "You are an educational content analyzer."
                     },
                     {"role": "user", "content": prompt}
                 ],
@@ -95,11 +106,25 @@ class OpenAIService:
                 temperature=0.6
             )
             
-            return response.choices[0].message.content.strip()
+            content = response.choices[0].message.content
+            return json.loads(content)
             
-        except Exception as e:
-            return f"Failed to generate description: {str(e)}"
-
-
-# Global instance
-openai_service = OpenAIService()
+        except Exception:
+            return {}
+    
+    def _format_user_preferences(self, preferences: Dict[str, Any]) -> str:
+        """Format user preferences for OpenAI prompts."""
+        formatted_lines = []
+        
+        for key, value in preferences.items():
+            if isinstance(value, list):
+                formatted_lines.append(f"{key}: {', '.join(value)}")
+            else:
+                formatted_lines.append(f"{key}: {value}")
+        
+        return "\n".join(formatted_lines)
+    
+    def _validate_suggestion_format(self, suggestion: Dict[str, Any]) -> bool:
+        """Validate that suggestion has required fields."""
+        required_fields = ["title", "description", "category", "difficulty_level", "duration_minutes"]
+        return all(field in suggestion for field in required_fields)
