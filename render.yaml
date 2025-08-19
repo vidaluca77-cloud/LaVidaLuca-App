@@ -1,0 +1,22 @@
+services:
+  # API FastAPI pour l'IA
+  - type: web
+    name: lavidaluca-ia-api
+    env: python
+    plan: free
+    buildCommand: pip install -r apps/ia/requirements.txt
+    startCommand: cd apps/ia && python main.py
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: HOST
+        value: 0.0.0.0
+      - key: ENVIRONMENT
+        value: production
+      - key: ALLOWED_ORIGINS
+        value: https://la-vida-luca.vercel.app,https://lavidaluca-ia-api.onrender.com
+      - key: LOG_LEVEL
+        value: INFO
+    # Variables d'environnement sensibles à configurer dans l'interface Render
+    # OPENAI_API_KEY, ANTHROPIC_API_KEY, DATABASE_URL
