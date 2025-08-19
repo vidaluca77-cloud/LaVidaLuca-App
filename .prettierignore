@@ -1,0 +1,29 @@
+# Prettier ignore file
+node_modules/
+.next/
+.vercel/
+.git/
+dist/
+build/
+coverage/
+*.log
+*.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Binary files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.ico
+*.svg
+*.woff
+*.woff2
+*.ttf
+*.eot
+
+# Ignore generated files
+*.min.js
+*.min.css

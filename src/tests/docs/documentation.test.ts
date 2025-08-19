@@ -7,14 +7,14 @@ import path from 'path';
 
 describe('Documentation Tests', () => {
   const readmeContent = fs.readFileSync(
-    path.join(process.cwd(), 'README.md'), 
+    path.join(process.cwd(), 'README.md'),
     'utf-8'
   );
 
   test('README should have main sections', () => {
     const expectedSections = [
       '# La Vida Luca - Documentation',
-      '## Vue d\'ensemble',
+      "## Vue d'ensemble",
       '## Architecture',
       '## Installation',
       '## Scripts disponibles',
@@ -27,7 +27,7 @@ describe('Documentation Tests', () => {
       '## Sécurité',
       '## Performance',
       '## Support et Contact',
-      '## Roadmap'
+      '## Roadmap',
     ];
 
     expectedSections.forEach(section => {
@@ -90,8 +90,14 @@ describe('Documentation Tests', () => {
 
 describe('Configuration Files', () => {
   test('Sentry configuration files should exist', () => {
-    const sentryClientConfig = path.join(process.cwd(), 'sentry.client.config.ts');
-    const sentryServerConfig = path.join(process.cwd(), 'sentry.server.config.ts');
+    const sentryClientConfig = path.join(
+      process.cwd(),
+      'sentry.client.config.ts'
+    );
+    const sentryServerConfig = path.join(
+      process.cwd(),
+      'sentry.server.config.ts'
+    );
     const sentryEdgeConfig = path.join(process.cwd(), 'sentry.edge.config.ts');
 
     expect(fs.existsSync(sentryClientConfig)).toBe(true);
@@ -101,8 +107,14 @@ describe('Configuration Files', () => {
 
   test('Monitoring files should exist', () => {
     const alertsFile = path.join(process.cwd(), 'src/monitoring/alerts.ts');
-    const performanceFile = path.join(process.cwd(), 'src/monitoring/performance.ts');
-    const dashboardFile = path.join(process.cwd(), 'src/monitoring/dashboard.ts');
+    const performanceFile = path.join(
+      process.cwd(),
+      'src/monitoring/performance.ts'
+    );
+    const dashboardFile = path.join(
+      process.cwd(),
+      'src/monitoring/dashboard.ts'
+    );
 
     expect(fs.existsSync(alertsFile)).toBe(true);
     expect(fs.existsSync(performanceFile)).toBe(true);
@@ -111,7 +123,10 @@ describe('Configuration Files', () => {
 
   test('Backend monitoring structure should exist', () => {
     const loggerFile = path.join(process.cwd(), 'backend/monitoring/logger.py');
-    const metricsFile = path.join(process.cwd(), 'backend/monitoring/metrics.py');
+    const metricsFile = path.join(
+      process.cwd(),
+      'backend/monitoring/metrics.py'
+    );
     const openApiFile = path.join(process.cwd(), 'backend/docs/openapi.py');
 
     expect(fs.existsSync(loggerFile)).toBe(true);
