@@ -7,3 +7,5 @@ apps/web/.next/
 apps/backend/.env
 apps/backend/__pycache__/
 apps/backend/alembic/versions/
+apps/backend/venv/
+apps/backend/app.db
