@@ -1,6 +1,9 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { AuthProvider } from "../context/AuthContext";
+import { Toaster } from "react-hot-toast";
+import Navigation from "../components/Navigation";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://la-vida-luca.vercel.app"),
@@ -46,29 +49,42 @@ export default function RootLayout({
       <body
         className="min-h-screen bg-white text-neutral-900 antialiased font-sans"
       >
-        <header className="border-b">
-          <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-            <a href="/" className="font-semibold">La Vida Luca</a>
-            <nav className="flex gap-6 text-sm">
-              <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
-              <a href="/rejoindre" className="opacity-80 hover:opacity-100">
-                Rejoindre
-              </a>
-              <a href="/contact" className="opacity-80 hover:opacity-100">
-                Contact
-              </a>
-            </nav>
-          </div>
-        </header>
-
-        <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
-
-        <footer className="border-t">
-          <div className="mx-auto max-w-6xl px-4 py-8 text-sm opacity-70">
-            © {new Date().getFullYear()} La Vida Luca — Tous droits réservés
-          </div>
-        </footer>
+        <AuthProvider>
+          <Navigation />
+          <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
+          <Footer />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#363636',
+                color: '#fff',
+              },
+              success: {
+                style: {
+                  background: '#10b981',
+                },
+              },
+              error: {
+                style: {
+                  background: '#ef4444',
+                },
+              },
+            }}
+          />
+        </AuthProvider>
       </body>
     </html>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="border-t">
+      <div className="mx-auto max-w-6xl px-4 py-8 text-sm opacity-70">
+        © {new Date().getFullYear()} La Vida Luca — Tous droits réservés
+      </div>
+    </footer>
   );
 }

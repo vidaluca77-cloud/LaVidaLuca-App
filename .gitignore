@@ -4,6 +4,7 @@ node_modules/
 apps/web/node_modules/
 apps/web/.next/
 .next/
+out/
 .env
 .env.local
 .env.development
