@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: lavidaluca-ia-api
+    env: python
+    region: frankfurt # Région européenne
+    plan: free # Ou 'starter' pour un plan payant
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: ALLOWED_ORIGINS
+        fromService:
+          type: web
+          name: lavidaluca-web-app
+          property: host
+      - key: SUPABASE_URL
+        sync: false # À configurer manuellement
+      - key: SUPABASE_KEY  
+        sync: false # À configurer manuellement
+      - key: OPENAI_API_KEY
+        sync: false # À configurer manuellement si IA OpenAI utilisée
+    healthCheckPath: /health
+    numInstances: 1
+    
+  # Configuration pour synchroniser avec Vercel (optionnel)
+  # - type: web  
+  #   name: lavidaluca-web-app
+  #   env: static
+  #   buildCommand: npm install && npm run build
+  #   staticPublishPath: ./out
+  #   envVars:
+  #     - key: NEXT_PUBLIC_IA_API_URL
+  #       fromService:
+  #         type: web
+  #         name: lavidaluca-ia-api  
+  #         property: host
+
+databases:
+  # Si vous souhaitez utiliser PostgreSQL sur Render au lieu de Supabase
+  # - name: lavidaluca-db
+  #   databaseName: lavidaluca
+  #   user: lavidaluca_user
+  #   plan: free
