@@ -3,3 +3,14 @@ apps/ia/.env
 node_modules/
 apps/web/node_modules/
 apps/web/.next/
+.next/
+out/
+dist/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+.pytest_cache/
