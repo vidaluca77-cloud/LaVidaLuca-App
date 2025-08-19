@@ -65,3 +65,59 @@ Voir /apps/web/pages/catalogue-activites.tsx pour la liste complète et la prés
 	5.	Configurer les variables d’environnement
 	6.	Tester l’accès aux pages protégées
  
+
+⸻
+
+## Development
+
+### Local Setup
+
+1. Backend (Terminal A)
+```bash
+cd apps/ia
+python -m venv .venv
+source .venv/bin/activate  # ou .venv\Scripts\activate sur Windows
+pip install -r requirements.txt
+cp .env.example .env  # puis configurer OPENAI_API_KEY
+uvicorn main:app --reload --port 8001
+```
+
+2. Frontend (Terminal B)
+```bash
+cp .env.local.example .env.local
+npm install
+npm run dev
+```
+
+3. Test
+- Ouvrir http://localhost:3000/test-ia
+- Tester une question
+- Vérifier http://localhost:8001/health
+
+### Déploiement
+
+1. Backend (Render)
+- Connecter le repo GitHub
+- Créer un nouveau Web Service
+- Root Directory: apps/ia
+- Environment: Python
+- Build Command: pip install -r requirements.txt
+- Start Command: uvicorn main:app --host 0.0.0.0 --port $PORT
+- Variables d'environnement:
+  - OPENAI_API_KEY
+  - CORS_ORIGINS=https://la-vida-luca-app.vercel.app
+
+2. Frontend (Vercel)
+- Importer depuis GitHub
+- Variables d'environnement:
+  - NEXT_PUBLIC_IA_API_URL=https://la-vida-luca-ia.onrender.com
+
+### API Endpoints
+
+- GET /health : Healthcheck
+- POST /guide : Guide IA agricole
+- POST /chat : Chat IA
+
+## URLs finales
+- Frontend: https://la-vida-luca-app.vercel.app
+- Backend: https://la-vida-luca-ia.onrender.com

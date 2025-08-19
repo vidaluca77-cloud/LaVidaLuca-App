@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: la-vida-luca-ia
+    env: python
+    rootDir: apps/ia
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    autoDeploy: true
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://la-vida-luca-app.vercel.app
