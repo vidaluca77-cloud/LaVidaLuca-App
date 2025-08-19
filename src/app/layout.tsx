@@ -1,9 +1,6 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://la-vida-luca.vercel.app"),
@@ -47,7 +44,7 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <body
-        className={`${inter.className} min-h-screen bg-white text-neutral-900 antialiased`}
+        className="min-h-screen bg-white text-neutral-900 antialiased font-sans"
       >
         <header className="border-b">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
@@ -59,6 +56,9 @@ export default function RootLayout({
               </a>
               <a href="/contact" className="opacity-80 hover:opacity-100">
                 Contact
+              </a>
+              <a href="/auth/login" className="opacity-80 hover:opacity-100">
+                Connexion
               </a>
             </nav>
           </div>
