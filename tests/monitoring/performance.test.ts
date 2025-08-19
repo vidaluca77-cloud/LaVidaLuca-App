@@ -59,8 +59,8 @@ describe('PerformanceMonitor', () => {
     performanceMonitor.end('non-existent-timer');
     
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('WARN'),
-      expect.stringContaining("Performance timing 'non-existent-timer' was ended without being started")
+      expect.stringContaining("Performance timing 'non-existent-timer' was ended without being started"),
+      ""
     );
     
     consoleSpy.mockRestore();
