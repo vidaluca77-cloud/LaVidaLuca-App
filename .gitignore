@@ -1,5 +1,9 @@
 .venv/
+venv/
 apps/ia/.env
+apps/ia/__pycache__/
+apps/ia/**/__pycache__/
+apps/ia/test.db
 node_modules/
 apps/web/node_modules/
 apps/web/.next/
