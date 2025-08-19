@@ -1,0 +1,18 @@
+# Render deployment configuration
+# This file configures deployment to Render.com
+
+# Python version
+python_version: "3.11"
+
+# Build command
+build_command: "pip install -r requirements.txt"
+
+# Start command  
+start_command: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+
+# Environment variables (set these in Render dashboard)
+# DATABASE_URL - PostgreSQL connection string
+# SECRET_KEY - JWT secret key
+# OPENAI_API_KEY - OpenAI API key  
+# ALLOWED_ORIGINS - Frontend domain(s)
+# ENVIRONMENT - production
