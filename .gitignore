@@ -3,3 +3,15 @@ apps/ia/.env
 node_modules/
 apps/web/node_modules/
 apps/web/.next/
+.next/
+out/
+*.log
+.env
+.env.local
+.env.production.local
+.env.development.local
+package-lock.json
+.vercel
+.DS_Store
+__pycache__/
+*.pyc

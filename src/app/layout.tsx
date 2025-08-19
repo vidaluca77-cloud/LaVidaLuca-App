@@ -54,6 +54,9 @@ export default function RootLayout({
               <a href="/rejoindre" className="opacity-80 hover:opacity-100">
                 Rejoindre
               </a>
+              <a href="/test-ia" className="opacity-80 hover:opacity-100">
+                Test IA
+              </a>
               <a href="/contact" className="opacity-80 hover:opacity-100">
                 Contact
               </a>
