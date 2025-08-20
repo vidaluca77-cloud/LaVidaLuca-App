@@ -3,6 +3,8 @@
  * Context provider for gamification state and functionality
  */
 
+'use client';
+
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useAchievements } from '@/hooks/useAchievements';
 import {
