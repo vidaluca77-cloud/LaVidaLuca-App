@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mode hors ligne - La Vida Luca</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    
+    .container {
+      text-align: center;
+      max-width: 500px;
+      padding: 2rem;
+    }
+    
+    .icon {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 2rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+    }
+    
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    
+    p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+    }
+    
+    .button {
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      display: inline-block;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    
+    .button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: translateY(-2px);
+    }
+    
+    .status {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem;
+      border-left: 4px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .online {
+      border-left-color: #10b981;
+      background: rgba(16, 185, 129, 0.2);
+    }
+    
+    .offline {
+      border-left-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.2);
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">
+      🌱
+    </div>
+    
+    <h1>Mode hors ligne</h1>
+    
+    <p>
+      Vous êtes actuellement hors ligne. Certaines fonctionnalités peuvent être limitées, 
+      mais vous pouvez toujours consulter le contenu déjà mis en cache.
+    </p>
+    
+    <div class="status offline" id="status">
+      <strong>📡 Statut de connexion:</strong> <span id="status-text">Hors ligne</span>
+    </div>
+    
+    <div style="margin-top: 2rem;">
+      <button class="button" onclick="checkConnection()">
+        Vérifier la connexion
+      </button>
+      
+      <button class="button" onclick="goHome()" style="margin-left: 1rem;">
+        Accueil
+      </button>
+    </div>
+    
+    <div style="margin-top: 2rem; font-size: 0.9rem; opacity: 0.8;">
+      <p>
+        💡 Astuce: Les données que vous créez hors ligne seront automatiquement 
+        synchronisées lorsque la connexion sera rétablie.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Check connection status
+    function updateConnectionStatus() {
+      const status = document.getElementById('status');
+      const statusText = document.getElementById('status-text');
+      
+      if (navigator.onLine) {
+        status.className = 'status online';
+        statusText.textContent = 'En ligne';
+        
+        // Auto-redirect to home if online
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 2000);
+      } else {
+        status.className = 'status offline';
+        statusText.textContent = 'Hors ligne';
+      }
+    }
+    
+    function checkConnection() {
+      const button = event.target;
+      button.textContent = 'Vérification...';
+      button.classList.add('pulse');
+      
+      // Force a connection check
+      fetch('/', { mode: 'no-cors' })
+        .then(() => {
+          updateConnectionStatus();
+          button.textContent = 'Vérifier la connexion';
+          button.classList.remove('pulse');
+        })
+        .catch(() => {
+          updateConnectionStatus();
+          button.textContent = 'Vérifier la connexion';
+          button.classList.remove('pulse');
+        });
+    }
+    
+    function goHome() {
+      window.location.href = '/';
+    }
+    
+    // Listen for online/offline events
+    window.addEventListener('online', updateConnectionStatus);
+    window.addEventListener('offline', updateConnectionStatus);
+    
+    // Initial status check
+    updateConnectionStatus();
+    
+    // Periodic status check
+    setInterval(updateConnectionStatus, 5000);
+  </script>
+</body>
+</html>

@@ -2,6 +2,9 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import OfflineIndicator from "@/components/OfflineIndicator";
+import SyncStatus from "@/components/SyncStatus";
+import PWAInstall from "@/components/PWAInstall";
 
 // Import monitoring setup
 import '../monitoring/performance';
@@ -50,31 +53,67 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Register service worker
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('SW registered: ', registration);
+                  }).catch(function(registrationError) {
+                    console.log('SW registration failed: ', registrationError);
+                  });
+                });
+              }
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${fontClass} min-h-screen bg-white text-neutral-900 antialiased`}
       >
         <ErrorBoundary>
+          {/* PWA Install Banner */}
+          <div className="fixed top-0 left-0 right-0 z-40">
+            <PWAInstall variant="banner" className="mx-4 mt-4" />
+          </div>
+
           <header className="border-b">
             <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
               <a href="/" className="font-semibold">La Vida Luca</a>
-              <nav className="flex gap-6 text-sm">
-                <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
-                <a href="/rejoindre" className="opacity-80 hover:opacity-100">
-                  Rejoindre
-                </a>
-                <a href="/contact" className="opacity-80 hover:opacity-100">
-                  Contact
-                </a>
-                {process.env.NODE_ENV === 'development' && (
-                  <a href="/monitoring" className="opacity-80 hover:opacity-100">
-                    Monitoring
+              
+              {/* Status indicators */}
+              <div className="flex items-center gap-4">
+                <OfflineIndicator className="text-xs" />
+                
+                <nav className="flex gap-6 text-sm">
+                  <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
+                  <a href="/rejoindre" className="opacity-80 hover:opacity-100">
+                    Rejoindre
                   </a>
-                )}
-              </nav>
+                  <a href="/contact" className="opacity-80 hover:opacity-100">
+                    Contact
+                  </a>
+                  {process.env.NODE_ENV === 'development' && (
+                    <a href="/monitoring" className="opacity-80 hover:opacity-100">
+                      Monitoring
+                    </a>
+                  )}
+                </nav>
+              </div>
             </div>
           </header>
 
-          <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
+          <main className="mx-auto max-w-6xl px-4 py-10">
+            {/* Sync Status Component */}
+            <div className="mb-6">
+              <SyncStatus />
+            </div>
+            
+            {children}
+          </main>
 
           <footer className="border-t">
             <div className="mx-auto max-w-6xl px-4 py-8 text-sm opacity-70">
