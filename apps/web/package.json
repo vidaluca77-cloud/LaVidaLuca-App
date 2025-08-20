@@ -22,7 +22,6 @@
     "@sentry/nextjs": "^10.5.0",
     "clsx": "^2.1.0",
     "framer-motion": "^11.0.0",
-    "lucide-react": "^0.344.0",
     "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {
