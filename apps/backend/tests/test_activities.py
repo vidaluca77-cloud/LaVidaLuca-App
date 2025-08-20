@@ -4,10 +4,14 @@ Test activity endpoints.
 
 import pytest
 from httpx import AsyncClient
+import sys
+import os
 
-from ..models.user import User
-from ..models.activity import Activity
-from ..auth.password import hash_password
+# Add the app directory to the path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'app'))
+
+from models.models import User, Activity
+from core.security import get_password_hash
 
 
 @pytest.fixture

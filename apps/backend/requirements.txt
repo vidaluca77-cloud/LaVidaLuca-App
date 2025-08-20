@@ -12,6 +12,10 @@ asyncpg==0.29.0
 alembic==1.13.1
 databases[postgresql]==0.8.0
 
+# Redis (for caching and sessions)
+redis==5.0.1
+aioredis==2.0.1
+
 # Authentication & Security
 python-jose[cryptography]==3.3.0
 python-multipart==0.0.6

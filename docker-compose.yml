@@ -1,0 +1,81 @@
+# Docker Compose for La Vida Luca App
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: lavidaluca-postgres
+    environment:
+      POSTGRES_DB: lavidaluca
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - lavidaluca-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: lavidaluca-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - lavidaluca-network
+
+  # Backend API (FastAPI)
+  backend:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: lavidaluca-backend
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/lavidaluca
+      REDIS_URL: redis://redis:6379
+      SECRET_KEY: your-secret-key-change-in-production
+      ENVIRONMENT: development
+      CORS_ORIGINS: http://localhost:3000,http://frontend:3000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./apps/backend:/app
+    networks:
+      - lavidaluca-network
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Frontend (Next.js)
+  frontend:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: lavidaluca-frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_APP_ENV: development
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+    networks:
+      - lavidaluca-network
+    command: npm run dev
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  lavidaluca-network:
+    driver: bridge

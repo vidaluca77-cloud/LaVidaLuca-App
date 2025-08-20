@@ -10,13 +10,12 @@ import os
 # Add the backend directory to the Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from main import create_app
+from main import app
 
 
 @pytest.fixture
 def client():
     """Create test client without database dependency."""
-    app = create_app()
     
     # Mock database connection for health endpoint
     async def mock_db_execute(query):
