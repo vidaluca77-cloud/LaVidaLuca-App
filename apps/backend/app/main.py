@@ -1,124 +1,76 @@
-import json
-import os
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.openapi.utils import get_openapi
-from .api.api import api_router
-from .core.config import settings
+"""
+Main FastAPI application module.
 
+This module creates and configures the FastAPI application instance
+with basic health check endpoints for the agricultural assistant.
+"""
 
-def load_custom_openapi():
-    """Load custom OpenAPI specification from docs/openapi.json"""
-    docs_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs", "openapi.json")
-    try:
-        with open(docs_path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return None
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
+
+from .config import settings
+from .database import get_db
 
 
 def create_app() -> FastAPI:
+    """
+    Create and configure the FastAPI application.
+    
+    Returns:
+        FastAPI: Configured application instance
+    """
     app = FastAPI(
-        title=settings.PROJECT_NAME,
-        version=settings.VERSION,
-        description=settings.DESCRIPTION,
-        openapi_url=f"{settings.API_V1_STR}/openapi.json",
+        title=settings.app_name,
+        description=settings.description,
+        version=settings.version,
         docs_url="/docs",
         redoc_url="/redoc",
-        swagger_ui_parameters={
-            "deepLinking": True,
-            "displayRequestDuration": True,
-            "docExpansion": "none",
-            "operationsSorter": "method",
-            "filter": True,
-            "showExtensions": True,
-            "showCommonExtensions": True,
-        }
     )
-
-    # CORS middleware
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.ALLOWED_HOSTS,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
-    # Include API router
-    app.include_router(api_router, prefix=settings.API_V1_STR)
-
-    # Custom OpenAPI configuration
-    def custom_openapi():
-        if app.openapi_schema:
-            return app.openapi_schema
-        
-        # Try to load custom OpenAPI spec first
-        custom_spec = load_custom_openapi()
-        if custom_spec:
-            app.openapi_schema = custom_spec
-            return app.openapi_schema
-        
-        # Fallback to auto-generated OpenAPI
-        openapi_schema = get_openapi(
-            title=settings.PROJECT_NAME,
-            version=settings.VERSION,
-            description=settings.DESCRIPTION,
-            routes=app.routes,
-        )
-        
-        # Add security scheme
-        openapi_schema["components"]["securitySchemes"] = {
-            "HTTPBearer": {
-                "type": "http",
-                "scheme": "bearer",
-                "bearerFormat": "JWT",
-                "description": "JWT token obtained from /auth/login endpoint"
-            }
-        }
-        
-        # Add tags
-        openapi_schema["tags"] = [
-            {
-                "name": "Authentication",
-                "description": "User authentication and authorization endpoints"
-            },
-            {
-                "name": "Activities", 
-                "description": "Learning activity management endpoints"
-            },
-            {
-                "name": "Users",
-                "description": "User management endpoints"
-            },
-            {
-                "name": "Suggestions",
-                "description": "AI-powered activity suggestion endpoints"
-            },
-            {
-                "name": "Contacts",
-                "description": "Contact form submission and management endpoints"
-            }
-        ]
-        
-        app.openapi_schema = openapi_schema
-        return app.openapi_schema
-
-    app.openapi = custom_openapi
-
+    
     @app.get("/")
-    def root():
+    async def root():
+        """
+        Root endpoint providing basic API information.
+        
+        Returns:
+            dict: Basic API information and status
+        """
         return {
-            "message": "Welcome to LaVidaLuca Backend API",
-            "version": settings.VERSION,
-            "docs": "/docs"
+            "message": "Bienvenue sur l'API La Vida Luca",
+            "version": settings.version,
+            "description": settings.description,
+            "docs": "/docs",
+            "status": "healthy"
         }
-
+    
     @app.get("/health")
-    def health_check():
-        return {"status": "healthy", "service": "lavidaluca-backend"}
-
+    async def health_check(db: Session = Depends(get_db)):
+        """
+        Health check endpoint for monitoring application status.
+        
+        Args:
+            db: Database session dependency
+            
+        Returns:
+            dict: Application health status including database connectivity
+        """
+        try:
+            # Test database connection with a simple query
+            from sqlalchemy import text
+            db.execute(text("SELECT 1"))
+            db_status = "healthy"
+        except Exception as e:
+            db_status = "unhealthy"
+            
+        return {
+            "status": "healthy" if db_status == "healthy" else "degraded",
+            "database": db_status,
+            "api_version": settings.version,
+            "service": "agricultural_assistant"
+        }
+    
     return app
 
 
+# Create application instance
 app = create_app()
