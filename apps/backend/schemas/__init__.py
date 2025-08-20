@@ -6,6 +6,7 @@ from .auth import *
 from .user import *
 from .activity import *
 from .contact import *
+from .consultation import *
 from .common import *
 
 __all__ = [
@@ -34,6 +35,14 @@ __all__ = [
     "ContactCreate",
     "ContactUpdate",
     "ContactResponse",
+    
+    # Consultation schemas
+    "ConsultationCreate",
+    "ConsultationResponse",
+    "ConsultationList",
+    "ConsultationQuery",
+    "AIAssistantRequest",
+    "AIAssistantResponse",
     
     # Common schemas
     "ApiResponse",

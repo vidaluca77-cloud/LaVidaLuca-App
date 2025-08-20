@@ -11,7 +11,7 @@ import os
 
 from config import settings
 from database import database
-from routes import auth, users, activities, contacts, suggestions, guide
+from routes import auth, users, activities, contacts, suggestions, guide, consultations
 from middleware import setup_middleware
 from exceptions import setup_exception_handlers
 from monitoring import (
@@ -96,6 +96,7 @@ def create_app() -> FastAPI:
     app.include_router(contacts.router, prefix="/api/v1/contacts", tags=["contacts"])
     app.include_router(suggestions.router, prefix="/api/v1/suggestions", tags=["suggestions"])
     app.include_router(guide.router, prefix="/api/v1", tags=["guide"])
+    app.include_router(consultations.router, prefix="/api/v1", tags=["agricultural-assistant"])
     
     @app.get("/")
     async def root():
