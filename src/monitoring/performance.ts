@@ -7,9 +7,34 @@ interface PerformanceMetric {
   metadata?: Record<string, any>;
 }
 
+interface RealTimeMetrics {
+  pageLoad: number;
+  apiCalls: {
+    count: number;
+    avgLatency: number;
+    errorRate: number;
+  };
+  webVitals: {
+    fcp: number;
+    lcp: number;
+    fid: number;
+    cls: number;
+  };
+  memory?: {
+    used: number;
+    total: number;
+  };
+  connection?: {
+    effectiveType: string;
+    downlink: number;
+  };
+}
+
 class PerformanceMonitor {
   private metrics: PerformanceMetric[] = [];
   private startTimes: Map<string, number> = new Map();
+  private realTimeListeners: Set<(metrics: RealTimeMetrics) => void> = new Set();
+  private realTimeInterval: NodeJS.Timeout | null = null;
 
   // Start timing an operation
   start(name: string) {
@@ -48,6 +73,11 @@ class PerformanceMonitor {
 
     // Log the metric
     logger.timing(name, value, metadata);
+
+    // Trigger real-time update if listeners are active
+    if (this.realTimeListeners.size > 0) {
+      this.updateRealTimeMetrics();
+    }
   }
 
   // Get metrics
@@ -62,6 +92,119 @@ class PerformanceMonitor {
   // Clear metrics
   clearMetrics() {
     this.metrics = [];
+  }
+
+  // Real-time metrics management
+  startRealTimeMonitoring(callback: (metrics: RealTimeMetrics) => void, interval: number = 5000): () => void {
+    this.realTimeListeners.add(callback);
+
+    // Start interval if this is the first listener
+    if (this.realTimeListeners.size === 1 && !this.realTimeInterval) {
+      this.realTimeInterval = setInterval(() => {
+        this.updateRealTimeMetrics();
+      }, interval);
+    }
+
+    // Initial update
+    this.updateRealTimeMetrics();
+
+    // Return unsubscribe function
+    return () => {
+      this.realTimeListeners.delete(callback);
+      
+      // Stop interval if no more listeners
+      if (this.realTimeListeners.size === 0 && this.realTimeInterval) {
+        clearInterval(this.realTimeInterval);
+        this.realTimeInterval = null;
+      }
+    };
+  }
+
+  private updateRealTimeMetrics(): void {
+    const now = Date.now();
+    const fiveMinutesAgo = new Date(now - 5 * 60 * 1000);
+    const recentMetrics = this.metrics.filter(m => m.timestamp >= fiveMinutesAgo);
+
+    const metrics: RealTimeMetrics = {
+      pageLoad: this.calculateAveragePageLoad(recentMetrics),
+      apiCalls: this.calculateAPIMetrics(recentMetrics),
+      webVitals: this.calculateWebVitals(recentMetrics),
+      memory: this.getMemoryInfo(),
+      connection: this.getConnectionInfo()
+    };
+
+    this.realTimeListeners.forEach(listener => {
+      try {
+        listener(metrics);
+      } catch (error) {
+        console.error('Error in real-time metrics listener:', error);
+      }
+    });
+  }
+
+  private calculateAveragePageLoad(metrics: PerformanceMetric[]): number {
+    const pageLoadMetrics = metrics.filter(m => m.name === 'page_load');
+    if (pageLoadMetrics.length === 0) return 0;
+    
+    const sum = pageLoadMetrics.reduce((acc, m) => acc + m.value, 0);
+    return sum / pageLoadMetrics.length;
+  }
+
+  private calculateAPIMetrics(metrics: PerformanceMetric[]): RealTimeMetrics['apiCalls'] {
+    const apiMetrics = metrics.filter(m => m.name === 'api_call');
+    
+    if (apiMetrics.length === 0) {
+      return { count: 0, avgLatency: 0, errorRate: 0 };
+    }
+
+    const totalLatency = apiMetrics.reduce((acc, m) => acc + m.value, 0);
+    const errorCount = apiMetrics.filter(m => m.metadata?.error).length;
+
+    return {
+      count: apiMetrics.length,
+      avgLatency: totalLatency / apiMetrics.length,
+      errorRate: (errorCount / apiMetrics.length) * 100
+    };
+  }
+
+  private calculateWebVitals(metrics: PerformanceMetric[]): RealTimeMetrics['webVitals'] {
+    const getLatestMetric = (name: string) => {
+      const filtered = metrics
+        .filter(m => m.name === name && m.metadata?.type === 'web-vital')
+        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      return filtered.length > 0 ? filtered[0].value : 0;
+    };
+
+    return {
+      fcp: getLatestMetric('fcp'),
+      lcp: getLatestMetric('lcp'),
+      fid: getLatestMetric('fid'),
+      cls: getLatestMetric('cls')
+    };
+  }
+
+  private getMemoryInfo(): RealTimeMetrics['memory'] | undefined {
+    if (typeof window === 'undefined' || !(performance as any).memory) {
+      return undefined;
+    }
+
+    const memory = (performance as any).memory;
+    return {
+      used: memory.usedJSHeapSize,
+      total: memory.totalJSHeapSize
+    };
+  }
+
+  private getConnectionInfo(): RealTimeMetrics['connection'] | undefined {
+    if (typeof window === 'undefined' || !(navigator as any).connection) {
+      return undefined;
+    }
+
+    const connection = (navigator as any).connection;
+    return {
+      effectiveType: connection.effectiveType || 'unknown',
+      downlink: connection.downlink || 0
+    };
   }
 
   // Monitor Web Vitals
