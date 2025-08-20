@@ -1,0 +1,48 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Next.js: debug server-side",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/apps/web/node_modules/next/dist/bin/next",
+      "args": ["dev"],
+      "cwd": "${workspaceFolder}/apps/web",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Next.js: debug client-side",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/apps/web"
+    },
+    {
+      "name": "Python: Backend Debug",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/apps/backend/main.py",
+      "cwd": "${workspaceFolder}/apps/backend",
+      "console": "integratedTerminal",
+      "env": {
+        "ENVIRONMENT": "development"
+      }
+    },
+    {
+      "name": "Python: Backend Tests",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["-v"],
+      "cwd": "${workspaceFolder}/apps/backend",
+      "console": "integratedTerminal"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack Debug",
+      "configurations": ["Next.js: debug server-side", "Python: Backend Debug"]
+    }
+  ]
+}

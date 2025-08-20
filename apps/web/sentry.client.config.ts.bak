@@ -1,0 +1,54 @@
+// This file configures the initialization of Sentry on the browser side.
+// The config you add here will be used whenever a page is visited.
+// https://docs.sentry.io/platforms/javascript/guides/nextjs/
+
+import * as Sentry from "@sentry/nextjs";
+
+const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN;
+
+Sentry.init({
+  dsn: SENTRY_DSN,
+  
+  // Performance monitoring
+  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+  
+  // Session replay
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0,
+  
+  // Environment and release
+  environment: process.env.NEXT_PUBLIC_ENVIRONMENT || 'development',
+  release: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
+  
+  // Debugging
+  debug: process.env.NODE_ENV === 'development',
+  
+  // Filter out unwanted transactions
+  beforeSend(event, hint) {
+    // Filter out Next.js dev mode errors
+    if (process.env.NODE_ENV === 'development') {
+      const error = hint.originalException;
+      if (error && typeof error === 'object' && 'message' in error && 
+          typeof error.message === 'string' && 
+          error.message.includes('Non-Error promise rejection captured')) {
+        return null;
+      }
+    }
+    
+    // Filter sensitive data
+    if (event.request?.headers) {
+      delete event.request.headers.authorization;
+      delete event.request.headers.cookie;
+    }
+    
+    return event;
+  },
+  
+  // Initial scope
+  initialScope: {
+    tags: {
+      component: 'frontend',
+      service: 'la-vida-luca-web',
+    },
+  },
+});
