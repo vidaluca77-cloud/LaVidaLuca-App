@@ -1,54 +1,47 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# LaVidaLuca-App - Monorepo .gitignore
 
-# dependencies
+# Root level ignores
+.env
+.env.local
+.env.production
+.env.staging
+
+# Node.js / NPM
 /node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env*.local
-.env
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# temporary files
-/tmp
-
-# legacy paths
-.venv/
-apps/ia/.env
-apps/web/node_modules/
+# Frontend (Next.js) - apps/web/
 apps/web/.next/
+apps/web/out/
+apps/web/node_modules/
+apps/web/.env.local
+apps/web/.env.production
+apps/web/.vercel
 
-# Python
+# Backend (FastAPI) - apps/backend/
+apps/backend/__pycache__/
+apps/backend/**/__pycache__/
+apps/backend/.env
+apps/backend/.pytest_cache/
+apps/backend/htmlcov/
+apps/backend/coverage.xml
+apps/backend/.coverage
+apps/backend/venv/
+apps/backend/.venv/
+apps/backend/env/
+apps/backend/*.db
+apps/backend/*.sqlite*
+
+# Python general
+*.pyc
+*.pyo
+*.pyd
 __pycache__/
-*.py[cod]
-*$py.class
 *.so
 .Python
 build/
@@ -79,15 +72,50 @@ ENV/
 *.sqlite
 *.sqlite3
 
-# Pytest
+# Testing
 .pytest_cache/
 .coverage
 htmlcov/
+coverage/
 
-# Alembic
-alembic/versions/
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
 
-# System files
+# Build outputs
+/build
+/out
+/dist
+
+# Logs
+*.log
+
+# IDE
+.vscode/settings.json.bak
+.idea/
+*.swp
+*.swo
+
+# OS
 .DS_Store
-**/__pycache__/
-**/*.pyc
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+/tmp
+*.tmp
+*.temp
+
+# Deployment
+.vercel
+.render
+
+# Monitoring
+sentry.properties
+
+# Legacy (to be removed)
+apps/ia/

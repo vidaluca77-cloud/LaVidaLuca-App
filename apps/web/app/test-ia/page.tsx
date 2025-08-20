@@ -24,8 +24,9 @@ export default function TestIA() {
       }
       const data = await r.json();
       setRes(data.answer ?? JSON.stringify(data));
-    } catch (err: any) {
-      setRes(`Erreur: ${err.message}`);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setRes(`Erreur: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -36,7 +37,7 @@ export default function TestIA() {
       <h1 style={{ fontWeight: 800, fontSize: 28 }}>Test API Guide</h1>
       <div style={{ marginTop: 8, color: "#555" }}>API: {api}</div>
       <div style={{ marginTop: 4, color: "#777", fontSize: 14 }}>
-        Cette page teste l'endpoint /guide de l'API principale La Vida Luca
+        Cette page teste l&apos;endpoint /guide de l&apos;API principale La Vida Luca
       </div>
 
       <form onSubmit={ask} style={{ marginTop: 16, display: "flex", gap: 8 }}>
