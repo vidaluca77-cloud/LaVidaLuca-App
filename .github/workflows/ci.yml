@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  # Environment variables for CI/CD
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   backend-test:
     name: Backend Tests
@@ -54,6 +59,7 @@ jobs:
         cp .env.example .env
         echo "DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/lavidaluca_test" >> .env
         echo "ENVIRONMENT=testing" >> .env
+        echo "JWT_SECRET_KEY=test-jwt-secret-key-for-ci-cd-pipeline-only" >> .env
         
     - name: Run backend tests
       run: |
@@ -71,6 +77,26 @@ jobs:
         file: apps/backend/coverage.xml
         flags: backend
         name: backend-coverage
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
 
   frontend-build:
     name: Frontend Build
@@ -96,12 +122,18 @@ jobs:
         cd apps/web
         cp .env.local.example .env.local
         echo "NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1" >> .env.local
+        echo "NEXT_PUBLIC_ENVIRONMENT=testing" >> .env.local
         echo "SENTRY_SUPPRESS_GLOBAL_ERROR_HANDLER_FILE_WARNING=1" >> .env.local
         
     - name: Lint frontend code
       run: |
         cd apps/web
         npm run lint
+        
+    - name: Type check frontend
+      run: |
+        cd apps/web
+        npm run type-check
         
     - name: Build frontend
       run: |
@@ -160,14 +192,97 @@ jobs:
         cd apps/backend
         cp .env.example .env
         echo "DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/lavidaluca_test" >> .env
+        echo "JWT_SECRET_KEY=test-jwt-secret-key-for-integration-tests" >> .env
+        echo "ENVIRONMENT=testing" >> .env
         python app_simple.py &
         sleep 10
         
     - name: Test API endpoints
       run: |
-        # Test health endpoint
+        # Test basic health endpoint
         curl -f http://localhost:8000/health || exit 1
+        
+        # Test liveness endpoint
+        curl -f http://localhost:8000/health/live || exit 1
+        
+        # Test readiness endpoint
+        curl -f http://localhost:8000/health/ready || exit 1
+        
         # Test guide endpoint
         curl -f -X POST http://localhost:8000/api/v1/guide \
           -H "Content-Type: application/json" \
           -d '{"question":"Test question"}' || exit 1
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-build, security-scan]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Render (Staging)
+      uses: johnbeynon/render-deploy-action@v0.0.8
+      with:
+        service-id: ${{ secrets.RENDER_STAGING_SERVICE_ID }}
+        api-key: ${{ secrets.RENDER_API_KEY }}
+        
+    - name: Wait for deployment
+      run: sleep 60
+      
+    - name: Validate staging deployment
+      run: |
+        # Test staging health endpoints
+        curl -f ${{ secrets.STAGING_API_URL }}/health/live || exit 1
+        curl -f ${{ secrets.STAGING_API_URL }}/health/ready || exit 1
+        
+        # Test staging validation endpoint
+        curl -f ${{ secrets.STAGING_API_URL }}/validate/deployment || exit 1
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-build, security-scan]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy Backend to Render
+      uses: johnbeynon/render-deploy-action@v0.0.8
+      with:
+        service-id: ${{ secrets.RENDER_SERVICE_ID }}
+        api-key: ${{ secrets.RENDER_API_KEY }}
+        
+    - name: Deploy Frontend to Vercel
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-args: '--prod'
+        
+    - name: Wait for deployments
+      run: sleep 90
+      
+    - name: Validate production deployment
+      run: |
+        # Test production health endpoints
+        curl -f ${{ secrets.PRODUCTION_API_URL }}/health/live || exit 1
+        curl -f ${{ secrets.PRODUCTION_API_URL }}/health/ready || exit 1
+        
+        # Test production validation endpoint
+        curl -f ${{ secrets.PRODUCTION_API_URL }}/validate/deployment || exit 1
+        
+        # Test frontend deployment
+        curl -f ${{ secrets.PRODUCTION_FRONTEND_URL }} || exit 1
+        
+    - name: Notify deployment success
+      if: success()
+      run: |
+        echo "✅ Production deployment successful!"
+        echo "Backend: ${{ secrets.PRODUCTION_API_URL }}"
+        echo "Frontend: ${{ secrets.PRODUCTION_FRONTEND_URL }}"

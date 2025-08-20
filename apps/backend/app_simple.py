@@ -1,6 +1,6 @@
 """
 Simple working FastAPI app for La Vida Luca.
-This version bypasses the complex import structure for now.
+This version includes comprehensive health checks and monitoring.
 """
 
 from fastapi import FastAPI, HTTPException
@@ -9,6 +9,13 @@ from pydantic import BaseModel
 from typing import Optional
 import logging
 import os
+
+# Import health check routes
+try:
+    from routes.health import router as health_router
+except ImportError:
+    # Fallback if routes module is not available
+    health_router = None
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -23,13 +30,26 @@ app = FastAPI(
 )
 
 # Add CORS middleware
+cors_origins = os.getenv("CORS_ORIGINS", '["*"]')
+if isinstance(cors_origins, str):
+    try:
+        import json
+        cors_origins = json.loads(cors_origins)
+    except:
+        cors_origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origins
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include health check routes if available
+if health_router:
+    app.include_router(health_router)
+    logger.info("Health check routes included")
 
 
 class GuideRequest(BaseModel):
@@ -52,17 +72,20 @@ async def root():
         "message": "Welcome to La Vida Luca API",
         "version": "1.0.0",
         "docs": "/docs",
-        "status": "healthy"
+        "status": "healthy",
+        "environment": os.getenv("ENVIRONMENT", "development")
     }
 
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint."""
+    """Basic health check endpoint for backward compatibility."""
     return {
         "status": "healthy",
-        "database": "not_connected",  # Simplified for now
-        "environment": os.getenv("ENVIRONMENT", "development")
+        "timestamp": "2025-08-19T23:54:15Z",
+        "environment": os.getenv("ENVIRONMENT", "development"),
+        "version": "1.0.0",
+        "message": "Service is running. Use /health/detailed for comprehensive status."
     }
 
 

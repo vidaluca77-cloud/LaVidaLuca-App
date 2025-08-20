@@ -1,0 +1,67 @@
+{
+  "version": 2,
+  "name": "lavidaluca-app",
+  "builds": [
+    {
+      "src": "apps/web/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": ".next"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "https://lavidaluca-backend.onrender.com/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "apps/web/$1"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://lavidaluca-backend.onrender.com/api/v1",
+    "NEXT_PUBLIC_ENVIRONMENT": "production"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_API_URL": "@next_public_api_url",
+      "NEXT_PUBLIC_SENTRY_DSN": "@next_public_sentry_dsn",
+      "SENTRY_ORG": "@sentry_org",
+      "SENTRY_PROJECT": "@sentry_project"
+    }
+  },
+  "functions": {
+    "apps/web/src/app/**/*.tsx": {
+      "maxDuration": 30
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "origin-when-cross-origin"
+        }
+      ]
+    }
+  ]
+}
