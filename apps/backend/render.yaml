@@ -1,34 +1,99 @@
-# Render.com deployment configuration
+# Render.com deployment configuration for La Vida Luca Backend
 version: "1"
 
 services:
   - type: web
     name: lavidaluca-backend
     runtime: python3
-    buildCommand: cd apps/backend && pip install -r requirements.txt
-    startCommand: cd apps/backend && gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT
+    buildCommand: |
+      cd apps/backend && 
+      pip install --upgrade pip &&
+      pip install -r requirements.txt
+    startCommand: |
+      cd apps/backend && 
+      gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT --timeout 120 --keepalive 5 --max-requests 1000 --max-requests-jitter 100
     plan: starter
     region: oregon
     branch: main
     healthCheckPath: /health
+    autoDeploy: true
+    
+    # Production Environment Variables
     envVars:
+      # Core Environment
       - key: ENVIRONMENT
         value: production
+      - key: DEBUG
+        value: "false"
+      - key: LOG_LEVEL
+        value: WARNING
+        
+      # Database Configuration
       - key: DATABASE_URL
         fromDatabase:
           name: lavidaluca-db
           property: connectionString
+      - key: DATABASE_POOL_SIZE
+        value: "10"
+      - key: DATABASE_MAX_OVERFLOW
+        value: "20"
+        
+      # Security & Authentication
       - key: JWT_SECRET_KEY
         generateValue: true
-      - key: OPENAI_API_KEY
-        sync: false  # Set this manually in Render dashboard
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_EXPIRATION_HOURS
+        value: "24"
+        
+      # CORS Configuration
       - key: CORS_ORIGINS
-        value: '["https://lavidaluca.fr","https://www.lavidaluca.fr"]'
-      - key: LOG_LEVEL
-        value: INFO
+        value: '["https://lavidaluca.fr","https://www.lavidaluca.fr","https://lavidaluca.vercel.app"]'
+      - key: CORS_ALLOW_CREDENTIALS
+        value: "true"
+        
+      # Security Headers
+      - key: TRUSTED_HOSTS
+        value: '["lavidaluca.fr","*.lavidaluca.fr","lavidaluca-backend.onrender.com"]'
+        
+      # Rate Limiting
+      - key: RATE_LIMIT_REQUESTS_PER_MINUTE
+        value: "100"
+      - key: RATE_LIMIT_REQUESTS_PER_MINUTE_ANONYMOUS
+        value: "20"
+        
+      # External APIs (Set manually in Render dashboard for security)
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-3.5-turbo
+      - key: OPENAI_MAX_TOKENS
+        value: "500"
+        
+      # Email Configuration (Optional - Set manually if needed)
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM_EMAIL
+        value: noreply@lavidaluca.fr
+        
+      # Monitoring & Observability (Set manually in Render dashboard)
+      - key: SENTRY_DSN
+        sync: false
+      - key: SENTRY_ENVIRONMENT
+        value: production
+      - key: SENTRY_RELEASE
+        value: "1.0.0"
 
+# Production Database Configuration
 databases:
   - name: lavidaluca-db
     plan: starter
     region: oregon
     postgresMajorVersion: 15
+    # Automatic backups and monitoring enabled by default

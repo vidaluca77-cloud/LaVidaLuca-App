@@ -5,33 +5,109 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.12'
+
 jobs:
+  # Pre-deployment validation
+  validate-deployment:
+    name: Validate Deployment Prerequisites
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    outputs:
+      should-deploy: ${{ steps.check-secrets.outputs.should-deploy }}
+    
+    steps:
+    - name: Check required secrets
+      id: check-secrets
+      run: |
+        if [[ -z "${{ secrets.RENDER_DEPLOY_HOOK_IA }}" ]]; then
+          echo "❌ RENDER_DEPLOY_HOOK_IA secret is missing"
+          echo "should-deploy=false" >> $GITHUB_OUTPUT
+        elif [[ -z "${{ secrets.VERCEL_TOKEN }}" ]]; then
+          echo "❌ VERCEL_TOKEN secret is missing"
+          echo "should-deploy=false" >> $GITHUB_OUTPUT
+        elif [[ -z "${{ secrets.VERCEL_ORG_ID }}" ]]; then
+          echo "❌ VERCEL_ORG_ID secret is missing"
+          echo "should-deploy=false" >> $GITHUB_OUTPUT
+        elif [[ -z "${{ secrets.VERCEL_PROJECT_ID }}" ]]; then
+          echo "❌ VERCEL_PROJECT_ID secret is missing"
+          echo "should-deploy=false" >> $GITHUB_OUTPUT
+        else
+          echo "✅ All required secrets are present"
+          echo "should-deploy=true" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Log deployment info
+      run: |
+        echo "🚀 Production Deployment Information"
+        echo "Commit: ${{ github.sha }}"
+        echo "Branch: ${{ github.ref_name }}"
+        echo "Actor: ${{ github.actor }}"
+        echo "Environment: production"
+
   deploy-backend:
     name: Deploy Backend to Render
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    needs: validate-deployment
+    if: needs.validate-deployment.outputs.should-deploy == 'true'
+    environment: production
     
     steps:
     - name: Deploy to Render
       run: |
+        echo "🚀 Deploying backend to Render..."
         curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_IA }}" \
           -H "Content-Type: application/json" \
+          -H "User-Agent: GitHub-Actions-LaVidaLuca/1.0" \
           -d '{
-            "clearCache": false,
+            "clearCache": true,
             "commitId": "${{ github.sha }}",
             "branch": "${{ github.ref_name }}"
-          }'
+          }' || {
+            echo "❌ Backend deployment failed"
+            exit 1
+          }
       
-    - name: Verify deployment
+    - name: Wait for deployment
       run: |
-        echo "Backend deployment triggered successfully"
+        echo "⏳ Waiting for deployment to complete..."
+        sleep 30
+        
+    - name: Verify backend deployment
+      run: |
+        echo "🔍 Verifying backend deployment..."
+        max_attempts=10
+        attempt=1
+        
+        while [ $attempt -le $max_attempts ]; do
+          if curl -f -s "https://lavidaluca-backend.onrender.com/health" > /dev/null; then
+            echo "✅ Backend health check passed"
+            break
+          else
+            echo "⏳ Attempt $attempt/$max_attempts failed, retrying in 30s..."
+            sleep 30
+            attempt=$((attempt + 1))
+          fi
+        done
+        
+        if [ $attempt -gt $max_attempts ]; then
+          echo "❌ Backend health check failed after $max_attempts attempts"
+          exit 1
+        fi
+        
+        echo "Backend deployment verified successfully"
         echo "Commit: ${{ github.sha }}"
         echo "Branch: ${{ github.ref_name }}"
 
   deploy-frontend:
     name: Deploy Frontend to Vercel
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    needs: [validate-deployment, deploy-backend]
+    if: needs.validate-deployment.outputs.should-deploy == 'true'
+    environment: production
     
     steps:
     - uses: actions/checkout@v4
@@ -39,45 +115,109 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: 'apps/web/package-lock.json'
         
     - name: Install Vercel CLI
       run: npm install -g vercel@latest
       
+    - name: Set up production environment
+      run: |
+        cd apps/web
+        echo "🔧 Setting up production environment variables..."
+        cp .env.production .env.local
+        
     - name: Deploy to Vercel
       run: |
         cd apps/web
+        echo "🚀 Deploying frontend to Vercel..."
         vercel --token ${{ secrets.VERCEL_TOKEN }} \
           --scope ${{ secrets.VERCEL_ORG_ID }} \
           --prod \
           --yes \
-          --confirm
+          --confirm \
+          --force || {
+            echo "❌ Frontend deployment failed"
+            exit 1
+          }
       env:
         VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
         VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         
-    - name: Verify deployment
+    - name: Verify frontend deployment
       run: |
-        echo "Frontend deployment completed successfully"
+        echo "🔍 Verifying frontend deployment..."
+        max_attempts=5
+        attempt=1
+        
+        while [ $attempt -le $max_attempts ]; do
+          if curl -f -s "https://lavidaluca.vercel.app/" > /dev/null; then
+            echo "✅ Frontend health check passed"
+            break
+          else
+            echo "⏳ Attempt $attempt/$max_attempts failed, retrying in 15s..."
+            sleep 15
+            attempt=$((attempt + 1))
+          fi
+        done
+        
+        if [ $attempt -gt $max_attempts ]; then
+          echo "❌ Frontend health check failed after $max_attempts attempts"
+          exit 1
+        fi
+        
+        echo "Frontend deployment verified successfully"
         echo "Commit: ${{ github.sha }}"
         echo "Branch: ${{ github.ref_name }}"
 
-  notify-deployment:
-    name: Notify Deployment Status
+  post-deployment:
+    name: Post-Deployment Tasks
     runs-on: ubuntu-latest
     needs: [deploy-backend, deploy-frontend]
     if: always() && github.ref == 'refs/heads/main'
+    environment: production
     
     steps:
-    - name: Deployment notification
+    - name: Deployment status notification
       run: |
+        echo "📊 Deployment Status Report"
+        echo "========================="
+        
         if [[ "${{ needs.deploy-backend.result }}" == "success" && "${{ needs.deploy-frontend.result }}" == "success" ]]; then
-          echo "✅ Deployment successful"
-          echo "Backend: Deployed to Render"
-          echo "Frontend: Deployed to Vercel"
+          echo "✅ DEPLOYMENT SUCCESSFUL"
+          echo ""
+          echo "🔗 Production URLs:"
+          echo "Frontend: https://lavidaluca.vercel.app"
+          echo "Backend API: https://lavidaluca-backend.onrender.com"
+          echo "API Docs: https://lavidaluca-backend.onrender.com/docs"
+          echo ""
+          echo "📋 Deployment Details:"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
         else
-          echo "❌ Deployment failed"
+          echo "❌ DEPLOYMENT FAILED"
+          echo ""
+          echo "📋 Status Details:"
           echo "Backend status: ${{ needs.deploy-backend.result }}"
           echo "Frontend status: ${{ needs.deploy-frontend.result }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref_name }}"
           exit 1
         fi
+        
+    - name: Security check reminder
+      if: success()
+      run: |
+        echo "🔒 Security Reminder"
+        echo "==================="
+        echo "✅ Ensure all secrets are properly configured in:"
+        echo "   - GitHub repository secrets"
+        echo "   - Render dashboard environment variables"
+        echo "   - Vercel project settings"
+        echo ""
+        echo "🔍 Monitor application health at:"
+        echo "   - Backend: https://lavidaluca-backend.onrender.com/health"
+        echo "   - Frontend: https://lavidaluca.vercel.app"
