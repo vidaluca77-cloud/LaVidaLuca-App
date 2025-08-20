@@ -1,10 +1,10 @@
 """
-OpenAI integration service for generating activity suggestions.
+OpenAI integration service for generating activity suggestions and agricultural consultations.
 """
 
 import json
 import openai
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from pydantic import BaseModel, Field
 
 from ..config import settings
@@ -15,6 +15,173 @@ class SuggestionRequest(BaseModel):
     request: str = Field(..., description="User's request for activity suggestions")
     max_suggestions: int = Field(5, ge=1, le=10, description="Maximum number of suggestions")
     filters: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Additional filters")
+
+
+class AgriConsultationRequest(BaseModel):
+    """Request schema for agricultural consultations."""
+    question: str = Field(..., description="User's agricultural question")
+    context: Optional[str] = Field(None, description="Additional context")
+    user_location: Optional[str] = Field(None, description="User's location for localized advice")
+
+
+async def get_agricultural_consultation(
+    question: str,
+    context: Optional[str] = None,
+    user_location: Optional[str] = None
+) -> Tuple[str, Dict[str, Any]]:
+    """
+    Get AI-powered agricultural consultation using OpenAI.
+    
+    Args:
+        question: User's agricultural question
+        context: Additional context for the question
+        user_location: User's location for localized advice
+        
+    Returns:
+        Tuple of (answer, metadata) where metadata contains AI model info, tokens used, etc.
+    """
+    if not settings.OPENAI_API_KEY:
+        return _fallback_agricultural_response(question), {
+            "model": "fallback",
+            "tokens_used": "0",
+            "confidence": "medium"
+        }
+    
+    # Set up OpenAI client
+    openai.api_key = settings.OPENAI_API_KEY
+    
+    # Build the prompt for agricultural consultation
+    prompt = _build_agricultural_prompt(question, context, user_location)
+    
+    try:
+        # Call OpenAI API
+        response = await openai.chat.completions.create(
+            model=settings.OPENAI_MODEL or "gpt-4",
+            messages=[
+                {
+                    "role": "system",
+                    "content": """Tu es un expert en agriculture durable, permaculture et jardinage écologique. 
+                    Tu aides les agriculteurs, jardiniers et personnes intéressées par l'agriculture avec des conseils pratiques, 
+                    scientifiquement fondés et respectueux de l'environnement. Tes réponses sont claires, structurées et adaptées 
+                    au niveau de l'utilisateur. Tu privilégies toujours les méthodes naturelles et durables."""
+                },
+                {
+                    "role": "user", 
+                    "content": prompt
+                }
+            ],
+            max_tokens=settings.OPENAI_MAX_TOKENS or 1000,
+            temperature=0.7,
+        )
+        
+        # Extract response content
+        answer = response.choices[0].message.content
+        
+        # Prepare metadata
+        metadata = {
+            "model": response.model,
+            "tokens_used": str(response.usage.total_tokens) if response.usage else "unknown",
+            "prompt_tokens": str(response.usage.prompt_tokens) if response.usage else "unknown",
+            "completion_tokens": str(response.usage.completion_tokens) if response.usage else "unknown",
+            "confidence": "high",
+            "finish_reason": response.choices[0].finish_reason
+        }
+        
+        return answer, metadata
+        
+    except Exception as e:
+        # Fallback to predefined responses if OpenAI fails
+        return _fallback_agricultural_response(question), {
+            "model": "fallback",
+            "tokens_used": "0",
+            "confidence": "medium",
+            "error": str(e)
+        }
+
+
+def _build_agricultural_prompt(
+    question: str,
+    context: Optional[str] = None,
+    user_location: Optional[str] = None
+) -> str:
+    """Build the prompt for agricultural consultation."""
+    
+    location_info = f"\nLocalisation de l'utilisateur: {user_location}" if user_location else ""
+    context_info = f"\nContexte supplémentaire: {context}" if context else ""
+    
+    prompt = f"""Question agricole: {question}{location_info}{context_info}
+
+Veuillez fournir une réponse détaillée et pratique qui inclut:
+
+1. **Réponse directe** à la question posée
+2. **Conseils pratiques** étape par étape si applicable
+3. **Considérations saisonnières** si pertinentes
+4. **Alternatives écologiques** aux méthodes conventionnelles
+5. **Ressources ou références** utiles si appropriées
+
+Structurez votre réponse en utilisant des titres clairs et des listes à puces pour faciliter la lecture.
+Adaptez le niveau technique à un public de jardiniers amateurs à confirmés.
+Privilégiez toujours les méthodes durables et respectueuses de l'environnement."""
+    
+    return prompt
+
+
+def _fallback_agricultural_response(question: str) -> str:
+    """
+    Provide fallback responses when OpenAI is not available.
+    """
+    question_lower = question.lower()
+    
+    if any(word in question_lower for word in ["sol", "terre", "ph", "compost"]):
+        return """**Amélioration du sol - Conseils généraux**
+
+1. **Analyse du sol** : Commencez par tester le pH et la structure de votre sol
+2. **Apport de matière organique** : Ajoutez du compost bien décomposé
+3. **Évitez le travail excessif** : Préservez la structure naturelle du sol
+4. **Couvrez le sol** : Utilisez du paillis pour protéger et nourrir
+5. **Rotation des cultures** : Alternez les familles de plantes
+
+Pour des conseils plus spécifiques, n'hésitez pas à préciser votre type de sol et vos objectifs de culture."""
+
+    elif any(word in question_lower for word in ["maladie", "ravageur", "parasite", "puceron", "traitement"]):
+        return """**Gestion écologique des problèmes au jardin**
+
+1. **Prévention** : Maintenir un sol sain et des plantes vigoureuses
+2. **Observation régulière** : Inspectez vos plantes hebdomadairement
+3. **Biodiversité** : Encouragez les auxiliaires naturels
+4. **Traitements doux** : Savon noir, purin d'ortie, bicarbonate
+5. **Rotation et associations** : Plantez des espèces complémentaires
+
+Pour identifier un problème spécifique, décrivez les symptômes observés et les plantes affectées."""
+
+    elif any(word in question_lower for word in ["arrosage", "irrigation", "eau", "sécheresse"]):
+        return """**Gestion de l'eau au jardin**
+
+1. **Arrosage matinal** : Privilégiez les heures fraîches
+2. **Arrosage au pied** : Évitez de mouiller le feuillage
+3. **Paillage** : Réduisez l'évaporation et conservez l'humidité
+4. **Récupération d'eau** : Installez des systèmes de collecte d'eau de pluie
+5. **Plantes adaptées** : Choisissez des variétés résistantes à la sécheresse
+
+La fréquence d'arrosage dépend de votre climat, type de sol et stade de développement des plantes."""
+
+    else:
+        return f"""**Réponse à votre question : "{question}"**
+
+Merci pour votre question agricole. Je suis là pour vous aider avec des conseils sur :
+
+- **Le jardinage** et techniques de culture
+- **La permaculture** et agriculture durable
+- **La gestion du sol** et compostage
+- **Les problèmes phytosanitaires** naturels
+- **L'optimisation des récoltes**
+
+Pour vous donner des conseils plus précis et adaptés, pourriez-vous :
+1. Préciser votre contexte (jardin, potager, champ)
+2. Indiquer votre région ou climat
+3. Décrire plus en détail votre problématique
+
+N'hésitez pas à reformuler votre question avec plus de détails !"""
 
 
 async def get_activity_suggestions(
