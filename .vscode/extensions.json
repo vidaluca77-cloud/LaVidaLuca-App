@@ -1,0 +1,24 @@
+{
+  "recommendations": [
+    "ms-vscode.vscode-typescript-next",
+    "bradlc.vscode-tailwindcss",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "ms-python.python",
+    "ms-python.black-formatter",
+    "ms-python.pylint",
+    "ms-azuretools.vscode-docker",
+    "ms-vscode.vscode-json",
+    "redhat.vscode-yaml",
+    "formulahendry.auto-rename-tag",
+    "christian-kohler.path-intellisense",
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.vscode-jest",
+    "humao.rest-client",
+    "ms-vscode.vscode-npm-script",
+    "ms-vscode-remote.remote-containers",
+    "github.vscode-pull-request-github",
+    "github.copilot",
+    "github.copilot-chat"
+  ]
+}
