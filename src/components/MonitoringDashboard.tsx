@@ -4,6 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { monitoringDashboard } from '@/monitoring/dashboard';
 import { performanceMonitor } from '@/monitoring/performance';
 import { alertManager } from '@/monitoring/alerts';
+import { ConnectionStatus } from '@/components/ConnectionStatus';
+import { useConnectionStatus } from '@/hooks/useConnectionStatus';
+import { serviceWorkerManager } from '@/lib/serviceWorker';
+import { backgroundSyncManager } from '@/lib/backgroundSync';
 
 interface DashboardMetrics {
   performance: {
@@ -286,7 +290,171 @@ export const MonitoringDashboard: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Connection and PWA Status */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Connection Status */}
+          <ConnectionStatus showDetails={true} className="w-full" />
+          
+          {/* Service Worker Status */}
+          <ServiceWorkerStatus />
+        </div>
+
+        {/* Background Sync Queue */}
+        <BackgroundSyncStatus />
       </div>
     </div>
   );
 };
+
+// Service Worker Status Component
+function ServiceWorkerStatus() {
+  const [swStatus, setSwStatus] = useState<any>(null);
+  const [cacheInfo, setCacheInfo] = useState<any[]>([]);
+
+  useEffect(() => {
+    const updateStatus = () => {
+      setSwStatus(serviceWorkerManager.getStatus());
+    };
+
+    const updateCacheInfo = async () => {
+      const sizes = await serviceWorkerManager.getCacheSize();
+      setCacheInfo(sizes);
+    };
+
+    serviceWorkerManager.onStatusChange(updateStatus);
+    updateStatus();
+    updateCacheInfo();
+
+    return () => {
+      serviceWorkerManager.removeStatusListener(updateStatus);
+    };
+  }, []);
+
+  const handleClearCache = async () => {
+    await serviceWorkerManager.clearCache();
+    const sizes = await serviceWorkerManager.getCacheSize();
+    setCacheInfo(sizes);
+  };
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-medium text-gray-900">Service Worker & Cache</h3>
+        <button
+          onClick={handleClearCache}
+          className="text-xs text-red-600 hover:text-red-800"
+        >
+          Vider le cache
+        </button>
+      </div>
+
+      <div className="space-y-2 text-sm">
+        <div className="flex justify-between">
+          <span className="text-gray-600">Supporté:</span>
+          <span className={swStatus?.isSupported ? 'text-green-600' : 'text-red-600'}>
+            {swStatus?.isSupported ? 'Oui' : 'Non'}
+          </span>
+        </div>
+
+        <div className="flex justify-between">
+          <span className="text-gray-600">Installé:</span>
+          <span className={swStatus?.isInstalled ? 'text-green-600' : 'text-gray-600'}>
+            {swStatus?.isInstalled ? 'Oui' : 'Non'}
+          </span>
+        </div>
+
+        <div className="flex justify-between">
+          <span className="text-gray-600">Mise à jour disponible:</span>
+          <span className={swStatus?.updateAvailable ? 'text-amber-600' : 'text-gray-600'}>
+            {swStatus?.updateAvailable ? 'Oui' : 'Non'}
+          </span>
+        </div>
+
+        {cacheInfo.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-gray-200">
+            <h4 className="text-xs font-medium text-gray-700 mb-2">Caches:</h4>
+            {cacheInfo.map((cache, index) => (
+              <div key={index} className="flex justify-between text-xs">
+                <span className="text-gray-600 truncate">{cache.name}:</span>
+                <span className="text-gray-900">{cache.size} éléments</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Background Sync Status Component
+function BackgroundSyncStatus() {
+  const [syncStatus, setSyncStatus] = useState<any>({ pending: 0, processing: false });
+  const connectionStatus = useConnectionStatus();
+
+  useEffect(() => {
+    const updateSyncStatus = () => {
+      setSyncStatus(backgroundSyncManager.getQueueStatus());
+    };
+
+    // Update immediately and then every 5 seconds
+    updateSyncStatus();
+    const interval = setInterval(updateSyncStatus, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleClearQueue = async () => {
+    await backgroundSyncManager.clearQueue();
+    setSyncStatus(backgroundSyncManager.getQueueStatus());
+  };
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg p-4 mb-8">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-lg font-semibold text-gray-900">Synchronisation en arrière-plan</h3>
+        {syncStatus.pending > 0 && (
+          <button
+            onClick={handleClearQueue}
+            className="text-sm text-red-600 hover:text-red-800"
+          >
+            Vider la file
+          </button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="text-center">
+          <h4 className="text-sm font-medium text-gray-500 mb-2">Tâches en attente</h4>
+          <p className="text-2xl font-bold text-blue-600">{syncStatus.pending}</p>
+        </div>
+        
+        <div className="text-center">
+          <h4 className="text-sm font-medium text-gray-500 mb-2">Statut</h4>
+          <p className={`text-sm font-medium ${
+            syncStatus.processing ? 'text-amber-600' : 
+            syncStatus.pending > 0 ? 'text-blue-600' : 'text-green-600'
+          }`}>
+            {syncStatus.processing ? 'Traitement en cours' : 
+             syncStatus.pending > 0 ? 'En attente' : 'Aucune tâche'}
+          </p>
+        </div>
+        
+        <div className="text-center">
+          <h4 className="text-sm font-medium text-gray-500 mb-2">Connexion</h4>
+          <p className={`text-sm font-medium ${
+            connectionStatus.isOnline ? 'text-green-600' : 'text-red-600'
+          }`}>
+            {connectionStatus.isOnline ? 'En ligne' : 'Hors ligne'}
+          </p>
+        </div>
+      </div>
+
+      {!connectionStatus.isOnline && syncStatus.pending > 0 && (
+        <div className="mt-4 p-3 bg-amber-50 rounded text-amber-700 text-sm">
+          Les tâches seront synchronisées automatiquement quand la connexion sera rétablie.
+        </div>
+      )}
+    </div>
+  );
+}

@@ -2,6 +2,9 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { OfflineBanner } from "@/components/OfflineBanner";
+import { PWAUpdateNotification } from "@/components/PWAUpdateNotification";
+import { ClientInitializer } from "@/components/ClientInitializer";
 
 // Import monitoring setup
 import '../monitoring/performance';
@@ -54,6 +57,8 @@ export default function RootLayout({
         className={`${fontClass} min-h-screen bg-white text-neutral-900 antialiased`}
       >
         <ErrorBoundary>
+          <ClientInitializer />
+          <OfflineBanner />
           <header className="border-b">
             <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
               <a href="/" className="font-semibold">La Vida Luca</a>
@@ -81,6 +86,8 @@ export default function RootLayout({
               © {new Date().getFullYear()} La Vida Luca — Tous droits réservés
             </div>
           </footer>
+
+          <PWAUpdateNotification />
         </ErrorBoundary>
       </body>
     </html>
