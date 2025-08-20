@@ -34,6 +34,19 @@ export default function Home() {
         </a>
 
         <a
+          href="/gamification"
+          style={{
+            padding: "10px 14px",
+            border: "1px solid #10b981",
+            borderRadius: 6,
+            background: "#10b981",
+            color: "white",
+          }}
+        >
+          🎮 Gamification
+        </a>
+
+        <a
           href="/test-ia"
           style={{
             padding: "10px 14px",
