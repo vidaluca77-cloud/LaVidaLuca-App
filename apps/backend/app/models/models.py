@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from ..db.database import Base
@@ -19,6 +19,7 @@ class User(Base):
 
     # Relationships
     activities = relationship("Activity", back_populates="creator")
+    consultations = relationship("Consultation", back_populates="user")
 
 
 class Activity(Base):
@@ -57,3 +58,30 @@ class ActivitySuggestion(Base):
     # Relationships
     user = relationship("User")
     activity = relationship("Activity")
+
+
+class Consultation(Base):
+    """Consultation model for agricultural AI assistant."""
+    
+    __tablename__ = "consultations"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # Optional for anonymous users
+    
+    # Consultation content
+    question = Column(Text, nullable=False)
+    response = Column(Text, nullable=False)
+    
+    # Additional context
+    context = Column(JSON, default=dict)  # Store additional context like crop type, region, etc.
+    
+    # AI model metadata
+    model_used = Column(String, default="gpt-3.5-turbo")
+    tokens_used = Column(Integer)  # Store token usage for analytics
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationship to User (if authenticated)
+    user = relationship("User", back_populates="consultations")

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict, Any
 from pydantic import BaseModel, EmailStr
 
 
@@ -97,6 +97,27 @@ class ActivitySuggestion(ActivitySuggestionBase):
     activity_id: int
     created_at: datetime
     activity: Activity
+
+    class Config:
+        from_attributes = True
+
+
+# Consultation Schemas
+class ConsultationRequest(BaseModel):
+    question: str
+    context: Optional[Dict[str, Any]] = None
+
+
+class ConsultationResponse(BaseModel):
+    id: int
+    user_id: Optional[int] = None
+    question: str
+    response: str
+    context: Optional[Dict[str, Any]] = None
+    model_used: str
+    tokens_used: Optional[int] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
