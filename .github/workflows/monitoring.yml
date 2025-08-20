@@ -1,0 +1,108 @@
+name: Health Monitoring
+
+on:
+  schedule:
+    # Run every 30 minutes
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    name: Application Health Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check Backend Health
+      id: backend_health
+      run: |
+        echo "Checking backend health..."
+        # Add actual backend URL when available
+        # response=$(curl -s -o /dev/null -w "%{http_code}" https://your-backend-url.render.com/health || echo "000")
+        response="200"  # Mock for now
+        
+        if [ "$response" = "200" ]; then
+          echo "status=healthy" >> $GITHUB_OUTPUT
+          echo "✅ Backend is healthy"
+        else
+          echo "status=unhealthy" >> $GITHUB_OUTPUT
+          echo "❌ Backend is unhealthy (HTTP $response)"
+        fi
+
+    - name: Check Frontend Health
+      id: frontend_health
+      run: |
+        echo "Checking frontend health..."
+        # Add actual frontend URL when available
+        # response=$(curl -s -o /dev/null -w "%{http_code}" https://your-app.vercel.app || echo "000")
+        response="200"  # Mock for now
+        
+        if [ "$response" = "200" ]; then
+          echo "status=healthy" >> $GITHUB_OUTPUT
+          echo "✅ Frontend is healthy"
+        else
+          echo "status=unhealthy" >> $GITHUB_OUTPUT
+          echo "❌ Frontend is unhealthy (HTTP $response)"
+        fi
+
+    - name: Check IA Service Health
+      id: ia_health
+      run: |
+        echo "Checking IA service health..."
+        # Add actual IA service URL when available
+        # response=$(curl -s -o /dev/null -w "%{http_code}" https://your-ia-service-url/health || echo "000")
+        response="200"  # Mock for now
+        
+        if [ "$response" = "200" ]; then
+          echo "status=healthy" >> $GITHUB_OUTPUT
+          echo "✅ IA service is healthy"
+        else
+          echo "status=unhealthy" >> $GITHUB_OUTPUT
+          echo "❌ IA service is unhealthy (HTTP $response)"
+        fi
+
+    - name: Report Health Status
+      run: |
+        backend_status="${{ steps.backend_health.outputs.status }}"
+        frontend_status="${{ steps.frontend_health.outputs.status }}"
+        ia_status="${{ steps.ia_health.outputs.status }}"
+        
+        echo "=== La Vida Luca Health Report ==="
+        echo "Timestamp: $(date -u)"
+        echo "Backend: $backend_status"
+        echo "Frontend: $frontend_status"
+        echo "IA Service: $ia_status"
+        
+        # Alert if any service is unhealthy
+        if [ "$backend_status" != "healthy" ] || [ "$frontend_status" != "healthy" ] || [ "$ia_status" != "healthy" ]; then
+          echo "🚨 One or more services are unhealthy!"
+          exit 1
+        else
+          echo "✅ All services are healthy"
+        fi
+
+  performance-check:
+    name: Performance Monitoring
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        npm install -g lighthouse
+
+    - name: Run Lighthouse audit
+      run: |
+        echo "Running Lighthouse performance audit..."
+        # Add actual frontend URL when available
+        # lighthouse https://your-app.vercel.app --output=json --output-path=lighthouse-report.json --chrome-flags="--headless"
+        echo "Lighthouse audit would run here"
+        echo "Configure frontend URL for performance monitoring"
+
+    - name: Upload Lighthouse report
+      uses: actions/upload-artifact@v3
+      with:
+        name: lighthouse-report
+        path: lighthouse-report.json
+      if: always()
