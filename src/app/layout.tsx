@@ -59,6 +59,9 @@ export default function RootLayout({
               <a href="/" className="font-semibold">La Vida Luca</a>
               <nav className="flex gap-6 text-sm">
                 <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
+                <a href="/agri-assistant" className="opacity-80 hover:opacity-100">
+                  Assistant IA
+                </a>
                 <a href="/rejoindre" className="opacity-80 hover:opacity-100">
                   Rejoindre
                 </a>

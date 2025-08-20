@@ -57,3 +57,18 @@ class ActivitySuggestion(Base):
     # Relationships
     user = relationship("User")
     activity = relationship("Activity")
+
+
+class Consultation(Base):
+    __tablename__ = "consultations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    question = Column(Text, nullable=False)
+    response = Column(Text, nullable=False)
+    category = Column(String, nullable=True)  # e.g., "agriculture", "elevage", "jardinage"
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # Optional, for anonymous consultations
+    session_id = Column(String, nullable=True)  # For tracking anonymous sessions
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    user = relationship("User")

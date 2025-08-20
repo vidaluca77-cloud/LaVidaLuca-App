@@ -100,3 +100,28 @@ class ActivitySuggestion(ActivitySuggestionBase):
 
     class Config:
         from_attributes = True
+
+
+# Consultation Schemas
+class ConsultationBase(BaseModel):
+    question: str
+    category: Optional[str] = None
+
+
+class ConsultationCreate(ConsultationBase):
+    session_id: Optional[str] = None
+
+
+class ConsultationResponse(BaseModel):
+    response: str
+
+
+class Consultation(ConsultationBase):
+    id: int
+    response: str
+    user_id: Optional[int] = None
+    session_id: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

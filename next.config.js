@@ -2,7 +2,7 @@
 const { withSentryConfig } = require('@sentry/nextjs');
 
 const nextConfig = {
-  output: 'export',
+  // Removed output: 'export' to enable API routes
   trailingSlash: true,
   images: {
     unoptimized: true

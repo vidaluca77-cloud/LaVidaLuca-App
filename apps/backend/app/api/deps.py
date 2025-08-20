@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Generator, Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
@@ -8,6 +8,7 @@ from ..models.models import User
 
 
 security = HTTPBearer()
+optional_security = HTTPBearer(auto_error=False)
 
 
 def get_current_user(
@@ -29,6 +30,28 @@ def get_current_user(
             detail="User not found",
         )
     return user
+
+
+def get_current_user_optional(
+    db: Session = Depends(get_db),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_security)
+) -> Optional[User]:
+    """
+    Get current user if authenticated, otherwise return None.
+    This allows endpoints to work for both authenticated and anonymous users.
+    """
+    if not credentials:
+        return None
+    
+    try:
+        token = credentials.credentials
+        user_id = verify_token(token)
+        if user_id is None:
+            return None
+        user = db.query(User).filter(User.id == user_id).first()
+        return user
+    except Exception:
+        return None
 
 
 def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
