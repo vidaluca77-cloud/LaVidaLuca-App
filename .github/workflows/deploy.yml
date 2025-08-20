@@ -5,16 +5,23 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+
 jobs:
   deploy-backend:
     name: Deploy Backend to Render
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    environment: production
     
     steps:
-    - name: Deploy to Render
+    - uses: actions/checkout@v4
+    
+    - name: Deploy Backend to Render
       run: |
-        curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_IA }}" \
+        curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}" \
           -H "Content-Type: application/json" \
           -d '{
             "clearCache": false,
@@ -22,16 +29,22 @@ jobs:
             "branch": "${{ github.ref_name }}"
           }'
       
-    - name: Verify deployment
+    - name: Wait for deployment
+      run: sleep 30
+      
+    - name: Verify backend deployment
       run: |
         echo "Backend deployment triggered successfully"
         echo "Commit: ${{ github.sha }}"
         echo "Branch: ${{ github.ref_name }}"
+        echo "Checking health endpoint..."
+        curl -f "${{ secrets.PRODUCTION_BACKEND_URL }}/health" || echo "Health check endpoint not ready yet"
 
   deploy-frontend:
     name: Deploy Frontend to Vercel
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    environment: production
     
     steps:
     - uses: actions/checkout@v4
@@ -39,7 +52,14 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: 'apps/web/package-lock.json'
+        
+    - name: Install dependencies
+      run: |
+        cd apps/web
+        npm ci
         
     - name: Install Vercel CLI
       run: npm install -g vercel@latest
@@ -55,29 +75,56 @@ jobs:
       env:
         VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
         VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        NEXT_PUBLIC_API_URL: ${{ secrets.PRODUCTION_API_URL }}
+        NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.SENTRY_DSN_FRONTEND }}
+        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+        SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT_FRONTEND }}
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         
-    - name: Verify deployment
+    - name: Verify frontend deployment
       run: |
         echo "Frontend deployment completed successfully"
         echo "Commit: ${{ github.sha }}"
         echo "Branch: ${{ github.ref_name }}"
+        echo "Checking frontend availability..."
+        curl -f "${{ secrets.PRODUCTION_FRONTEND_URL }}" || echo "Frontend not ready yet"
+
+  health-check:
+    name: Post-Deployment Health Check
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-frontend]
+    if: always() && github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run health checks
+      run: |
+        chmod +x scripts/health-check.sh
+        ./scripts/health-check.sh
+      env:
+        BACKEND_URL: ${{ secrets.PRODUCTION_BACKEND_URL }}
+        FRONTEND_URL: ${{ secrets.PRODUCTION_FRONTEND_URL }}
 
   notify-deployment:
     name: Notify Deployment Status
     runs-on: ubuntu-latest
-    needs: [deploy-backend, deploy-frontend]
+    needs: [deploy-backend, deploy-frontend, health-check]
     if: always() && github.ref == 'refs/heads/main'
     
     steps:
     - name: Deployment notification
       run: |
-        if [[ "${{ needs.deploy-backend.result }}" == "success" && "${{ needs.deploy-frontend.result }}" == "success" ]]; then
+        if [[ "${{ needs.deploy-backend.result }}" == "success" && "${{ needs.deploy-frontend.result }}" == "success" && "${{ needs.health-check.result }}" == "success" ]]; then
           echo "✅ Deployment successful"
           echo "Backend: Deployed to Render"
           echo "Frontend: Deployed to Vercel"
+          echo "Health checks: Passed"
         else
           echo "❌ Deployment failed"
           echo "Backend status: ${{ needs.deploy-backend.result }}"
           echo "Frontend status: ${{ needs.deploy-frontend.result }}"
+          echo "Health check status: ${{ needs.health-check.result }}"
           exit 1
         fi
