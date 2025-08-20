@@ -247,12 +247,14 @@ class SyncManager {
     };
 
     try {
-      const queueItems = await cacheManager.getAll<SyncItem>('sync_queue', {
+      const queueItemsData = await cacheManager.getAll<SyncItem>('sync_queue', {
         limit: this.config.batchSize,
-        filter: (item) => item.retryCount < item.maxRetries,
         orderBy: 'timestamp',
         orderDirection: 'asc',
       });
+
+      // Filter out items that have exceeded retry count
+      const queueItems = queueItemsData.filter(item => item.retryCount < item.maxRetries);
 
       for (const item of queueItems) {
         try {
