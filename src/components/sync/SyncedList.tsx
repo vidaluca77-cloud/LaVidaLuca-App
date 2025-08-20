@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSync } from '@/hooks/useSync';
-import { cache } from '@/lib/cache';
+import { cache, cacheManager } from '@/lib/cache';
 import { logger } from '@/lib/logger';
 
 interface SyncedListProps<T> {
@@ -276,7 +276,7 @@ export function SyncedList<T extends { id: string }>({
   // Clear cache
   const clearCache = useCallback(async () => {
     try {
-      await cache[storeName as keyof typeof cache]?.clear?.();
+      await cacheManager.clear(storeName);
       await loadData();
       logger.info('Cache cleared successfully', { storeName });
     } catch (err) {

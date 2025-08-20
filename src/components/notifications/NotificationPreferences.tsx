@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
-import { type NotificationPreferences } from '@/lib/notifications';
+import { type NotificationPreferences as NotificationPreferencesType } from '@/lib/notifications';
 
 interface NotificationPreferencesProps {
   className?: string;
@@ -74,7 +74,7 @@ export const NotificationPreferences: React.FC<NotificationPreferencesProps> = (
     }
   };
 
-  const handleTypeToggle = (type: keyof NotificationPreferences['types'], enabled: boolean) => {
+  const handleTypeToggle = (type: keyof NotificationPreferencesType['types'], enabled: boolean) => {
     updatePreferences({
       types: {
         ...preferences.types,
@@ -206,16 +206,16 @@ export const NotificationPreferences: React.FC<NotificationPreferencesProps> = (
                   <button
                     type="button"
                     onClick={() => handleTypeToggle(
-                      type as keyof NotificationPreferences['types'], 
-                      !preferences.types[type as keyof NotificationPreferences['types']]
+                      type as keyof NotificationPreferencesType['types'], 
+                      !preferences.types[type as keyof NotificationPreferencesType['types']]
                     )}
                     className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                      preferences.types[type as keyof NotificationPreferences['types']] ? 'bg-blue-600' : 'bg-gray-200'
+                      preferences.types[type as keyof NotificationPreferencesType['types']] ? 'bg-blue-600' : 'bg-gray-200'
                     }`}
                   >
                     <span
                       className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        preferences.types[type as keyof NotificationPreferences['types']] ? 'translate-x-4' : 'translate-x-0'
+                        preferences.types[type as keyof NotificationPreferencesType['types']] ? 'translate-x-4' : 'translate-x-0'
                       }`}
                     />
                   </button>

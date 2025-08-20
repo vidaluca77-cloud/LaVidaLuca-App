@@ -44,7 +44,7 @@ export function SyncedContent<T>({
       setError(null);
 
       // First, try to get from cache
-      const cachedData = await cache[storeName as keyof typeof cache]?.get(itemId);
+      const cachedData = await cache[storeName as keyof typeof cache]?.get(itemId) as T;
       
       if (cachedData) {
         setData(cachedData);
@@ -61,7 +61,7 @@ export function SyncedContent<T>({
           const response = await fetch(`/api/${storeName}/${itemId}`);
           
           if (response.ok) {
-            const freshData = await response.json();
+            const freshData = await response.json() as T;
             
             // Update cache
             await cache[storeName as keyof typeof cache]?.set(itemId, freshData, { ttl });
@@ -187,6 +187,7 @@ export function withSyncedContent<T, P extends object>(
 ) {
   return function SyncedWrapper(props: P) {
     const itemId = syncConfig.getItemId(props);
+    const { queueChange } = useSync();
     
     return (
       <SyncedContent<T>
@@ -195,66 +196,36 @@ export function withSyncedContent<T, P extends object>(
         ttl={syncConfig.ttl}
         refreshInterval={syncConfig.refreshInterval}
       >
-        {(data, isLoading, error) => (
-          <SyncedContentInner
-            {...props}
-            data={data}
-            isLoading={isLoading}
-            error={error}
-            WrappedComponent={WrappedComponent}
-            storeName={syncConfig.storeName}
-            itemId={itemId}
-          />
-        )}
+        {(data, isLoading, error) => {
+          const updateData = async (updates: Partial<T>) => {
+            const currentData = data || {} as T;
+            const updatedData = { ...currentData, ...updates };
+            
+            // Update cache
+            await cache[syncConfig.storeName as keyof typeof cache]?.set(itemId, updatedData);
+
+            // Queue for sync
+            await queueChange({
+              action: 'update' as const,
+              data: updatedData,
+              endpoint: `/${syncConfig.storeName}/${itemId}`,
+              method: 'PUT' as const,
+              maxRetries: 3,
+            });
+          };
+
+          return (
+            <WrappedComponent
+              {...(props as P)}
+              data={data}
+              isLoading={isLoading}
+              updateData={updateData}
+            />
+          );
+        }}
       </SyncedContent>
     );
   };
-}
-
-// Helper component for the HOC
-function SyncedContentInner<T, P extends object>({
-  WrappedComponent,
-  data,
-  isLoading,
-  error,
-  storeName,
-  itemId,
-  ...props
-}: {
-  WrappedComponent: React.ComponentType<P & { data: T | null; isLoading: boolean; updateData: (updates: Partial<T>) => Promise<void> }>;
-  data: T | null;
-  isLoading: boolean;
-  error: string | null;
-  storeName: string;
-  itemId: string;
-} & P) {
-  const { queueChange } = useSync();
-
-  const updateData = useCallback(async (updates: Partial<T>) => {
-    const currentData = data || {} as T;
-    const updatedData = { ...currentData, ...updates };
-    
-    // Update cache
-    await cache[storeName as keyof typeof cache]?.set(itemId, updatedData);
-
-    // Queue for sync
-    await queueChange({
-      action: 'update' as const,
-      data: updatedData,
-      endpoint: `/${storeName}/${itemId}`,
-      method: 'PUT' as const,
-      maxRetries: 3,
-    });
-  }, [data, storeName, itemId, queueChange]);
-
-  return (
-    <WrappedComponent
-      {...(props as P)}
-      data={data}
-      isLoading={isLoading}
-      updateData={updateData}
-    />
-  );
 }
 
 export default SyncedContent;
