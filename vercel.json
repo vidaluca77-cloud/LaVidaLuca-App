@@ -1,0 +1,45 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "out",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["fra1"],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "@next_public_api_url",
+    "NEXT_PUBLIC_IA_API_URL": "@next_public_ia_api_url",
+    "SENTRY_DSN": "@sentry_dsn",
+    "SENTRY_ORG": "@sentry_org",
+    "SENTRY_PROJECT": "@sentry_project"
+  },
+  "functions": {
+    "src/app/api/**/*": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/backend/(.*)",
+      "destination": "$BACKEND_API_URL/api/v1/$1"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 """
 Simple working FastAPI app for La Vida Luca.
-This version bypasses the complex import structure for now.
+This version includes OpenAI integration for the AI agricultural assistant.
 """
 
 from fastapi import FastAPI, HTTPException
@@ -9,10 +9,26 @@ from pydantic import BaseModel
 from typing import Optional
 import logging
 import os
+import openai
+from openai import OpenAI
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
+
+# Initialize OpenAI client
+openai_client = None
+if os.getenv("OPENAI_API_KEY"):
+    try:
+        openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        logger.info("OpenAI client initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize OpenAI client: {e}")
+else:
+    logger.warning("OPENAI_API_KEY not found - AI features will be limited")
 
 app = FastAPI(
     title="La Vida Luca API",
@@ -71,8 +87,47 @@ async def get_guide(request: GuideRequest):
     """
     Get AI-powered guidance for questions about sustainable living and gardening.
     """
+    logger.info(f"Received guide request: {request.question}")
+    
     try:
-        # Generate response based on question content
+        # Try to use OpenAI if available
+        if openai_client:
+            try:
+                logger.info("Using OpenAI for response generation")
+                
+                # Create a system prompt for agricultural advice
+                system_prompt = """Tu es un assistant agricole spécialisé dans le jardinage, la permaculture et la vie durable. 
+                Tu aides les utilisateurs avec des conseils pratiques, écologiques et adaptés au climat français. 
+                Réponds de manière claire, structurée et bienveillante. 
+                Si tu n'es pas sûr d'une information, dis-le clairement."""
+                
+                response = openai_client.chat.completions.create(
+                    model=os.getenv("OPENAI_MODEL", "gpt-3.5-turbo"),
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": request.question}
+                    ],
+                    max_tokens=int(os.getenv("OPENAI_MAX_TOKENS", "500")),
+                    temperature=0.7
+                )
+                
+                answer = response.choices[0].message.content
+                logger.info("OpenAI response generated successfully")
+                
+                return GuideResponse(
+                    answer=answer,
+                    confidence=0.9,
+                    sources=["OpenAI GPT", "La Vida Luca Knowledge Base"]
+                )
+                
+            except Exception as e:
+                logger.error(f"OpenAI API error: {e}")
+                # Fall back to predefined responses
+                logger.info("Falling back to predefined responses")
+        
+        # Fallback: Generate response based on question content (existing logic)
+        logger.info("Using fallback response generation")
+        
         if "sol" in request.question.lower() or "terre" in request.question.lower():
             answer = """Pour améliorer un sol argileux compact, voici quelques conseils :
 
@@ -125,10 +180,15 @@ Je suis là pour vous aider avec des conseils sur :
 
 Pouvez-vous préciser votre domaine d'intérêt pour que je puisse vous donner des conseils plus adaptés ?"""
 
+        confidence = 0.7 if openai_client else 0.8
+        sources = ["La Vida Luca Knowledge Base", "Sustainable Living Practices"]
+        
+        logger.info("Response generated successfully")
+        
         return GuideResponse(
             answer=answer,
-            confidence=0.8,
-            sources=["La Vida Luca Knowledge Base", "Sustainable Living Practices"]
+            confidence=confidence,
+            sources=sources
         )
         
     except Exception as e:
@@ -142,10 +202,14 @@ Pouvez-vous préciser votre domaine d'intérêt pour que je puisse vous donner d
 @app.get("/api/v1/guide/health")
 async def guide_health():
     """Health check for guide service."""
+    openai_status = "enabled" if openai_client else "disabled"
     return {
         "status": "healthy",
         "service": "guide",
-        "ai_enabled": os.getenv("OPENAI_API_KEY") is not None
+        "ai_enabled": openai_client is not None,
+        "openai_status": openai_status,
+        "environment": os.getenv("ENVIRONMENT", "development"),
+        "version": "1.0.0"
     }
 
 
