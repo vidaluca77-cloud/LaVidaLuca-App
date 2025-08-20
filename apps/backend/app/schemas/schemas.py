@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, EmailStr
 
 
@@ -100,3 +100,135 @@ class ActivitySuggestion(ActivitySuggestionBase):
 
     class Config:
         from_attributes = True
+
+
+# Gamification Schemas
+
+# Skill Schemas
+class SkillBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    category: str
+
+
+class SkillCreate(SkillBase):
+    pass
+
+
+class Skill(SkillBase):
+    id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# User Skill Schemas
+class UserSkillBase(BaseModel):
+    skill_id: int
+    level: int = 1
+    experience: int = 0
+
+
+class UserSkillCreate(UserSkillBase):
+    pass
+
+
+class UserSkill(UserSkillBase):
+    id: int
+    user_id: int
+    obtained_at: datetime
+    skill: Skill
+
+    class Config:
+        from_attributes = True
+
+
+# Achievement Schemas
+class AchievementBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    icon: Optional[str] = None
+    points_reward: int = 50
+    category: Optional[str] = None
+    criteria: Optional[dict] = None
+    is_active: bool = True
+
+
+class AchievementCreate(AchievementBase):
+    pass
+
+
+class Achievement(AchievementBase):
+    id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# User Achievement Schemas
+class UserAchievementBase(BaseModel):
+    achievement_id: int
+
+
+class UserAchievementCreate(UserAchievementBase):
+    pass
+
+
+class UserAchievement(UserAchievementBase):
+    id: int
+    user_id: int
+    earned_at: datetime
+    achievement: Achievement
+
+    class Config:
+        from_attributes = True
+
+
+# Activity Completion Schemas
+class ActivityCompletionBase(BaseModel):
+    activity_id: int
+    rating: Optional[int] = None
+    feedback: Optional[str] = None
+
+
+class ActivityCompletionCreate(ActivityCompletionBase):
+    pass
+
+
+class ActivityCompletion(ActivityCompletionBase):
+    id: int
+    user_id: int
+    completion_date: datetime
+    points_earned: int
+    activity: Activity
+
+    class Config:
+        from_attributes = True
+
+
+# User Progress Schemas
+class UserProgressBase(BaseModel):
+    activities_completed: int = 0
+    points_earned: int = 0
+    skills_learned: int = 0
+    achievements_unlocked: int = 0
+
+
+class UserProgress(UserProgressBase):
+    id: int
+    user_id: int
+    date: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# Enhanced User Schema with gamification
+class UserWithStats(User):
+    total_points: int = 0
+    current_level: int = 1
+    experience_points: int = 0
+    user_skills: List[UserSkill] = []
+    achievements: List[UserAchievement] = []

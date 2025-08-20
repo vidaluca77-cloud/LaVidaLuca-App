@@ -10,8 +10,8 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from database import Base
-from models import User, Activity, Contact
+from app.db.database import Base
+from app.models.models import User, Activity, ActivitySuggestion, Skill, UserSkill, Achievement, UserAchievement, ActivityCompletion, UserProgress
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
