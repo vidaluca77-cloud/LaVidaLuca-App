@@ -93,7 +93,13 @@ describe('ErrorBoundary', () => {
 
   it('shows error details in development mode', () => {
     const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'development';
+    
+    // Mock NODE_ENV for development mode
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      value: 'development',
+      writable: true,
+      configurable: true
+    });
 
     render(
       <ErrorBoundary>
@@ -103,7 +109,12 @@ describe('ErrorBoundary', () => {
 
     expect(screen.getByText('Détails de l\'erreur (développement uniquement)')).toBeInTheDocument();
 
-    process.env.NODE_ENV = originalEnv;
+    // Restore original value
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      value: originalEnv,
+      writable: true,
+      configurable: true
+    });
   });
 });
 

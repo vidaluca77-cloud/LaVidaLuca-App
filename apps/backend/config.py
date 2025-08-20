@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost:5432/lavidaluca"
     DATABASE_POOL_SIZE: int = 10
     DATABASE_MAX_OVERFLOW: int = 20
+    DATABASE_POOL_TIMEOUT: int = 30
+    DATABASE_POOL_RECYCLE: int = 3600
     
     # JWT Authentication
     JWT_SECRET_KEY: str = "your-secret-key-change-in-production"
@@ -27,6 +29,8 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: list[str] = ["http://localhost:3000", "https://lavidaluca.fr"]
     CORS_ALLOW_CREDENTIALS: bool = True
+    CORS_ALLOW_METHODS: list[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    CORS_ALLOW_HEADERS: list[str] = ["*"]
     
     # OpenAI
     OPENAI_API_KEY: Optional[str] = None
@@ -42,6 +46,13 @@ class Settings(BaseSettings):
     
     # Security
     TRUSTED_HOSTS: list[str] = ["localhost", "127.0.0.1", "lavidaluca.fr", "*.lavidaluca.fr"]
+    ALLOWED_HOSTS: list[str] = ["localhost", "127.0.0.1", "lavidaluca.fr", "*.lavidaluca.fr"]
+    
+    # Sentry Configuration
+    SENTRY_DSN: Optional[str] = None
+    SENTRY_ENVIRONMENT: str = "development"
+    SENTRY_TRACES_SAMPLE_RATE: float = 1.0
+    SENTRY_PROFILES_SAMPLE_RATE: float = 1.0
     
     # Email (for contact forms)
     SMTP_HOST: Optional[str] = None
@@ -61,6 +72,8 @@ class DevelopmentSettings(Settings):
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/lavidaluca_dev"
+    DATABASE_POOL_SIZE: int = 5
+    DATABASE_MAX_OVERFLOW: int = 10
 
 
 class TestingSettings(Settings):
@@ -69,6 +82,9 @@ class TestingSettings(Settings):
     DEBUG: bool = True
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/lavidaluca_test"
     JWT_SECRET_KEY: str = "test-secret-key"
+    DATABASE_POOL_SIZE: int = 2
+    DATABASE_MAX_OVERFLOW: int = 5
+    SENTRY_DSN: Optional[str] = None  # Disable Sentry in tests
 
 
 class ProductionSettings(Settings):
@@ -76,11 +92,16 @@ class ProductionSettings(Settings):
     ENVIRONMENT: str = "production"
     DEBUG: bool = False
     LOG_LEVEL: str = "WARNING"
+    DATABASE_POOL_SIZE: int = 20
+    DATABASE_MAX_OVERFLOW: int = 40
+    DATABASE_POOL_TIMEOUT: int = 60
+    CORS_ORIGINS: list[str] = ["https://lavidaluca.fr", "https://*.lavidaluca.fr"]
     
     # These should be set via environment variables in production
     DATABASE_URL: str
     JWT_SECRET_KEY: str
     OPENAI_API_KEY: Optional[str] = None
+    SENTRY_DSN: Optional[str] = None
 
 
 def get_settings() -> Settings:
