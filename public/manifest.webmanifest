@@ -1,12 +1,59 @@
 {
   "name": "La Vida Luca",
   "short_name": "Vida Luca",
+  "description": "Réseau de fermes autonomes & pédagogiques — formation, insertion et agriculture vivante.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#ffffff",
   "theme_color": "#10b981",
+  "categories": ["lifestyle", "education", "productivity"],
+  "lang": "fr",
+  "dir": "ltr",
   "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ]
+    { 
+      "src": "/icons/icon-192.png", 
+      "sizes": "192x192", 
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    { 
+      "src": "/icons/icon-512.png", 
+      "sizes": "512x512", 
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Catalogue des activités",
+      "short_name": "Catalogue",
+      "description": "Découvrir les activités disponibles",
+      "url": "/catalogue",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Nous rejoindre",
+      "short_name": "Rejoindre",
+      "description": "Proposer son aide ou participer",
+      "url": "/rejoindre",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide"
+    },
+    {
+      "src": "/screenshots/mobile.png",
+      "sizes": "375x667",
+      "type": "image/png",
+      "platform": "narrow"
+    }
+  ],
+  "prefer_related_applications": false
 }

@@ -25,8 +25,11 @@
     "@heroicons/react": "^2.0.18",
     "@sentry/nextjs": "^10.5.0",
     "next": "14.0.4",
+    "next-pwa": "^5.6.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "workbox-webpack-plugin": "^7.0.0",
+    "idb": "^8.0.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.7.0",

@@ -2,6 +2,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { OfflineDataProvider, OfflineStatus, PWAInstallPrompt } from "@/components/offline";
 
 // Import monitoring setup
 import '../monitoring/performance';
@@ -35,12 +36,20 @@ export const metadata: Metadata = {
     ],
     apple: "/icons/icon-192.png",
   },
+  // PWA specific metadata
+  other: {
+    'mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'default',
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: "#10b981",
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
@@ -54,33 +63,46 @@ export default function RootLayout({
         className={`${fontClass} min-h-screen bg-white text-neutral-900 antialiased`}
       >
         <ErrorBoundary>
-          <header className="border-b">
-            <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-              <a href="/" className="font-semibold">La Vida Luca</a>
-              <nav className="flex gap-6 text-sm">
-                <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
-                <a href="/rejoindre" className="opacity-80 hover:opacity-100">
-                  Rejoindre
-                </a>
-                <a href="/contact" className="opacity-80 hover:opacity-100">
-                  Contact
-                </a>
-                {process.env.NODE_ENV === 'development' && (
-                  <a href="/monitoring" className="opacity-80 hover:opacity-100">
-                    Monitoring
-                  </a>
-                )}
-              </nav>
-            </div>
-          </header>
+          <OfflineDataProvider>
+            <header className="border-b">
+              <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+                <a href="/" className="font-semibold">La Vida Luca</a>
+                <div className="flex items-center gap-4">
+                  <nav className="flex gap-6 text-sm">
+                    <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
+                    <a href="/rejoindre" className="opacity-80 hover:opacity-100">
+                      Rejoindre
+                    </a>
+                    <a href="/contact" className="opacity-80 hover:opacity-100">
+                      Contact
+                    </a>
+                    {process.env.NODE_ENV === 'development' && (
+                      <a href="/monitoring" className="opacity-80 hover:opacity-100">
+                        Monitoring
+                      </a>
+                    )}
+                  </nav>
+                  {/* Offline status indicator */}
+                  <OfflineStatus showDetails={false} className="hidden sm:block" />
+                </div>
+              </div>
+            </header>
 
-          <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
+            <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
 
-          <footer className="border-t">
-            <div className="mx-auto max-w-6xl px-4 py-8 text-sm opacity-70">
-              © {new Date().getFullYear()} La Vida Luca — Tous droits réservés
-            </div>
-          </footer>
+            <footer className="border-t">
+              <div className="mx-auto max-w-6xl px-4 py-8 text-sm opacity-70 flex justify-between items-center">
+                <div>
+                  © {new Date().getFullYear()} La Vida Luca — Tous droits réservés
+                </div>
+                {/* Mobile offline status */}
+                <OfflineStatus showDetails={false} className="sm:hidden" />
+              </div>
+            </footer>
+
+            {/* PWA Install and Update Prompts */}
+            <PWAInstallPrompt />
+          </OfflineDataProvider>
         </ErrorBoundary>
       </body>
     </html>
