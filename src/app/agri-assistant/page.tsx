@@ -26,6 +26,9 @@ export default function AgriAssistant() {
   const [history, setHistory] = useState<ConsultationHistory | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Backend URL - in production this would be the actual backend URL
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+
   // Load consultation history on component mount
   useEffect(() => {
     loadHistory();
@@ -33,7 +36,7 @@ export default function AgriAssistant() {
 
   const loadHistory = async () => {
     try {
-      const response = await fetch("/api/agri-assistant/history");
+      const response = await fetch(`${BACKEND_URL}/api/v1/agri-assistant/history`);
       if (response.ok) {
         const data = await response.json();
         setHistory(data);
@@ -56,7 +59,7 @@ export default function AgriAssistant() {
     setCurrentConsultation(null);
 
     try {
-      const response = await fetch("/api/agri-assistant", {
+      const response = await fetch(`${BACKEND_URL}/api/v1/agri-assistant`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
