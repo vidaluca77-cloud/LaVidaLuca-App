@@ -1,10 +1,10 @@
 """
-OpenAI integration service for generating activity suggestions.
+OpenAI integration service for generating activity suggestions and agricultural consultations.
 """
 
 import json
 import openai
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from pydantic import BaseModel, Field
 
 from ..config import settings
@@ -219,3 +219,190 @@ def _fallback_suggestions(
     # Sort by score and return top suggestions
     suggestions.sort(key=lambda x: x['score'], reverse=True)
     return suggestions[:max_suggestions]
+
+
+async def get_agricultural_consultation(
+    question: str,
+    context: Optional[str] = None,
+    user_profile: Optional[Dict[str, Any]] = None
+) -> Tuple[str, Optional[str], float, int]:
+    """
+    Get AI-powered agricultural consultation.
+    
+    Args:
+        question: The agricultural question
+        context: Additional context about the situation
+        user_profile: User's profile information
+        
+    Returns:
+        Tuple of (answer, category, confidence_score, tokens_used)
+    """
+    # Set up OpenAI client
+    openai.api_key = settings.OPENAI_API_KEY
+    
+    # Build specialized agricultural prompt
+    system_prompt = _build_agricultural_system_prompt()
+    user_prompt = _build_agricultural_user_prompt(question, context, user_profile)
+    
+    try:
+        # Call OpenAI API
+        response = await openai.chat.completions.create(
+            model=settings.OPENAI_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            max_tokens=settings.OPENAI_MAX_TOKENS,
+            temperature=0.7,
+        )
+        
+        # Extract response content
+        content = response.choices[0].message.content
+        tokens_used = response.usage.total_tokens if response.usage else 0
+        
+        # Parse response and extract category and confidence
+        answer, category, confidence = _parse_agricultural_response(content)
+        
+        return answer, category, confidence, tokens_used
+        
+    except Exception as e:
+        # Fallback response
+        return _fallback_agricultural_response(question, context), None, 0.5, 0
+
+
+def _build_agricultural_system_prompt() -> str:
+    """Build system prompt for agricultural consultation."""
+    return """Vous êtes un expert agricole et en permaculture spécialisé dans l'aide aux jardiniers et agriculteurs.
+Votre expertise couvre:
+- Jardinage biologique et permaculture
+- Santé des sols et compostage
+- Gestion des ravageurs et maladies naturellement
+- Choix de variétés et rotations de cultures
+- Techniques d'irrigation et conservation de l'eau
+- Planification saisonnière et calendrier de plantation
+- Solutions écologiques et durables
+
+Donnez des conseils pratiques, basés sur des méthodes éprouvées et respectueuses de l'environnement.
+Adaptez vos réponses au contexte local français et aux pratiques de l'agriculture biologique.
+
+Format de réponse attendu:
+1. Réponse détaillée et pratique
+2. Catégorie: [sol|plantes|ravageurs|irrigation|planification|general]
+3. Confiance: [0.0-1.0]
+
+Exemple:
+[Votre réponse détaillée ici]
+
+Catégorie: sol
+Confiance: 0.85"""
+
+
+def _build_agricultural_user_prompt(
+    question: str,
+    context: Optional[str] = None,
+    user_profile: Optional[Dict[str, Any]] = None
+) -> str:
+    """Build user prompt for agricultural consultation."""
+    prompt = f"Question: {question}\n"
+    
+    if context:
+        prompt += f"Contexte: {context}\n"
+    
+    if user_profile:
+        location = user_profile.get('location', '')
+        experience = user_profile.get('experience_level', '')
+        if location:
+            prompt += f"Localisation: {location}\n"
+        if experience:
+            prompt += f"Niveau d'expérience: {experience}\n"
+    
+    prompt += "\nVeuillez fournir des conseils détaillés et pratiques."
+    
+    return prompt
+
+
+def _parse_agricultural_response(content: str) -> Tuple[str, Optional[str], float]:
+    """Parse agricultural consultation response."""
+    lines = content.strip().split('\n')
+    answer_lines = []
+    category = None
+    confidence = 0.8  # Default confidence
+    
+    for line in lines:
+        line = line.strip()
+        if line.lower().startswith('catégorie:'):
+            category = line.split(':', 1)[1].strip().lower()
+        elif line.lower().startswith('confiance:'):
+            try:
+                confidence = float(line.split(':', 1)[1].strip())
+            except (ValueError, IndexError):
+                confidence = 0.8
+        elif line and not line.lower().startswith(('catégorie:', 'confiance:')):
+            answer_lines.append(line)
+    
+    answer = '\n'.join(answer_lines).strip()
+    return answer, category, confidence
+
+
+def _fallback_agricultural_response(question: str, context: Optional[str] = None) -> str:
+    """Fallback response when OpenAI is not available."""
+    question_lower = question.lower()
+    
+    if any(word in question_lower for word in ['sol', 'terre', 'terreau']):
+        return """Pour améliorer votre sol, voici quelques conseils généraux :
+
+1. **Testez votre sol** : Connaître le pH et la composition vous aide à choisir les bonnes amendements.
+
+2. **Ajoutez de la matière organique** : Compost, fumier décomposé, ou feuilles mortes enrichissent et structurent le sol.
+
+3. **Évitez le travail du sol humide** : Cela peut créer des mottes compactes difficiles à corriger.
+
+4. **Utilisez des couvre-sols** : Plantez des légumineuses ou gardez un paillis permanent.
+
+5. **Rotation des cultures** : Alternez les familles de légumes pour préserver la fertilité.
+
+Pour des conseils plus spécifiques, n'hésitez pas à préciser votre type de sol et votre région."""
+    
+    elif any(word in question_lower for word in ['compost', 'composte']):
+        return """Voici comment réussir votre compost :
+
+1. **Équilibre vert/brun** : 1/3 de matières vertes (épluchures, tontes) pour 2/3 de matières brunes (feuilles sèches, carton).
+
+2. **Humidité optimale** : Le compost doit être humide comme une éponge essorée.
+
+3. **Aération régulière** : Retournez le tas toutes les 2-3 semaines pour apporter de l'oxygène.
+
+4. **Taille des déchets** : Plus c'est petit, plus ça se décompose vite.
+
+5. **Patience** : Comptez 6 à 12 mois selon les conditions et la méthode.
+
+Un bon compost sent la terre de forêt et a une texture friable."""
+    
+    elif any(word in question_lower for word in ['ravageur', 'insecte', 'maladie', 'parasite']):
+        return """Pour gérer les ravageurs naturellement :
+
+1. **Prévention** : Favorisez la biodiversité avec des plantes compagnes et des abris pour auxiliaires.
+
+2. **Observation régulière** : Inspectez vos plantes pour détecter les problèmes tôt.
+
+3. **Solutions douces** : Savon noir, huile de neem, ou purins de plantes (ortie, prêle).
+
+4. **Auxiliaires naturels** : Encouragez coccinelles, oiseaux, et autres prédateurs naturels.
+
+5. **Rotation et hygiène** : Nettoyez les débris végétaux et alternez les cultures.
+
+Précisez quel ravageur vous préoccupe pour des conseils plus ciblés."""
+    
+    else:
+        return f"""Merci pour votre question : "{question}"
+
+Je suis là pour vous aider avec des conseils sur :
+- Le jardinage biologique et la permaculture
+- La santé des sols et le compostage
+- La gestion naturelle des ravageurs
+- La planification des cultures
+- L'irrigation et l'économie d'eau
+
+Pouvez-vous préciser votre domaine d'intérêt pour que je puisse vous donner des conseils plus adaptés ?
+
+N'hésitez pas à mentionner votre région et votre niveau d'expérience pour des recommandations personnalisées."""
