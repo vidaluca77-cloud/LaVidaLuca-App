@@ -19,9 +19,18 @@ export default function DashboardPage() {
   } = useGamificationStore();
 
   useEffect(() => {
-    loadUserStats();
-    loadLeaderboard('weekly');
-  }, [loadUserStats, loadLeaderboard]);
+    // Initialize the store with mock data immediately 
+    const initializeStore = async () => {
+      try {
+        await loadUserStats();
+        await loadLeaderboard('weekly');
+      } catch (error) {
+        console.error('Failed to initialize store:', error);
+      }
+    };
+    
+    initializeStore();
+  }, []);
 
   const handleTestAction = () => {
     updateUserStats({

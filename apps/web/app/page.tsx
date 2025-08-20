@@ -14,6 +14,19 @@ export default function Home() {
 
       <nav style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
         <a
+          href="/dashboard"
+          style={{
+            padding: "10px 14px",
+            border: "1px solid #0070f3",
+            borderRadius: 6,
+            background: "#0070f3",
+            color: "white",
+          }}
+        >
+          📊 Tableau de Bord
+        </a>
+        
+        <a
           href="/activites"
           style={{
             padding: "10px 14px",
