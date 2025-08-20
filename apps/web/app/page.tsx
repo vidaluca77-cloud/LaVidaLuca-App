@@ -1,3 +1,5 @@
+import React from 'react'
+
 export default function Home() {
   return (
     <main style={{ padding: "32px", maxWidth: 900, margin: "0 auto" }}>

@@ -1,3 +1,5 @@
+import React from 'react'
+
 type Activity = {
   title: string;
   category: "agri"|"transfo"|"artisanat"|"nature"|"social";
