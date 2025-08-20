@@ -27,11 +27,29 @@ interface DashboardMetrics {
     warnings: number;
     recent: number;
   };
+  offline: {
+    isOnline: boolean;
+    queueLength: number;
+    isProcessing: boolean;
+    cacheSize: {
+      indexedDB: number;
+      localStorage: number;
+    };
+    serviceWorkerReady: boolean;
+  };
   health: {
     status: 'healthy' | 'warning' | 'critical';
     issues: string[];
   };
 }
+
+const formatBytes = (bytes: number): string => {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
 
 const formatDuration = (ms: number): string => {
   if (ms < 1000) return `${Math.round(ms)}ms`;
@@ -68,8 +86,8 @@ export const MonitoringDashboard: React.FC = () => {
   const [isLive, setIsLive] = useState(false);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
 
-  const refreshMetrics = () => {
-    const currentMetrics = monitoringDashboard.getMetrics();
+  const refreshMetrics = async () => {
+    const currentMetrics = await monitoringDashboard.getMetrics();
     setMetrics(currentMetrics);
   };
 
@@ -95,8 +113,8 @@ export const MonitoringDashboard: React.FC = () => {
     refreshMetrics();
   };
 
-  const exportMetrics = () => {
-    const data = monitoringDashboard.exportMetrics();
+  const exportMetrics = async () => {
+    const data = await monitoringDashboard.exportMetrics();
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -257,7 +275,7 @@ export const MonitoringDashboard: React.FC = () => {
         </div>
 
         {/* API Performance */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
           <h3 className="text-xl font-semibold text-gray-900 mb-4">Performance API</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
@@ -283,6 +301,69 @@ export const MonitoringDashboard: React.FC = () => {
                   : 'N/A'
                 }
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Offline & PWA Status */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">Mode Hors Ligne & PWA</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="text-center">
+              <h4 className="text-sm font-medium text-gray-500 mb-2">Statut de connexion</h4>
+              <div className="flex items-center justify-center">
+                <div className={`w-3 h-3 rounded-full mr-2 ${
+                  metrics.offline.isOnline ? 'bg-green-400' : 'bg-red-400'
+                }`}></div>
+                <p className={`text-lg font-bold ${
+                  metrics.offline.isOnline ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {metrics.offline.isOnline ? 'En ligne' : 'Hors ligne'}
+                </p>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <h4 className="text-sm font-medium text-gray-500 mb-2">File d'attente</h4>
+              <p className={`text-2xl font-bold ${
+                metrics.offline.queueLength === 0 ? 'text-green-600' : 
+                metrics.offline.queueLength < 10 ? 'text-yellow-600' : 'text-red-600'
+              }`}>
+                {metrics.offline.queueLength}
+              </p>
+              {metrics.offline.isProcessing && (
+                <div className="flex items-center justify-center mt-1">
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                  <span className="ml-1 text-xs text-blue-600">Synchronisation...</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="text-center">
+              <h4 className="text-sm font-medium text-gray-500 mb-2">Cache IndexedDB</h4>
+              <p className="text-lg font-bold text-blue-600">
+                {formatBytes(metrics.offline.cacheSize.indexedDB)}
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <h4 className="text-sm font-medium text-gray-500 mb-2">Cache LocalStorage</h4>
+              <p className="text-lg font-bold text-purple-600">
+                {formatBytes(metrics.offline.cacheSize.localStorage)}
+              </p>
+            </div>
+          </div>
+          
+          <div className="mt-4 flex items-center justify-center">
+            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+              metrics.offline.serviceWorkerReady 
+                ? 'text-green-800 bg-green-100' 
+                : 'text-gray-800 bg-gray-100'
+            }`}>
+              <div className={`w-2 h-2 rounded-full mr-2 ${
+                metrics.offline.serviceWorkerReady ? 'bg-green-400' : 'bg-gray-400'
+              }`}></div>
+              Service Worker {metrics.offline.serviceWorkerReady ? 'Actif' : 'Inactif'}
             </div>
           </div>
         </div>

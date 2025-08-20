@@ -1,11 +1,30 @@
 /** @type {import('next').NextConfig} */
 const { withSentryConfig } = require('@sentry/nextjs');
+const { InjectManifest } = require('workbox-webpack-plugin');
+const path = require('path');
 
 const nextConfig = {
   output: 'export',
   trailingSlash: true,
   images: {
     unoptimized: true
+  },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.plugins.push(
+        new InjectManifest({
+          swSrc: path.join(__dirname, 'src/sw.ts'),
+          swDest: path.join(config.output.path || '.next', 'sw.js'),
+          additionalManifestEntries: [
+            { url: '/', revision: null },
+            { url: '/catalogue/', revision: null },
+            { url: '/contact/', revision: null },
+            { url: '/rejoindre/', revision: null },
+          ]
+        })
+      );
+    }
+    return config;
   }
 }
 

@@ -2,6 +2,8 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ConnectionStatusIndicator, OfflineBanner } from "@/components/ConnectionStatus";
+import { PWAInstallPrompt, PWAUpdateNotification, PWAStatusIndicator } from "@/components/PWAComponents";
 
 // Import monitoring setup
 import '../monitoring/performance';
@@ -54,33 +56,52 @@ export default function RootLayout({
         className={`${fontClass} min-h-screen bg-white text-neutral-900 antialiased`}
       >
         <ErrorBoundary>
+          {/* Offline Banner */}
+          <OfflineBanner />
+          
           <header className="border-b">
             <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-              <a href="/" className="font-semibold">La Vida Luca</a>
-              <nav className="flex gap-6 text-sm">
-                <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
-                <a href="/rejoindre" className="opacity-80 hover:opacity-100">
-                  Rejoindre
-                </a>
-                <a href="/contact" className="opacity-80 hover:opacity-100">
-                  Contact
-                </a>
-                {process.env.NODE_ENV === 'development' && (
-                  <a href="/monitoring" className="opacity-80 hover:opacity-100">
-                    Monitoring
+              <div className="flex items-center space-x-4">
+                <a href="/" className="font-semibold">La Vida Luca</a>
+                <PWAStatusIndicator />
+              </div>
+              <div className="flex items-center space-x-4">
+                <nav className="flex gap-6 text-sm">
+                  <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
+                  <a href="/rejoindre" className="opacity-80 hover:opacity-100">
+                    Rejoindre
                   </a>
-                )}
-              </nav>
+                  <a href="/contact" className="opacity-80 hover:opacity-100">
+                    Contact
+                  </a>
+                  {process.env.NODE_ENV === 'development' && (
+                    <a href="/monitoring" className="opacity-80 hover:opacity-100">
+                      Monitoring
+                    </a>
+                  )}
+                </nav>
+                <ConnectionStatusIndicator />
+              </div>
             </div>
           </header>
 
-          <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
+          <main className="mx-auto max-w-6xl px-4 py-10">
+            {/* PWA Install Prompt */}
+            <div className="mb-6">
+              <PWAInstallPrompt />
+            </div>
+            
+            {children}
+          </main>
 
           <footer className="border-t">
             <div className="mx-auto max-w-6xl px-4 py-8 text-sm opacity-70">
               © {new Date().getFullYear()} La Vida Luca — Tous droits réservés
             </div>
           </footer>
+
+          {/* PWA Update Notification */}
+          <PWAUpdateNotification />
         </ErrorBoundary>
       </body>
     </html>

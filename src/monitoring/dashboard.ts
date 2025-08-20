@@ -1,5 +1,7 @@
 import { performanceMonitor } from './performance';
 import { alertManager } from './alerts';
+import { offlineQueue } from '../lib/offline-queue';
+import { offlineCacheManager } from '../lib/offline-cache';
 
 interface DashboardMetrics {
   performance: {
@@ -23,6 +25,16 @@ interface DashboardMetrics {
     warnings: number;
     recent: number; // last hour
   };
+  offline: {
+    isOnline: boolean;
+    queueLength: number;
+    isProcessing: boolean;
+    cacheSize: {
+      indexedDB: number;
+      localStorage: number;
+    };
+    serviceWorkerReady: boolean;
+  };
   health: {
     status: 'healthy' | 'warning' | 'critical';
     issues: string[];
@@ -39,7 +51,7 @@ export class MonitoringDashboard {
     return MonitoringDashboard.instance;
   }
 
-  getMetrics(): DashboardMetrics {
+  async getMetrics(): Promise<DashboardMetrics> {
     const metrics = performanceMonitor.getMetrics();
     const alerts = alertManager.getAlerts();
     const now = new Date();
@@ -67,8 +79,14 @@ export class MonitoringDashboard {
     const errorAlerts = alerts.filter(alert => alert.type === 'error');
     const warningAlerts = alerts.filter(alert => alert.type === 'warning');
 
+    // Get offline metrics
+    const queueStatus = offlineQueue.getQueueStatus();
+    const cacheSize = await offlineCacheManager.getCacheSize();
+    const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+    const serviceWorkerReady = 'serviceWorker' in navigator && !!navigator.serviceWorker.controller;
+
     // Determine health status
-    const health = this.calculateHealthStatus(webVitals, errorAlerts.length, failedAPICalls.length);
+    const health = this.calculateHealthStatus(webVitals, errorAlerts.length, failedAPICalls.length, queueStatus.length);
 
     return {
       performance: {
@@ -86,6 +104,13 @@ export class MonitoringDashboard {
         errors: errorAlerts.length,
         warnings: warningAlerts.length,
         recent: recentAlerts.length,
+      },
+      offline: {
+        isOnline,
+        queueLength: queueStatus.length,
+        isProcessing: queueStatus.isProcessing,
+        cacheSize,
+        serviceWorkerReady,
       },
       health,
     };
@@ -114,7 +139,8 @@ export class MonitoringDashboard {
   private calculateHealthStatus(
     webVitals: any, 
     errorCount: number, 
-    failedAPICount: number
+    failedAPICount: number,
+    queueLength?: number
   ): { status: 'healthy' | 'warning' | 'critical'; issues: string[] } {
     const issues: string[] = [];
     let status: 'healthy' | 'warning' | 'critical' = 'healthy';
@@ -147,18 +173,24 @@ export class MonitoringDashboard {
       status = status === 'healthy' ? 'warning' : 'critical';
     }
 
+    // Check offline queue
+    if (queueLength && queueLength > 10) {
+      issues.push('Large offline queue detected');
+      status = status === 'healthy' ? 'warning' : status;
+    }
+
     return { status, issues };
   }
 
-  exportMetrics(): string {
-    const metrics = this.getMetrics();
-    return JSON.stringify(metrics, null, 2);
+  exportMetrics(): Promise<string> {
+    return this.getMetrics().then(metrics => JSON.stringify(metrics, null, 2));
   }
 
   // Real-time monitoring
   startRealTimeMonitoring(callback: (metrics: DashboardMetrics) => void, interval: number = 30000) {
-    return setInterval(() => {
-      callback(this.getMetrics());
+    return setInterval(async () => {
+      const metrics = await this.getMetrics();
+      callback(metrics);
     }, interval);
   }
 
