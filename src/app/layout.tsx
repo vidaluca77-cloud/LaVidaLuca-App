@@ -2,6 +2,9 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import OfflineIndicator from "@/components/OfflineIndicator";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import ServiceWorkerUpdate from "@/components/ServiceWorkerUpdate";
 
 // Import monitoring setup
 import '../monitoring/performance';
@@ -54,6 +57,11 @@ export default function RootLayout({
         className={`${fontClass} min-h-screen bg-white text-neutral-900 antialiased`}
       >
         <ErrorBoundary>
+          {/* PWA and offline components */}
+          <OfflineIndicator />
+          <ServiceWorkerUpdate />
+          <PWAInstallPrompt />
+          
           <header className="border-b">
             <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
               <a href="/" className="font-semibold">La Vida Luca</a>
@@ -64,6 +72,9 @@ export default function RootLayout({
                 </a>
                 <a href="/contact" className="opacity-80 hover:opacity-100">
                   Contact
+                </a>
+                <a href="/settings" className="opacity-80 hover:opacity-100">
+                  Paramètres
                 </a>
                 {process.env.NODE_ENV === 'development' && (
                   <a href="/monitoring" className="opacity-80 hover:opacity-100">

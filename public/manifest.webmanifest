@@ -1,12 +1,90 @@
 {
-  "name": "La Vida Luca",
+  "name": "La Vida Luca - Réseau de fermes autonomes",
   "short_name": "Vida Luca",
+  "description": "Réseau de fermes autonomes & pédagogiques — formation, insertion et agriculture vivante",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#ffffff",
   "theme_color": "#10b981",
+  "categories": ["education", "lifestyle", "social"],
+  "lang": "fr",
+  "scope": "/",
   "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ]
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Catalogue d'activités",
+      "short_name": "Catalogue",
+      "description": "Découvrir les activités disponibles",
+      "url": "/catalogue",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Nous contacter",
+      "short_name": "Contact",
+      "description": "Poser une question ou demander des informations",
+      "url": "/contact",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Rejoindre le réseau",
+      "short_name": "Rejoindre",
+      "description": "Devenir membre du réseau La Vida Luca",
+      "url": "/rejoindre",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop-home.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Page d'accueil sur desktop"
+    },
+    {
+      "src": "/screenshots/mobile-home.png",
+      "sizes": "375x667",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Page d'accueil sur mobile"
+    }
+  ],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "handle_links": "preferred",
+  "capture_links": "existing-client-navigate"
 }
