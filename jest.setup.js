@@ -48,6 +48,12 @@ jest.mock('@heroicons/react/24/outline', () => ({
   ShieldCheckIcon: () => React.createElement('svg', { 'data-testid': 'shield-check-icon' }),
   UserGroupIcon: () => React.createElement('svg', { 'data-testid': 'user-group-icon' }),
   StarIcon: () => React.createElement('svg', { 'data-testid': 'star-icon' }),
+  ExclamationTriangleIcon: () => React.createElement('svg', { 'data-testid': 'exclamation-triangle-icon' }),
+  WifiIcon: () => React.createElement('svg', { 'data-testid': 'wifi-icon' }),
+  SignalIcon: () => React.createElement('svg', { 'data-testid': 'signal-icon' }),
+  NoSymbolIcon: () => React.createElement('svg', { 'data-testid': 'no-symbol-icon' }),
+  ArrowPathIcon: () => React.createElement('svg', { 'data-testid': 'arrow-path-icon' }),
+  XMarkIcon: () => React.createElement('svg', { 'data-testid': 'x-mark-icon' }),
 }));
 
 // Mock monitoring module
