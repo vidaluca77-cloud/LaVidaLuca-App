@@ -2,6 +2,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ClientLayout } from "@/components/ClientLayout";
 
 // Import monitoring setup
 import '../monitoring/performance';
@@ -54,33 +55,40 @@ export default function RootLayout({
         className={`${fontClass} min-h-screen bg-white text-neutral-900 antialiased`}
       >
         <ErrorBoundary>
-          <header className="border-b">
-            <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-              <a href="/" className="font-semibold">La Vida Luca</a>
-              <nav className="flex gap-6 text-sm">
-                <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
-                <a href="/rejoindre" className="opacity-80 hover:opacity-100">
-                  Rejoindre
-                </a>
-                <a href="/contact" className="opacity-80 hover:opacity-100">
-                  Contact
-                </a>
-                {process.env.NODE_ENV === 'development' && (
-                  <a href="/monitoring" className="opacity-80 hover:opacity-100">
-                    Monitoring
+          <ClientLayout>
+            <header className="border-b">
+              <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+                <a href="/" className="font-semibold">La Vida Luca</a>
+                <nav className="flex gap-6 text-sm">
+                  <a href="/" className="opacity-80 hover:opacity-100">Accueil</a>
+                  <a href="/rejoindre" className="opacity-80 hover:opacity-100">
+                    Rejoindre
                   </a>
-                )}
-              </nav>
-            </div>
-          </header>
+                  <a href="/contact" className="opacity-80 hover:opacity-100">
+                    Contact
+                  </a>
+                  {process.env.NODE_ENV === 'development' && (
+                    <>
+                      <a href="/monitoring" className="opacity-80 hover:opacity-100">
+                        Monitoring
+                      </a>
+                      <a href="/offline-demo" className="opacity-80 hover:opacity-100">
+                        Offline Demo
+                      </a>
+                    </>
+                  )}
+                </nav>
+              </div>
+            </header>
 
-          <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
+            <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
 
-          <footer className="border-t">
-            <div className="mx-auto max-w-6xl px-4 py-8 text-sm opacity-70">
-              © {new Date().getFullYear()} La Vida Luca — Tous droits réservés
-            </div>
-          </footer>
+            <footer className="border-t">
+              <div className="mx-auto max-w-6xl px-4 py-8 text-sm opacity-70">
+                © {new Date().getFullYear()} La Vida Luca — Tous droits réservés
+              </div>
+            </footer>
+          </ClientLayout>
         </ErrorBoundary>
       </body>
     </html>
