@@ -7,12 +7,33 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from contextlib import asynccontextmanager
 import logging
+import os
 
-from .config import settings
-from .database import database
-from .routes import auth, users, activities, contacts, suggestions
-from .middleware import setup_middleware
-from .exceptions import setup_exception_handlers
+from config import settings
+from database import database
+from routes import auth, users, activities, contacts, suggestions, guide
+from middleware import setup_middleware
+from exceptions import setup_exception_handlers
+from monitoring import (
+    init_sentry, setup_logging, context_logger, set_app_info, 
+    update_system_metrics, APP_INFO
+)
+
+# Initialize monitoring
+init_sentry(
+    environment=settings.ENVIRONMENT,
+    release=os.getenv("RELEASE_VERSION", "1.0.0")
+)
+
+# Setup structured logging
+app_logger = setup_logging("la-vida-luca-backend")
+
+# Set application info for metrics
+set_app_info(
+    version="1.0.0",
+    environment=settings.ENVIRONMENT,
+    build_date=os.getenv("BUILD_DATE", "unknown")
+)
 
 
 # Configure logging
@@ -26,18 +47,28 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
-    logger.info("Starting La Vida Luca API...")
+    context_logger.info("Starting La Vida Luca API...")
     
-    # Connect to database
-    await database.connect()
-    logger.info("Database connected")
+    # Try to connect to database
+    try:
+        await database.connect()
+        context_logger.info("Database connected")
+    except Exception as e:
+        context_logger.warning(f"Database connection failed: {e}")
+        context_logger.info("Starting API without database connection")
+    
+    # Update system metrics on startup
+    update_system_metrics()
     
     yield
     
     # Cleanup
-    await database.disconnect()
-    logger.info("Database disconnected")
-    logger.info("La Vida Luca API shutdown")
+    try:
+        await database.disconnect()
+        context_logger.info("Database disconnected")
+    except Exception as e:
+        context_logger.warning(f"Database disconnect failed: {e}")
+    context_logger.info("La Vida Luca API shutdown")
 
 
 def create_app() -> FastAPI:
@@ -64,6 +95,7 @@ def create_app() -> FastAPI:
     app.include_router(activities.router, prefix="/api/v1/activities", tags=["activities"])
     app.include_router(contacts.router, prefix="/api/v1/contacts", tags=["contacts"])
     app.include_router(suggestions.router, prefix="/api/v1/suggestions", tags=["suggestions"])
+    app.include_router(guide.router, prefix="/api/v1", tags=["guide"])
     
     @app.get("/")
     async def root():
@@ -83,14 +115,29 @@ def create_app() -> FastAPI:
             await database.execute("SELECT 1")
             db_status = "healthy"
         except Exception as e:
-            logger.error(f"Database health check failed: {e}")
+            context_logger.error("Database health check failed", error=str(e))
             db_status = "unhealthy"
         
         return {
-            "status": "healthy",
+            "status": "healthy" if db_status == "healthy" else "degraded",
             "database": db_status,
             "environment": settings.ENVIRONMENT
         }
+    
+    # Add metrics endpoint
+    @app.get("/metrics")
+    async def metrics():
+        """Prometheus metrics endpoint."""
+        from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+        from fastapi import Response
+        
+        # Update system metrics before serving
+        update_system_metrics()
+        
+        return Response(
+            generate_latest(),
+            media_type=CONTENT_TYPE_LATEST
+        )
     
     return app
 

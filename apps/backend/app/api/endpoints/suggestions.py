@@ -11,23 +11,61 @@ from ...core.config import settings
 router = APIRouter()
 
 
-@router.get("/", response_model=List[ActivitySuggestionSchema])
+@router.get("/", response_model=List[ActivitySuggestionSchema], summary="Get user activity suggestions")
 def get_user_suggestions(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
+    """
+    Get personalized activity suggestions for the current user.
+    
+    **Authentication required.** Returns up to 10 of the most recent
+    activity suggestions generated for the current user.
+    
+    Suggestions can be either:
+    - AI-generated based on user preferences and profile
+    - Simple recommendations based on available activities
+    
+    Each suggestion includes the recommended activity details and
+    the reason why it was suggested.
+    """
     suggestions = db.query(ActivitySuggestion).filter(
         ActivitySuggestion.user_id == current_user.id
     ).order_by(ActivitySuggestion.created_at.desc()).limit(10).all()
     return suggestions
 
 
-@router.post("/generate", response_model=List[ActivitySuggestionSchema])
+@router.post("/generate", response_model=List[ActivitySuggestionSchema], summary="Generate new AI suggestions")
 def generate_ai_suggestions(
-    preferences: Optional[str] = None,
+    preferences: Optional[str] = Query(None, description="User preferences or interests to guide suggestions"),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
+    """
+    Generate new personalized activity suggestions using AI.
+    
+    **Authentication required.** This endpoint generates new activity
+    suggestions based on the user's profile, existing activities, and
+    optional preferences.
+    
+    **How it works:**
+    1. If OpenAI is configured: Uses GPT to generate intelligent suggestions
+       based on user context and available activities
+    2. If OpenAI is not available: Returns simple recommendations based
+       on available published activities
+    
+    **Parameters:**
+    - **preferences**: Optional text describing user interests, goals,
+      or specific areas they want to explore
+    
+    **Features:**
+    - Avoids suggesting activities the user has already created
+    - Only suggests from published activities
+    - Stores suggestions in database for future reference
+    - Prevents duplicate suggestions
+    
+    Returns a list of new suggestions with detailed reasoning.
+    """
     if not settings.OPENAI_API_KEY:
         # Return simple suggestions based on available activities when OpenAI is not configured
         available_activities = db.query(Activity).filter(

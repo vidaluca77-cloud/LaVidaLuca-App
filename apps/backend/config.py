@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     
     # Database
-    DATABASE_URL: str = "postgresql://user:password@localhost:5432/lavidaluca"
+    DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost:5432/lavidaluca"
     DATABASE_POOL_SIZE: int = 10
     DATABASE_MAX_OVERFLOW: int = 20
     
@@ -60,14 +60,14 @@ class DevelopmentSettings(Settings):
     """Development environment settings."""
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/lavidaluca_dev"
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/lavidaluca_dev"
 
 
 class TestingSettings(Settings):
     """Testing environment settings."""
     ENVIRONMENT: str = "testing"
     DEBUG: bool = True
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/lavidaluca_test"
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/lavidaluca_test"
     JWT_SECRET_KEY: str = "test-secret-key"
 
 

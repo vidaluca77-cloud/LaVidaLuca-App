@@ -11,8 +11,22 @@ from ...core.config import settings
 router = APIRouter()
 
 
-@router.post("/register", response_model=UserSchema)
+@router.post("/register", response_model=UserSchema, summary="Register a new user")
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
+    """
+    Create a new user account.
+    
+    Creates a new user with the provided information. The username and email must be unique.
+    Password will be hashed before storage.
+    
+    - **email**: Valid email address (must be unique)
+    - **username**: Unique username (3-50 characters)
+    - **full_name**: Optional full name for display
+    - **password**: Password (minimum 8 characters)
+    - **is_active**: Whether the account is active (default: true)
+    
+    Returns the created user information (without password).
+    """
     # Check if user already exists
     db_user = db.query(User).filter(
         (User.email == user.email) | (User.username == user.username)
@@ -38,8 +52,24 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     return db_user
 
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=Token, summary="Login user")
 def login_user(user_credentials: UserLogin, db: Session = Depends(get_db)):
+    """
+    Authenticate user and return JWT access token.
+    
+    Validates user credentials and returns a JWT token that can be used
+    for authentication in subsequent API calls.
+    
+    - **username**: The username for the account
+    - **password**: The password for the account
+    
+    Returns:
+    - **access_token**: JWT token for API authentication
+    - **token_type**: Always "bearer"
+    
+    The token should be included in the Authorization header as:
+    `Authorization: Bearer <access_token>`
+    """
     user = db.query(User).filter(User.username == user_credentials.username).first()
     if not user or not verify_password(user_credentials.password, user.hashed_password):
         raise HTTPException(
