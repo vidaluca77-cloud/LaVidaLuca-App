@@ -16,7 +16,7 @@ export const useUserProfile = (initialProfile?: Partial<UserProfile>) => {
     ...initialProfile,
   });
 
-  const updateProfile = useCallback((key: keyof UserProfile, value: any) => {
+  const updateProfile = useCallback(<K extends keyof UserProfile>(key: K, value: UserProfile[K]) => {
     setProfile(prev => ({ ...prev, [key]: value }));
   }, []);
 
