@@ -22,7 +22,30 @@ export const useDarkMode = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
     localStorage.setItem('darkMode', String(newMode));
-    document.documentElement.classList.toggle('dark', newMode);
+    // Only run on client
+    if (typeof window !== 'undefined') {
+      // Check for saved preference or system preference
+      const savedMode = localStorage.getItem('darkMode');
+      if (savedMode) {
+        const isDark = savedMode === 'true';
+        setIsDarkMode(isDark);
+        document.documentElement.classList.toggle('dark', isDark);
+      } else {
+        // Check system preference
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setIsDarkMode(systemPrefersDark);
+        document.documentElement.classList.toggle('dark', systemPrefersDark);
+      }
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('darkMode', String(newMode));
+      document.documentElement.classList.toggle('dark', newMode);
+    }
   };
 
   return {
