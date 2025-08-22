@@ -20,7 +20,7 @@ export const OptimizedImage = ({
   className = '', 
   priority = false 
 }: OptimizedImageProps) => {
-  const { ref, isVisible } = useLazyLoading();
+  const { ref, isVisible } = useLazyLoading<HTMLDivElement>();
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
