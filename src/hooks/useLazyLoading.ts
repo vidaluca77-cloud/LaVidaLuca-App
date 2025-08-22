@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 
 export const useLazyLoading = (threshold = 0.1) => {
   const [isVisible, setIsVisible] = useState(false);
-  const ref = useRef<HTMLElement>(null);
+  const ref = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const element = ref.current;
