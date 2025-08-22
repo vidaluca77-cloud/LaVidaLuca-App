@@ -50,6 +50,13 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: Optional[str] = None
     SMTP_FROM_EMAIL: str = "noreply@lavidaluca.fr"
     
+    # Database Connection Components (for compatibility)
+    POSTGRES_SERVER: Optional[str] = None
+    POSTGRES_USER: Optional[str] = None
+    POSTGRES_PASSWORD: Optional[str] = None
+    POSTGRES_DB: Optional[str] = None
+    POSTGRES_PORT: Optional[int] = None
+    
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

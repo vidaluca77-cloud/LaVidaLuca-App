@@ -5,8 +5,9 @@ services:
   - type: web
     name: lavidaluca-backend
     runtime: python3
-    buildCommand: cd apps/backend && pip install -r requirements.txt
-    startCommand: cd apps/backend && gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT
+    rootDir: apps/backend
     plan: starter
     region: oregon
     branch: main

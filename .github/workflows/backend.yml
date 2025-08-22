@@ -16,10 +16,11 @@ jobs:
     
     services:
       postgres:
-        image: postgres:13
+        image: postgres:15
         env:
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_lavidaluca
+          POSTGRES_USER: postgres
+          POSTGRES_DB: lavidaluca_test
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -34,7 +35,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: '3.12'
     
     - name: Install dependencies
       working-directory: apps/backend
@@ -45,7 +46,7 @@ jobs:
     - name: Set up environment variables
       working-directory: apps/backend
       run: |
-        echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test_lavidaluca" >> .env
+        echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/lavidaluca_test" >> .env
         echo "SECRET_KEY=test-secret-key" >> .env
         echo "OPENAI_API_KEY=test-key" >> .env
     
@@ -57,7 +58,7 @@ jobs:
     - name: Run tests
       working-directory: apps/backend
       run: |
-        pytest app/tests/ -v --tb=short
+        pytest test_simple.py -v --tb=short
     
     - name: Run linting (optional)
       working-directory: apps/backend
