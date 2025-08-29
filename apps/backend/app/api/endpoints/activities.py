@@ -15,7 +15,7 @@ def get_activities(
     skip: int = Query(0, ge=0, description="Number of activities to skip (for pagination)"),
     limit: int = Query(100, ge=1, le=100, description="Maximum number of activities to return"),
     category: str = Query(None, description="Filter by activity category"),
-    difficulty: str = Query(None, description="Filter by difficulty level", regex="^(beginner|intermediate|advanced)$"),
+    difficulty: str = Query(None, description="Filter by difficulty level", pattern="^(beginner|intermediate|advanced)$"),
     published_only: bool = Query(True, description="Only show published activities"),
     db: Session = Depends(get_db)
 ):

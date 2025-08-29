@@ -56,7 +56,7 @@ cd apps/backend
 pip install -r requirements.txt
 cp .env.example .env
 # Configurer DATABASE_URL dans .env
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app_simple:app --reload --host 0.0.0.0 --port 8000
 ```
 
 #### Frontend (port 3000)
@@ -73,8 +73,8 @@ npm run dev
 ### Endpoints principaux
 
 - `GET /` - Informations de l'API
-- `GET /health` - Health check (base de données + statut)
-- `GET /docs` - Documentation Swagger (développement uniquement)
+- `POST /api/v1/guide` - Assistant IA pour conseils jardinage/permaculture
+- `GET /docs` - Documentation Swagger
 
 ### Authentification
 - `POST /api/v1/auth/register` - Inscription utilisateur
