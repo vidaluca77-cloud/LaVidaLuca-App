@@ -128,10 +128,9 @@ Dans les settings GitHub du repository, configurer :
 #### Backend (Render)
 - `RENDER_DEPLOY_HOOK_IA` : URL de déploiement Render
 
-#### Frontend (Vercel)
-- `VERCEL_TOKEN` : Token d'authentification Vercel
-- `VERCEL_PROJECT_ID` : ID du projet Vercel  
-- `VERCEL_ORG_ID` : ID de l'organisation Vercel
+#### Frontend (Netlify)
+- `NETLIFY_SITE_ID` : ID du site Netlify
+- `NETLIFY_AUTH_TOKEN` : Token d'authentification Netlify
 
 ### Processus de déploiement
 
@@ -140,7 +139,7 @@ Dans les settings GitHub du repository, configurer :
    - Build frontend
    - Tests d'intégration
    - Déploiement backend sur Render
-   - Déploiement frontend sur Vercel
+   - Déploiement frontend sur Netlify
 
 2. **Pull Requests** exécutent les tests CI sans déploiement
 
@@ -375,14 +374,15 @@ L'application sera accessible sur :
 
 ## Déploiement
 
-### Production sur Vercel
+### Production sur Netlify
 
 1. **Connexion du repository**
-   - Connecter le repository GitHub à Vercel
+   - Connecter le repository GitHub à Netlify
    - Sélectionner la branche `main` pour les déploiements automatiques
+   - Configuration automatique via `netlify.toml`
 
 2. **Configuration des variables d'environnement**
-   Dans le dashboard Vercel, ajouter toutes les variables du fichier `.env.local`
+   Dans le dashboard Netlify, ajouter toutes les variables du fichier `.env.local`
 
 3. **Déploiement**
    ```bash
@@ -390,15 +390,22 @@ L'application sera accessible sur :
    git push origin main
    
    # Ou déploiement manuel via CLI
-   npx vercel --prod
+   npm install -g netlify-cli
+   netlify login
+   cd apps/web
+   npm run build
+   netlify deploy --prod --dir=out
    ```
 
 ### Optimisations de production
-- **Compression** : Gzip automatique
-- **Images** : Optimisation via Next.js
+- **Static Export** : Site statique optimisé
+- **Compression** : Gzip automatique par Netlify
+- **CDN** : Distribution globale automatique
+- **Images** : Optimisation via Next.js (pré-build)
 - **Fonts** : Optimisation automatique des Google Fonts
 - **Bundle** : Tree-shaking et minification
 - **PWA** : Manifest et service worker
+- **Headers** : Configuration de sécurité via `netlify.toml`
 
 ## Monitoring et Observabilité
 

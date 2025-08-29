@@ -1,0 +1,47 @@
+[build]
+  # Configuration for the frontend (Next.js app)
+  base = "apps/web"
+  command = "npm run build"
+  publish = "apps/web/out"
+  
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--legacy-peer-deps"
+
+# Redirects and rewrites for SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers for security and performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:;"
+
+# Cache optimization
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Function configuration (if needed for backend integration)
+[functions]
+  directory = "apps/web/netlify/functions"
+  node_bundler = "esbuild"
+
+# Dev command for local development
+[dev]
+  command = "npm run dev"
+  port = 3000
+  publish = "apps/web/.next"

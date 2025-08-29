@@ -29,7 +29,7 @@ jobs:
         echo "Branch: ${{ github.ref_name }}"
 
   deploy-frontend:
-    name: Deploy Frontend to Vercel
+    name: Deploy Frontend to Netlify
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     
@@ -40,21 +40,26 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: 'apps/web/package-lock.json'
         
-    - name: Install Vercel CLI
-      run: npm install -g vercel@latest
-      
-    - name: Deploy to Vercel
+    - name: Install dependencies
       run: |
         cd apps/web
-        vercel --token ${{ secrets.VERCEL_TOKEN }} \
-          --scope ${{ secrets.VERCEL_ORG_ID }} \
-          --prod \
-          --yes \
-          --confirm
+        npm ci
+        
+    - name: Build application
+      run: |
+        cd apps/web
+        npm run build
+        
+    - name: Deploy to Netlify
+      uses: netlify/actions/cli@master
+      with:
+        args: deploy --dir=apps/web/out --prod
       env:
-        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         
     - name: Verify deployment
       run: |
@@ -74,7 +79,7 @@ jobs:
         if [[ "${{ needs.deploy-backend.result }}" == "success" && "${{ needs.deploy-frontend.result }}" == "success" ]]; then
           echo "✅ Deployment successful"
           echo "Backend: Deployed to Render"
-          echo "Frontend: Deployed to Vercel"
+          echo "Frontend: Deployed to Netlify"
         else
           echo "❌ Deployment failed"
           echo "Backend status: ${{ needs.deploy-backend.result }}"
