@@ -196,17 +196,16 @@ apps/web/
 
 ### Backend Deployment (Render)
 - **Platform**: Render.com
-- **Configuration**: `render.yaml`
+- **Configuration**: `render.yaml` (root level)
 - **Environment**: Production settings via environment variables
 - **Database**: PostgreSQL on Render
 - **Monitoring**: Sentry + Prometheus metrics
 
 ### Frontend Deployment (Render)
 - **Platform**: Render.com
-- **Configuration**: Automatic detection of Next.js framework
-- **Environment**: Environment variables via Render dashboard
-- **CDN**: Global distribution
-- **Static Assets**: Optimized deployment
+- **Configuration**: `render.yaml` (root level)
+- **Environment**: Environment variables via render.yaml and Render dashboard
+- **Static Assets**: Optimized Next.js deployment
 
 ### CI/CD Pipeline
 - **Trigger**: Push to `main` branch or pull requests

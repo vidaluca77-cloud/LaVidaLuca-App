@@ -126,12 +126,10 @@ Le déploiement est automatisé via GitHub Actions :
 Dans les settings GitHub du repository, configurer :
 
 #### Backend (Render)
-- `RENDER_DEPLOY_HOOK_IA` : URL de déploiement Render
+- `RENDER_DEPLOY_HOOK_BACKEND` : URL de déploiement Render backend
 
-#### Frontend (Vercel)
-- `VERCEL_TOKEN` : Token d'authentification Vercel
-- `VERCEL_PROJECT_ID` : ID du projet Vercel  
-- `VERCEL_ORG_ID` : ID de l'organisation Vercel
+#### Frontend (Render) 
+- `RENDER_DEPLOY_HOOK_FRONTEND` : URL de déploiement Render frontend
 
 ### Processus de déploiement
 
@@ -140,7 +138,7 @@ Dans les settings GitHub du repository, configurer :
    - Build frontend
    - Tests d'intégration
    - Déploiement backend sur Render
-   - Déploiement frontend sur Vercel
+   - Déploiement frontend sur Render
 
 2. **Pull Requests** exécutent les tests CI sans déploiement
 
