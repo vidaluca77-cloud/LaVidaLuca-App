@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "npm run dev:web",
     "dev:web": "cd apps/web && npm run dev",
-    "dev:backend": "cd apps/backend && python -m uvicorn main:app --reload --port 8000",
+    "dev:backend": "cd apps/backend && python -m uvicorn app_simple:app --reload --port 8000",
     "dev:full": "concurrently \"npm run dev:web\" \"npm run dev:backend\"",
     "build": "npm run build:web",
     "build:web": "cd apps/web && npm run build",
@@ -22,7 +22,7 @@
     "test:backend": "cd apps/backend && python -m pytest",
     "test:coverage": "cd apps/backend && python -m pytest --cov=. --cov-report=html",
     "backend:install": "cd apps/backend && pip install -r requirements.txt",
-    "backend:dev": "cd apps/backend && python -m uvicorn main:app --reload --port 8000",
+    "backend:dev": "cd apps/backend && python -m uvicorn app_simple:app --reload --port 8000",
     "backend:test": "cd apps/backend && python -m pytest",
     "backend:test:coverage": "cd apps/backend && python -m pytest --cov=. --cov-report=html",
     "backend:migrate": "cd apps/backend && alembic upgrade head",
