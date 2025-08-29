@@ -18,13 +18,9 @@ The repository has been prepared for successful deployment. All critical issues 
 ### GitHub Secrets Required:
 Configure these in GitHub repository settings > Secrets and variables > Actions:
 
-#### Backend (Render):
-- `RENDER_DEPLOY_HOOK_IA`: Render deployment webhook URL
-
-#### Frontend (Vercel):
-- `VERCEL_TOKEN`: Vercel authentication token
-- `VERCEL_PROJECT_ID`: Vercel project ID
-- `VERCEL_ORG_ID`: Vercel organization ID
+#### Render Services:
+- `RENDER_DEPLOY_HOOK_BACKEND`: Render backend deployment webhook URL
+- `RENDER_DEPLOY_HOOK_FRONTEND`: Render frontend deployment webhook URL
 
 ### Environment Variables for Production:
 
@@ -35,7 +31,7 @@ Configure these in GitHub repository settings > Secrets and variables > Actions:
 - `OPENAI_API_KEY` (set manually)
 - `CORS_ORIGINS` (configured in render.yaml)
 
-#### Frontend (Vercel dashboard):
+#### Frontend (Render dashboard):
 - `NEXT_PUBLIC_API_URL` (your backend URL)
 - `NEXT_PUBLIC_SENTRY_DSN` (optional)
 
@@ -43,19 +39,11 @@ Configure these in GitHub repository settings > Secrets and variables > Actions:
 
 1. **Push to main branch** triggers automatic deployment
 2. **CI/CD pipeline** runs tests and builds
-3. **Backend deploys** to Render automatically
-4. **Frontend deploys** to Vercel automatically
+3. **Both frontend and backend deploy** to Render automatically
 
 ## 🔧 Manual Deployment Commands
 
-### Frontend:
-```bash
-cd apps/web
-vercel --prod
-```
-
-### Backend:
-Deployed automatically via Render webhook or push to main branch.
+Both frontend and backend are deployed automatically via Render when pushing to the main branch.
 
 ## ⚠️ Known Non-Blocking Issues
 
@@ -66,8 +54,7 @@ Deployed automatically via Render webhook or push to main branch.
 ## 📋 Pre-Deployment Checklist
 
 - [ ] GitHub secrets configured
-- [ ] Render service configured with correct repository
-- [ ] Vercel project connected to repository  
+- [ ] Render services configured with correct repository (both frontend and backend)
 - [ ] Production environment variables set
 - [ ] Database provisioned on Render
 - [ ] Domain configured (if applicable)

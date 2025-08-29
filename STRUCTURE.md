@@ -12,15 +12,9 @@ LaVidaLuca-App/
 │   ├── ci.yml                 # Continuous Integration pipeline
 │   ├── deploy.yml             # Deployment pipeline
 │   └── backend.yml            # Backend-specific workflows
-├── .vscode/                   # VSCode workspace configuration
-│   ├── settings.json          # Workspace settings
-│   ├── launch.json            # Debug configurations
-│   ├── extensions.json        # Recommended extensions
-│   └── tasks.json             # Build/run tasks
 ├── apps/                      # Application modules
 │   ├── backend/              # FastAPI backend application
 │   └── web/                  # Next.js frontend application
-├── LaVidaLuca.code-workspace # VSCode workspace file
 ├── package.json              # Monorepo scripts and dependencies
 ├── .env.example              # Environment variables template
 ├── .gitignore               # Git ignore configuration
@@ -163,10 +157,10 @@ apps/web/
    npm run dev:backend  # Backend only (port 8000)
    ```
 
-### VSCode Setup
-1. Install recommended extensions from `.vscode/extensions.json`
-2. Open the workspace file: `LaVidaLuca.code-workspace`
-3. Configure Python interpreter path for backend development
+### Development Setup
+1. Clone the repository and install dependencies
+2. Set up environment variables for frontend and backend
+3. Configure your IDE for optimal development experience
 
 ## 📊 Available Scripts
 
@@ -207,12 +201,12 @@ apps/web/
 - **Database**: PostgreSQL on Render
 - **Monitoring**: Sentry + Prometheus metrics
 
-### Frontend Deployment (Vercel)
-- **Platform**: Vercel
-- **Configuration**: `vercel.json` (auto-detected)
-- **Environment**: Environment variables via Vercel dashboard
-- **CDN**: Automatic global distribution
-- **Analytics**: Vercel Analytics integration
+### Frontend Deployment (Render)
+- **Platform**: Render.com
+- **Configuration**: Automatic detection of Next.js framework
+- **Environment**: Environment variables via Render dashboard
+- **CDN**: Global distribution
+- **Static Assets**: Optimized deployment
 
 ### CI/CD Pipeline
 - **Trigger**: Push to `main` branch or pull requests
