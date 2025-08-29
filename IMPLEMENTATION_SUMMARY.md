@@ -96,7 +96,7 @@ This document summarizes the successful implementation of the complete project s
 ```
 LaVidaLuca-App/
 ├── .github/workflows/          # CI/CD pipelines
-├── .vscode/                    # VSCode workspace config
+
 ├── apps/
 │   ├── backend/               # FastAPI application
 │   │   ├── app/              # Main application code
@@ -111,8 +111,7 @@ LaVidaLuca-App/
 │       ├── public/           # Static assets
 │       ├── src/              # Source components
 │       └── *.config.js       # Configuration files
-├── STRUCTURE.md              # Architecture documentation
-├── LaVidaLuca.code-workspace # VSCode workspace file
+├── STRUCTURE.md                # Architecture documentation
 ├── package.json              # Monorepo scripts
 └── README.md                 # Project documentation
 ```

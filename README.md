@@ -12,7 +12,7 @@ Plateforme collaborative pour l'entraide et les échanges locaux, axée sur le j
 - **Base de données**: PostgreSQL avec AsyncPG
 - **Authentification**: JWT
 - **IA**: OpenAI Integration pour conseils personnalisés
-- **Déploiement**: Vercel (frontend) + Render (backend)
+- **Déploiement**: Render (fullstack)
 - **Monitoring**: Sentry + Prometheus metrics
 
 ## 🚀 Lancement Local
@@ -375,22 +375,19 @@ L'application sera accessible sur :
 
 ## Déploiement
 
-### Production sur Vercel
+### Production sur Render
 
 1. **Connexion du repository**
-   - Connecter le repository GitHub à Vercel
+   - Connecter le repository GitHub à Render
    - Sélectionner la branche `main` pour les déploiements automatiques
 
 2. **Configuration des variables d'environnement**
-   Dans le dashboard Vercel, ajouter toutes les variables du fichier `.env.local`
+   Dans le dashboard Render, ajouter toutes les variables d'environnement nécessaires
 
 3. **Déploiement**
    ```bash
    # Déploiement automatique via Git
    git push origin main
-   
-   # Ou déploiement manuel via CLI
-   npx vercel --prod
    ```
 
 ### Optimisations de production
