@@ -213,8 +213,8 @@ Développé avec ❤️ pour promouvoir l'entraide locale et la vie durable.
     Backend --> Sentry
     
     subgraph "Déploiement"
-        Frontend --> Vercel[Vercel Hosting]
-        Backend --> Render[Render Hosting]
+        Frontend --> Render[Render Frontend]
+        Backend --> RenderAPI[Render Backend]
     end
     
     subgraph "Fonctionnalités"

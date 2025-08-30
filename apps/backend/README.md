@@ -11,7 +11,7 @@ La Vida Luca est une plateforme collaborative dédiée à la formation des jeune
 - **Base de données**: PostgreSQL 12+
 - **Authentification**: JWT
 - **IA**: OpenAI API pour les suggestions personnalisées
-- **Déploiement**: Vercel (frontend) + Render (backend)
+- **Déploiement**: Render (frontend et backend)
 
 ## Installation
 
