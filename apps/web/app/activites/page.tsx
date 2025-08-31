@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 type Activity = {
   title: string;
@@ -8,43 +8,6 @@ type Activity = {
   safety: 1|2;
   desc: string;
 };
-
-const activities: Activity[] = [
-  { title:"Nourrir et soigner les moutons", category:"agri", duration:60, safety:1, desc:"Alimentation, eau, observation et bien-être du troupeau." },
-  { title:"Tonte & entretien du troupeau", category:"agri", duration:90, safety:2, desc:"Hygiène, tonte (démonstration) et soins courants." },
-  { title:"Soins basse-cour", category:"agri", duration:60, safety:1, desc:"Poules, canards, lapins : alimentation, abris, propreté." },
-  { title:"Plantation de cultures", category:"agri", duration:90, safety:1, desc:"Semis, arrosage, paillage, suivi des jeunes plants." },
-  { title:"Initiation maraîchage", category:"agri", duration:120, safety:1, desc:"Plan de culture, entretien, récolte respectueuse." },
-  { title:"Gestion des clôtures & abris", category:"agri", duration:120, safety:2, desc:"Identifier, réparer et sécuriser parcs et abris." },
-
-  { title:"Fabrication de fromage", category:"transfo", duration:90, safety:2, desc:"Du lait au caillé : hygiène, moulage, affinage (découverte)." },
-  { title:"Confitures & conserves", category:"transfo", duration:90, safety:1, desc:"Préparation, stérilisation, mise en pot, étiquetage." },
-  { title:"Transformation de la laine", category:"transfo", duration:90, safety:1, desc:"Lavage, cardage et petite création textile." },
-  { title:"Fabrication de jus", category:"transfo", duration:90, safety:2, desc:"Du verger à la bouteille : tri, pressage, filtration." },
-  { title:"Séchage d'herbes aromatiques", category:"transfo", duration:60, safety:1, desc:"Cueillette, séchage doux et conditionnement." },
-  { title:"Pain au four à bois", category:"transfo", duration:120, safety:2, desc:"Pétrissage, façonnage, cuisson : respect des temps." },
-
-  { title:"Construction d'abris", category:"artisanat", duration:120, safety:2, desc:"Petites structures bois : plan, coupe, assemblage." },
-  { title:"Réparation & entretien des outils", category:"artisanat", duration:60, safety:1, desc:"Affûtage, graissage, vérifications simples." },
-  { title:"Menuiserie simple", category:"artisanat", duration:120, safety:2, desc:"Mesure, coupe, ponçage, finitions." },
-  { title:"Peinture & décoration d'espaces", category:"artisanat", duration:90, safety:1, desc:"Préparer, protéger, peindre proprement." },
-  { title:"Aménagement d'espaces verts", category:"artisanat", duration:90, safety:1, desc:"Désherbage doux, paillage, plantations." },
-  { title:"Panneaux & orientation", category:"artisanat", duration:90, safety:1, desc:"Concevoir et poser une signalétique claire." },
-
-  { title:"Entretien de la rivière", category:"nature", duration:90, safety:2, desc:"Nettoyage doux, observation des berges." },
-  { title:"Plantation d'arbres", category:"nature", duration:120, safety:1, desc:"Choix d'essences, tuteurage, paillage, suivi." },
-  { title:"Potager écologique", category:"nature", duration:90, safety:1, desc:"Associations, paillis, rotation des cultures." },
-  { title:"Compostage", category:"nature", duration:60, safety:1, desc:"Tri, compost et valorisation des déchets verts." },
-  { title:"Observation de la faune locale", category:"nature", duration:60, safety:1, desc:"Discrétion, repérage, traces/indices." },
-  { title:"Nichoirs & hôtels à insectes", category:"nature", duration:120, safety:1, desc:"Concevoir, fabriquer, installer des abris." },
-
-  { title:"Journée portes ouvertes", category:"social", duration:180, safety:1, desc:"Préparer, accueillir, guider un public." },
-  { title:"Visites guidées de la ferme", category:"social", duration:60, safety:1, desc:"Présenter la ferme et répondre simplement." },
-  { title:"Ateliers pour enfants", category:"social", duration:90, safety:2, desc:"Jeux, découvertes nature, mini-gestes encadrés." },
-  { title:"Cuisine collective (équipe)", category:"social", duration:90, safety:1, desc:"Préparer un repas simple et bon." },
-  { title:"Goûter fermier", category:"social", duration:60, safety:1, desc:"Organisation, service, convivialité, propreté." },
-  { title:"Participation à un marché local", category:"social", duration:180, safety:1, desc:"Stand, présentation, caisse symbolique (simulation)." }
-];
 
 const CAT_LABEL: Record<Activity["category"], string> = {
   agri: "Agriculture",
@@ -71,15 +34,45 @@ const CAT_COLORS: Record<Activity["category"], string> = {
 };
 
 export default function ActivitesPage(){
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const filteredActivities = activities.filter(activity => {
-    const matchesCategory = selectedCategory === "all" || activity.category === selectedCategory;
-    const matchesSearch = activity.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         activity.desc.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+  // Fetch activities from backend
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        setLoading(true);
+        const params = new URLSearchParams();
+        if (selectedCategory !== "all") {
+          params.append("category", selectedCategory);
+        }
+        if (searchTerm) {
+          params.append("search", searchTerm);
+        }
+
+        const response = await fetch(`${apiUrl}/api/v1/activities?${params}`);
+        if (response.ok) {
+          const data = await response.json();
+          setActivities(data.data.activities);
+          setError("");
+        } else {
+          setError("Erreur lors du chargement des activités");
+        }
+      } catch (err) {
+        console.error("Error fetching activities:", err);
+        setError("Impossible de charger les activités");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActivities();
+  }, [selectedCategory, searchTerm, apiUrl]);
 
   const categories = ["all", ...Object.keys(CAT_LABEL)] as const;
 
@@ -113,12 +106,29 @@ export default function ActivitesPage(){
             Catalogue des Activités
           </h1>
           <p className="text-xl text-neutral-600 mb-2 max-w-3xl mx-auto">
-            Découvrez nos 30 activités pédagogiques pour la formation en MFR
+            Découvrez nos activités pédagogiques pour la formation en MFR
           </p>
           <p className="text-neutral-500 max-w-2xl mx-auto">
-            Consultation uniquement — aucun bouton d'inscription en ligne.
+            Données en temps réel depuis notre API - Connexion: {apiUrl}
           </p>
         </section>
+
+        {/* Error Message */}
+        {error && (
+          <section className="mb-8">
+            <div className="card max-w-4xl mx-auto bg-gradient-to-r from-red-50 to-red-100 border-red-200">
+              <div className="flex items-center space-x-3">
+                <div className="text-2xl">⚠️</div>
+                <div>
+                  <h3 className="font-display font-semibold text-red-800 mb-1">
+                    Erreur de connexion
+                  </h3>
+                  <p className="text-red-700">{error}</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Filters */}
         <section className="mb-8">
@@ -158,62 +168,77 @@ export default function ActivitesPage(){
             </div>
 
             <div className="text-sm text-neutral-500">
-              {filteredActivities.length} activité{filteredActivities.length > 1 ? 's' : ''} trouvée{filteredActivities.length > 1 ? 's' : ''}
+              {loading ? "Chargement..." : `${activities.length} activité${activities.length > 1 ? 's' : ''} trouvée${activities.length > 1 ? 's' : ''}`}
             </div>
           </div>
         </section>
+
+        {/* Loading State */}
+        {loading && (
+          <section className="text-center py-12">
+            <div className="text-4xl mb-4">⏳</div>
+            <h3 className="font-display font-semibold text-xl mb-2 text-neutral-700">
+              Chargement des activités...
+            </h3>
+            <p className="text-neutral-500">
+              Récupération des données depuis l'API
+            </p>
+          </section>
+        )}
 
         {/* Activities Grid */}
-        <section>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredActivities.map((activity) => (
-              <article key={activity.title} className={`card bg-gradient-to-br ${CAT_COLORS[activity.category]} hover:shadow-lg transition-all duration-200`}>
-                <div className="flex items-start justify-between mb-4">
-                  <div className="text-2xl">{CAT_ICONS[activity.category]}</div>
-                  <div className="flex gap-2">
-                    <span className="text-xs px-2 py-1 bg-white/70 rounded-full text-neutral-600">
-                      {activity.duration} min
+        {!loading && (
+          <section>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {activities.map((activity, index) => (
+                <article key={`${activity.title}-${index}`} className={`card bg-gradient-to-br ${CAT_COLORS[activity.category]} hover:shadow-lg transition-all duration-200`}>
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="text-2xl">{CAT_ICONS[activity.category]}</div>
+                    <div className="flex gap-2">
+                      <span className="text-xs px-2 py-1 bg-white/70 rounded-full text-neutral-600">
+                        {activity.duration} min
+                      </span>
+                      <span className={`text-xs px-2 py-1 rounded-full text-white ${
+                        activity.safety === 1 ? 'bg-green-500' : 'bg-earth-500'
+                      }`}>
+                        Niveau {activity.safety}
+                      </span>
+                    </div>
+                  </div>
+
+                  <h3 className="font-display font-semibold text-lg mb-3 text-neutral-800 leading-tight">
+                    {activity.title}
+                  </h3>
+                  
+                  <p className="text-neutral-600 text-sm leading-relaxed mb-4">
+                    {activity.desc}
+                  </p>
+
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="px-3 py-1 bg-white/50 rounded-full text-neutral-600 font-medium">
+                      {CAT_LABEL[activity.category]}
                     </span>
-                    <span className={`text-xs px-2 py-1 rounded-full text-white ${
-                      activity.safety === 1 ? 'bg-green-500' : 'bg-earth-500'
-                    }`}>
-                      Niveau {activity.safety}
+                    <span className="text-neutral-500">
+                      {activity.safety === 1 ? "🟢 Sécurité standard" : "🟡 Sécurité renforcée"}
                     </span>
                   </div>
-                </div>
-
-                <h3 className="font-display font-semibold text-lg mb-3 text-neutral-800 leading-tight">
-                  {activity.title}
-                </h3>
-                
-                <p className="text-neutral-600 text-sm leading-relaxed mb-4">
-                  {activity.desc}
-                </p>
-
-                <div className="flex items-center justify-between text-xs">
-                  <span className="px-3 py-1 bg-white/50 rounded-full text-neutral-600 font-medium">
-                    {CAT_LABEL[activity.category]}
-                  </span>
-                  <span className="text-neutral-500">
-                    {activity.safety === 1 ? "🟢 Sécurité standard" : "🟡 Sécurité renforcée"}
-                  </span>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          {filteredActivities.length === 0 && (
-            <div className="text-center py-12">
-              <div className="text-4xl mb-4">🔍</div>
-              <h3 className="font-display font-semibold text-xl mb-2 text-neutral-700">
-                Aucune activité trouvée
-              </h3>
-              <p className="text-neutral-500">
-                Essayez de modifier vos critères de recherche ou de filtrage.
-              </p>
+                </article>
+              ))}
             </div>
-          )}
-        </section>
+
+            {!loading && activities.length === 0 && (
+              <div className="text-center py-12">
+                <div className="text-4xl mb-4">🔍</div>
+                <h3 className="font-display font-semibold text-xl mb-2 text-neutral-700">
+                  Aucune activité trouvée
+                </h3>
+                <p className="text-neutral-500">
+                  Essayez de modifier vos critères de recherche ou de filtrage.
+                </p>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Back to Home */}
         <section className="text-center mt-16">
