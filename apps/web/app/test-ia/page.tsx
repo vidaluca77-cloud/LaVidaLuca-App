@@ -7,7 +7,7 @@ export default function TestIA() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const api = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+  const api = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
   const exampleQuestions = [
     "Comment améliorer un sol argileux compact ?",
@@ -27,7 +27,7 @@ export default function TestIA() {
     setResponse("");
 
     try {
-      const res = await fetch(`${api}/guide`, {
+      const res = await fetch(`${api}/api/v1/guide`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
