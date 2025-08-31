@@ -102,3 +102,94 @@ def test_guide_health_endpoint():
     assert data["status"] == "healthy"
     assert data["service"] == "guide"
     assert "ai_enabled" in data
+
+
+def test_activities_endpoint():
+    """Test the activities endpoint."""
+    response = client.get("/api/v1/activities")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert "data" in data
+    assert "activities" in data["data"]
+    assert "total" in data["data"]
+    assert "categories" in data["data"]
+    assert isinstance(data["data"]["activities"], list)
+    assert data["data"]["total"] == 30
+    assert len(data["data"]["activities"]) == 30
+
+
+def test_activities_endpoint_with_search():
+    """Test the activities endpoint with search parameter."""
+    response = client.get("/api/v1/activities?search=mouton")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert "data" in data
+    activities = data["data"]["activities"]
+    # Should find activities containing "mouton"
+    if len(activities) > 0:
+        assert any("mouton" in activity["title"].lower() for activity in activities)
+
+
+def test_activities_endpoint_with_category_filter():
+    """Test the activities endpoint with category filter."""
+    response = client.get("/api/v1/activities?category=agri")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    activities = data["data"]["activities"]
+    # All returned activities should be in the "agri" category
+    if len(activities) > 0:
+        assert all(activity["category"] == "agri" for activity in activities)
+
+
+def test_activities_categories_endpoint():
+    """Test the activities categories endpoint."""
+    response = client.get("/api/v1/activities/categories")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert "data" in data
+    categories = data["data"]
+    expected_categories = ["agri", "transfo", "artisanat", "nature", "social"]
+    for cat in expected_categories:
+        assert cat in categories
+    assert categories["agri"] == "Agriculture"
+    assert categories["transfo"] == "Transformation"
+
+
+def test_contact_endpoint_valid_submission():
+    """Test the contact endpoint with valid data."""
+    contact_data = {
+        "nom": "Jean Dupont",
+        "email": "jean@example.com",
+        "telephone": "0123456789",
+        "typeAide": "Formation",
+        "message": "Je souhaite participer aux formations"
+    }
+    response = client.post("/api/v1/contact", json=contact_data)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert "message" in data
+    assert "contact_id" in data
+
+
+def test_contact_endpoint_missing_required_fields():
+    """Test the contact endpoint with missing required fields."""
+    contact_data = {
+        "nom": "Jean Dupont"
+        # Missing email and message (required fields)
+    }
+    response = client.post("/api/v1/contact", json=contact_data)
+    assert response.status_code == 422  # Validation error
+
+
+def test_contact_health_endpoint():
+    """Test the contact health endpoint."""
+    response = client.get("/api/v1/contact/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "healthy"
+    assert data["service"] == "contact"
