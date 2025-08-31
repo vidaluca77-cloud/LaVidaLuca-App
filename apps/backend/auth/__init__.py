@@ -8,7 +8,7 @@ from .dependencies import get_current_active_user, require_admin
 
 __all__ = [
     "create_access_token",
-    "verify_token", 
+    "verify_token",
     "get_current_user",
     "hash_password",
     "verify_password",

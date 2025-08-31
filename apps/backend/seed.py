@@ -31,8 +31,8 @@ async def create_sample_users(session: AsyncSession):
             profile={
                 "skills": ["management", "agriculture", "education"],
                 "bio": "Administrateur de la plateforme La Vida Luca",
-                "experience_level": "advanced"
-            }
+                "experience_level": "advanced",
+            },
         ),
         User(
             email="formateur@lavidaluca.fr",
@@ -47,8 +47,8 @@ async def create_sample_users(session: AsyncSession):
                 "location": "Provence, France",
                 "bio": "Formateur en agriculture durable et apiculture",
                 "experience_level": "expert",
-                "preferred_categories": ["agri", "nature"]
-            }
+                "preferred_categories": ["agri", "nature"],
+            },
         ),
         User(
             email="etudiant@mfr.edu",
@@ -63,14 +63,14 @@ async def create_sample_users(session: AsyncSession):
                 "location": "Bretagne, France",
                 "bio": "Étudiante en formation agricole",
                 "experience_level": "beginner",
-                "preferred_categories": ["agri", "transfo"]
-            }
-        )
+                "preferred_categories": ["agri", "transfo"],
+            },
+        ),
     ]
-    
+
     for user in users:
         session.add(user)
-    
+
     await session.commit()
     return users
 
@@ -101,7 +101,7 @@ Les participants apprendront également l'importance des abeilles dans l'écosys
             learning_objectives=[
                 "Comprendre l'organisation d'une colonie d'abeilles",
                 "Maîtriser les gestes de base de l'apiculteur",
-                "Identifier les risques et mesures de sécurité"
+                "Identifier les risques et mesures de sécurité",
             ],
             assessment_methods=["observation pratique", "quiz final"],
             pedagogical_notes="Prévoir une séance théorique en salle avant la pratique",
@@ -111,9 +111,9 @@ Les participants apprendront également l'importance des abeilles dans l'écosys
             season_tags=["spring", "summer"],
             external_resources={
                 "videos": ["https://example.com/apiculture-intro"],
-                "documents": ["Guide de l'apiculteur débutant"]
+                "documents": ["Guide de l'apiculteur débutant"],
             },
-            created_by=users[1].id
+            created_by=users[1].id,
         ),
         Activity(
             title="Jardinage en permaculture",
@@ -138,14 +138,14 @@ Au programme : design du jardin, associations de plantes, compostage, gestion de
             learning_objectives=[
                 "Comprendre les principes de la permaculture",
                 "Savoir créer des associations de plantes",
-                "Maîtriser les techniques de compostage"
+                "Maîtriser les techniques de compostage",
             ],
             assessment_methods=["réalisation pratique", "présentation orale"],
             is_published=True,
             is_featured=True,
             keywords=["permaculture", "biodiversité", "durabilité"],
             season_tags=["spring", "summer", "autumn"],
-            created_by=users[1].id
+            created_by=users[1].id,
         ),
         Activity(
             title="Fabrication de fromage artisanal",
@@ -170,13 +170,13 @@ Les participants repartiront avec leurs propres fromages et les connaissances po
             learning_objectives=[
                 "Maîtriser les étapes de fabrication du fromage",
                 "Comprendre l'importance de l'hygiène",
-                "Connaître les techniques d'affinage"
+                "Connaître les techniques d'affinage",
             ],
             assessment_methods=["réalisation pratique", "dégustation"],
             is_published=True,
             keywords=["fromage", "lait", "tradition", "savoir-faire"],
             season_tags=["autumn", "winter"],
-            created_by=users[0].id
+            created_by=users[0].id,
         ),
         Activity(
             title="Poterie traditionnelle",
@@ -201,13 +201,13 @@ Cet atelier permet de renouer avec un savoir-faire ancestral tout en développan
             learning_objectives=[
                 "Maîtriser les techniques de base du tournage",
                 "Comprendre le processus de cuisson",
-                "Développer sa créativité artistique"
+                "Développer sa créativité artistique",
             ],
             assessment_methods=["réalisation d'une pièce", "auto-évaluation"],
             is_published=True,
             keywords=["argile", "créativité", "artisanat", "tradition"],
             season_tags=["autumn", "winter"],
-            created_by=users[1].id
+            created_by=users[1].id,
         ),
         Activity(
             title="Observation de la faune locale",
@@ -232,19 +232,19 @@ Une belle occasion de développer son sens de l'observation et sa connaissance d
             learning_objectives=[
                 "Savoir identifier les principales espèces locales",
                 "Comprendre les écosystèmes naturels",
-                "Développer l'observation naturaliste"
+                "Développer l'observation naturaliste",
             ],
             assessment_methods=["carnet d'observation", "présentation d'espèce"],
             is_published=True,
             keywords=["faune", "nature", "observation", "biodiversité"],
             season_tags=["spring", "summer", "autumn"],
-            created_by=users[1].id
-        )
+            created_by=users[1].id,
+        ),
     ]
-    
+
     for activity in activities:
         session.add(activity)
-    
+
     await session.commit()
     return activities
 
@@ -263,10 +263,7 @@ async def create_sample_contacts(session: AsyncSession):
             status="new",
             priority="normal",
             consent_privacy=True,
-            metadata={
-                "source": "website",
-                "referrer": "google"
-            }
+            metadata={"source": "website", "referrer": "google"},
         ),
         Contact(
             name="Sophie Martin",
@@ -277,7 +274,7 @@ async def create_sample_contacts(session: AsyncSession):
             status="in_progress",
             priority="normal",
             consent_privacy=True,
-            consent_marketing=True
+            consent_marketing=True,
         ),
         Contact(
             name="Lucas Bernard",
@@ -291,13 +288,13 @@ async def create_sample_contacts(session: AsyncSession):
             is_responded=True,
             response_count=2,
             consent_privacy=True,
-            tags=["apiculture", "formateur"]
-        )
+            tags=["apiculture", "formateur"],
+        ),
     ]
-    
+
     for contact in contacts:
         session.add(contact)
-    
+
     await session.commit()
     return contacts
 
@@ -305,28 +302,28 @@ async def create_sample_contacts(session: AsyncSession):
 async def seed_database():
     """Main function to seed the database with sample data."""
     print("🌱 Seeding database with sample data...")
-    
+
     async with AsyncSessionLocal() as session:
         try:
             # Create sample data
             print("👤 Creating sample users...")
             users = await create_sample_users(session)
             print(f"✅ Created {len(users)} users")
-            
+
             print("📚 Creating sample activities...")
             activities = await create_sample_activities(session, users)
             print(f"✅ Created {len(activities)} activities")
-            
+
             print("📞 Creating sample contacts...")
             contacts = await create_sample_contacts(session)
             print(f"✅ Created {len(contacts)} contacts")
-            
+
             print("\n🎉 Database seeded successfully!")
             print("\nSample credentials:")
             print("Admin: admin@lavidaluca.fr / AdminPassword123")
             print("Trainer: formateur@lavidaluca.fr / FormateurPassword123")
             print("Student: etudiant@mfr.edu / EtudiantPassword123")
-            
+
         except Exception as e:
             print(f"❌ Error seeding database: {e}")
             await session.rollback()

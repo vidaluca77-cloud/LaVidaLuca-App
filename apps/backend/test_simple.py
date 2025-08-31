@@ -32,10 +32,7 @@ def test_health_endpoint():
 def test_guide_endpoint_soil_question():
     """Test the guide endpoint with soil question."""
     test_question = "Comment améliorer un sol argileux ?"
-    response = client.post(
-        "/api/v1/guide",
-        json={"question": test_question}
-    )
+    response = client.post("/api/v1/guide", json={"question": test_question})
     assert response.status_code == 200
     data = response.json()
     assert "answer" in data
@@ -49,10 +46,7 @@ def test_guide_endpoint_soil_question():
 def test_guide_endpoint_gardening_question():
     """Test the guide endpoint with gardening question."""
     test_question = "Quels sont les meilleurs légumes à planter ?"
-    response = client.post(
-        "/api/v1/guide",
-        json={"question": test_question}
-    )
+    response = client.post("/api/v1/guide", json={"question": test_question})
     assert response.status_code == 200
     data = response.json()
     assert "answer" in data
@@ -62,10 +56,7 @@ def test_guide_endpoint_gardening_question():
 def test_guide_endpoint_compost_question():
     """Test the guide endpoint with compost question."""
     test_question = "Comment faire du compost ?"
-    response = client.post(
-        "/api/v1/guide",
-        json={"question": test_question}
-    )
+    response = client.post("/api/v1/guide", json={"question": test_question})
     assert response.status_code == 200
     data = response.json()
     assert "answer" in data
@@ -75,10 +66,7 @@ def test_guide_endpoint_compost_question():
 def test_guide_endpoint_general_question():
     """Test the guide endpoint with general question."""
     test_question = "Bonjour, que peux-tu faire ?"
-    response = client.post(
-        "/api/v1/guide",
-        json={"question": test_question}
-    )
+    response = client.post("/api/v1/guide", json={"question": test_question})
     assert response.status_code == 200
     data = response.json()
     assert "answer" in data
@@ -88,8 +76,7 @@ def test_guide_endpoint_general_question():
 def test_guide_endpoint_invalid_request():
     """Test the guide endpoint with invalid request."""
     response = client.post(
-        "/api/v1/guide",
-        json={}  # Missing required 'question' field
+        "/api/v1/guide", json={}  # Missing required 'question' field
     )
     assert response.status_code == 422  # Validation error
 
@@ -166,7 +153,7 @@ def test_contact_endpoint_valid_submission():
         "email": "jean@example.com",
         "telephone": "0123456789",
         "typeAide": "Formation",
-        "message": "Je souhaite participer aux formations"
+        "message": "Je souhaite participer aux formations",
     }
     response = client.post("/api/v1/contact", json=contact_data)
     assert response.status_code == 200

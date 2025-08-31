@@ -40,17 +40,17 @@ def db_session():
     connection = engine.connect()
     transaction = connection.begin()
     session = TestingSessionLocal(bind=connection)
-    
+
     # Override the dependency
     app.dependency_overrides[get_db] = lambda: session
-    
+
     yield session
-    
+
     # Cleanup
     session.close()
     transaction.rollback()
     connection.close()
-    
+
     # Remove override
     if get_db in app.dependency_overrides:
         del app.dependency_overrides[get_db]

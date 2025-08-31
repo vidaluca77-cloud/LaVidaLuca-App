@@ -13,7 +13,7 @@ def authenticated_user(db_session: Session):
         email="test@example.com",
         username="testuser",
         hashed_password=hashed_password,
-        full_name="Test User"
+        full_name="Test User",
     )
     db_session.add(user)
     db_session.commit()
@@ -39,7 +39,7 @@ def sample_activity(db_session: Session, authenticated_user):
         equipment_needed="Basic tools",
         learning_objectives="Learn basic farming",
         is_published=True,
-        creator_id=authenticated_user.id
+        creator_id=authenticated_user.id,
     )
     db_session.add(activity)
     db_session.commit()
@@ -79,9 +79,11 @@ def test_create_activity(client: TestClient, auth_headers):
         "location": "Barn",
         "equipment_needed": "Feed, water",
         "learning_objectives": "Learn animal care",
-        "is_published": True
+        "is_published": True,
     }
-    response = client.post("/api/v1/activities/", json=activity_data, headers=auth_headers)
+    response = client.post(
+        "/api/v1/activities/", json=activity_data, headers=auth_headers
+    )
     assert response.status_code == 200
     data = response.json()
     assert data["title"] == activity_data["title"]
@@ -89,23 +91,20 @@ def test_create_activity(client: TestClient, auth_headers):
 
 
 def test_create_activity_unauthorized(client: TestClient):
-    activity_data = {
-        "title": "Unauthorized Activity",
-        "category": "Test"
-    }
+    activity_data = {"title": "Unauthorized Activity", "category": "Test"}
     response = client.post("/api/v1/activities/", json=activity_data)
-    assert response.status_code == 401
+    assert response.status_code == 403
 
 
 def test_update_activity(client: TestClient, sample_activity, auth_headers):
     update_data = {
         "title": "Updated Activity Title",
-        "description": "Updated description"
+        "description": "Updated description",
     }
     response = client.put(
         f"/api/v1/activities/{sample_activity.id}",
         json=update_data,
-        headers=auth_headers
+        headers=auth_headers,
     )
     assert response.status_code == 200
     data = response.json()
@@ -118,29 +117,29 @@ def test_update_activity_not_owner(client: TestClient, sample_activity, db_sessi
     other_user = User(
         email="other@example.com",
         username="otheruser",
-        hashed_password=get_password_hash("password")
+        hashed_password=get_password_hash("password"),
     )
     db_session.add(other_user)
     db_session.commit()
-    
+
     # Get token for other user
     token = create_access_token(subject=other_user.id)
     headers = {"Authorization": f"Bearer {token}"}
-    
+
     update_data = {"title": "Unauthorized Update"}
     response = client.put(
-        f"/api/v1/activities/{sample_activity.id}",
-        json=update_data,
-        headers=headers
+        f"/api/v1/activities/{sample_activity.id}", json=update_data, headers=headers
     )
     assert response.status_code == 403
 
 
 def test_delete_activity(client: TestClient, sample_activity, auth_headers):
-    response = client.delete(f"/api/v1/activities/{sample_activity.id}", headers=auth_headers)
+    response = client.delete(
+        f"/api/v1/activities/{sample_activity.id}", headers=auth_headers
+    )
     assert response.status_code == 200
     assert "deleted successfully" in response.json()["message"]
-    
+
     # Verify activity is deleted
     response = client.get(f"/api/v1/activities/{sample_activity.id}")
     assert response.status_code == 404

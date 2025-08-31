@@ -14,27 +14,23 @@ __all__ = [
     "UserRegister",
     "Token",
     "TokenData",
-    
     # User schemas
     "UserBase",
     "UserCreate",
     "UserUpdate",
     "UserResponse",
     "UserProfile",
-    
     # Activity schemas
     "ActivityBase",
     "ActivityCreate",
     "ActivityUpdate",
     "ActivityResponse",
     "ActivitySearchFilters",
-    
     # Contact schemas
     "ContactBase",
     "ContactCreate",
     "ContactUpdate",
     "ContactResponse",
-    
     # Common schemas
     "ApiResponse",
     "ErrorResponse",

@@ -9,7 +9,9 @@ from .core.config import settings
 
 def load_custom_openapi():
     """Load custom OpenAPI specification from docs/openapi.json"""
-    docs_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs", "openapi.json")
+    docs_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)), "docs", "openapi.json"
+    )
     try:
         with open(docs_path, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -33,7 +35,7 @@ def create_app() -> FastAPI:
             "filter": True,
             "showExtensions": True,
             "showCommonExtensions": True,
-        }
+        },
     )
 
     # CORS middleware
@@ -52,13 +54,13 @@ def create_app() -> FastAPI:
     def custom_openapi():
         if app.openapi_schema:
             return app.openapi_schema
-        
+
         # Try to load custom OpenAPI spec first
         custom_spec = load_custom_openapi()
         if custom_spec:
             app.openapi_schema = custom_spec
             return app.openapi_schema
-        
+
         # Fallback to auto-generated OpenAPI
         openapi_schema = get_openapi(
             title=settings.PROJECT_NAME,
@@ -66,41 +68,38 @@ def create_app() -> FastAPI:
             description=settings.DESCRIPTION,
             routes=app.routes,
         )
-        
+
         # Add security scheme
         openapi_schema["components"]["securitySchemes"] = {
             "HTTPBearer": {
                 "type": "http",
                 "scheme": "bearer",
                 "bearerFormat": "JWT",
-                "description": "JWT token obtained from /auth/login endpoint"
+                "description": "JWT token obtained from /auth/login endpoint",
             }
         }
-        
+
         # Add tags
         openapi_schema["tags"] = [
             {
                 "name": "Authentication",
-                "description": "User authentication and authorization endpoints"
+                "description": "User authentication and authorization endpoints",
             },
             {
-                "name": "Activities", 
-                "description": "Learning activity management endpoints"
+                "name": "Activities",
+                "description": "Learning activity management endpoints",
             },
-            {
-                "name": "Users",
-                "description": "User management endpoints"
-            },
+            {"name": "Users", "description": "User management endpoints"},
             {
                 "name": "Suggestions",
-                "description": "AI-powered activity suggestion endpoints"
+                "description": "AI-powered activity suggestion endpoints",
             },
             {
                 "name": "Contacts",
-                "description": "Contact form submission and management endpoints"
-            }
+                "description": "Contact form submission and management endpoints",
+            },
         ]
-        
+
         app.openapi_schema = openapi_schema
         return app.openapi_schema
 
@@ -111,7 +110,7 @@ def create_app() -> FastAPI:
         return {
             "message": "Welcome to LaVidaLuca Backend API",
             "version": settings.VERSION,
-            "docs": "/docs"
+            "docs": "/docs",
         }
 
     @app.get("/health")
