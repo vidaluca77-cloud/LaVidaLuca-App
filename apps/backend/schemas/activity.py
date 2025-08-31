@@ -10,6 +10,7 @@ from enum import Enum
 
 class ActivityCategory(str, Enum):
     """Activity categories."""
+
     AGRI = "agri"
     TRANSFO = "transfo"
     ARTISANAT = "artisanat"
@@ -19,6 +20,7 @@ class ActivityCategory(str, Enum):
 
 class LocationType(str, Enum):
     """Location types for activities."""
+
     INDOOR = "indoor"
     OUTDOOR = "outdoor"
     FIELD = "field"
@@ -28,6 +30,7 @@ class LocationType(str, Enum):
 
 class ActivityBase(BaseModel):
     """Base activity schema."""
+
     title: str = Field(..., max_length=255)
     category: ActivityCategory
     summary: str = Field(..., max_length=1000)
@@ -40,6 +43,7 @@ class ActivityBase(BaseModel):
 
 class ActivityCreate(ActivityBase):
     """Activity creation schema."""
+
     difficulty_level: int = Field(1, ge=1, le=5)
     min_participants: int = Field(1, ge=1)
     max_participants: Optional[int] = Field(None, gt=0)
@@ -54,26 +58,27 @@ class ActivityCreate(ActivityBase):
     keywords: Optional[List[str]] = Field(default_factory=list)
     season_tags: Optional[List[str]] = Field(default_factory=list)
     external_resources: Optional[Dict[str, Any]] = Field(default_factory=dict)
-    
-    @validator('max_participants')
+
+    @validator("max_participants")
     def validate_max_participants(cls, v, values):
         """Ensure max_participants >= min_participants."""
-        if v is not None and 'min_participants' in values:
-            if v < values['min_participants']:
-                raise ValueError('max_participants must be >= min_participants')
+        if v is not None and "min_participants" in values:
+            if v < values["min_participants"]:
+                raise ValueError("max_participants must be >= min_participants")
         return v
-    
-    @validator('age_max')
+
+    @validator("age_max")
     def validate_age_max(cls, v, values):
         """Ensure age_max >= age_min."""
-        if v is not None and 'age_min' in values and values['age_min'] is not None:
-            if v < values['age_min']:
-                raise ValueError('age_max must be >= age_min')
+        if v is not None and "age_min" in values and values["age_min"] is not None:
+            if v < values["age_min"]:
+                raise ValueError("age_max must be >= age_min")
         return v
 
 
 class ActivityUpdate(BaseModel):
     """Activity update schema."""
+
     title: Optional[str] = Field(None, max_length=255)
     category: Optional[ActivityCategory] = None
     summary: Optional[str] = Field(None, max_length=1000)
@@ -102,6 +107,7 @@ class ActivityUpdate(BaseModel):
 
 class ActivityResponse(BaseModel):
     """Activity response schema."""
+
     id: UUID4
     title: str
     category: str
@@ -130,13 +136,14 @@ class ActivityResponse(BaseModel):
     metadata: Dict[str, Any]
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
-    
+
     class Config:
         from_attributes = True
 
 
 class ActivityListResponse(BaseModel):
     """Activity list response schema (minimal info for listings)."""
+
     id: UUID4
     title: str
     category: str
@@ -147,13 +154,14 @@ class ActivityListResponse(BaseModel):
     difficulty_level: int
     is_featured: bool
     created_at: Optional[datetime]
-    
+
     class Config:
         from_attributes = True
 
 
 class ActivitySearchFilters(BaseModel):
     """Activity search and filter parameters."""
+
     category: Optional[ActivityCategory] = None
     min_duration: Optional[int] = Field(None, ge=0)
     max_duration: Optional[int] = Field(None, gt=0)
@@ -164,11 +172,15 @@ class ActivitySearchFilters(BaseModel):
     location_type: Optional[LocationType] = None
     season_tags: Optional[List[str]] = None
     is_featured: Optional[bool] = None
-    
-    @validator('max_duration')
+
+    @validator("max_duration")
     def validate_max_duration(cls, v, values):
         """Ensure max_duration >= min_duration."""
-        if v is not None and 'min_duration' in values and values['min_duration'] is not None:
-            if v < values['min_duration']:
-                raise ValueError('max_duration must be >= min_duration')
+        if (
+            v is not None
+            and "min_duration" in values
+            and values["min_duration"] is not None
+        ):
+            if v < values["min_duration"]:
+                raise ValueError("max_duration must be >= min_duration")
         return v

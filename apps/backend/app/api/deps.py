@@ -12,7 +12,7 @@ security = HTTPBearer()
 
 def get_current_user(
     db: Session = Depends(get_db),
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> User:
     token = credentials.credentials
     user_id = verify_token(token)

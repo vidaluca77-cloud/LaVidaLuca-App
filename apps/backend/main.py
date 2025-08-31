@@ -15,14 +15,17 @@ from routes import auth, users, activities, contacts, suggestions, guide
 from middleware import setup_middleware
 from exceptions import setup_exception_handlers
 from monitoring import (
-    init_sentry, setup_logging, context_logger, set_app_info, 
-    update_system_metrics, APP_INFO
+    init_sentry,
+    setup_logging,
+    context_logger,
+    set_app_info,
+    update_system_metrics,
+    APP_INFO,
 )
 
 # Initialize monitoring
 init_sentry(
-    environment=settings.ENVIRONMENT,
-    release=os.getenv("RELEASE_VERSION", "1.0.0")
+    environment=settings.ENVIRONMENT, release=os.getenv("RELEASE_VERSION", "1.0.0")
 )
 
 # Setup structured logging
@@ -32,14 +35,13 @@ app_logger = setup_logging("la-vida-luca-backend")
 set_app_info(
     version="1.0.0",
     environment=settings.ENVIRONMENT,
-    build_date=os.getenv("BUILD_DATE", "unknown")
+    build_date=os.getenv("BUILD_DATE", "unknown"),
 )
 
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -48,7 +50,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
     context_logger.info("Starting La Vida Luca API...")
-    
+
     # Try to connect to database
     try:
         await database.connect()
@@ -56,12 +58,12 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         context_logger.warning(f"Database connection failed: {e}")
         context_logger.info("Starting API without database connection")
-    
+
     # Update system metrics on startup
     update_system_metrics()
-    
+
     yield
-    
+
     # Cleanup
     try:
         await database.disconnect()
@@ -73,7 +75,7 @@ async def lifespan(app: FastAPI):
 
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
-    
+
     app = FastAPI(
         title="La Vida Luca API",
         description="API pour la plateforme collaborative La Vida Luca",
@@ -82,21 +84,25 @@ def create_app() -> FastAPI:
         docs_url="/docs" if settings.ENVIRONMENT != "production" else None,
         redoc_url="/redoc" if settings.ENVIRONMENT != "production" else None,
     )
-    
+
     # Setup middleware
     setup_middleware(app)
-    
+
     # Setup exception handlers
     setup_exception_handlers(app)
-    
+
     # Include routes
     app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
     app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
-    app.include_router(activities.router, prefix="/api/v1/activities", tags=["activities"])
+    app.include_router(
+        activities.router, prefix="/api/v1/activities", tags=["activities"]
+    )
     app.include_router(contacts.router, prefix="/api/v1/contacts", tags=["contacts"])
-    app.include_router(suggestions.router, prefix="/api/v1/suggestions", tags=["suggestions"])
+    app.include_router(
+        suggestions.router, prefix="/api/v1/suggestions", tags=["suggestions"]
+    )
     app.include_router(guide.router, prefix="/api/v1", tags=["guide"])
-    
+
     @app.get("/")
     async def root():
         """Root endpoint."""
@@ -104,9 +110,9 @@ def create_app() -> FastAPI:
             "message": "Welcome to La Vida Luca API",
             "version": "1.0.0",
             "docs": "/docs",
-            "status": "healthy"
+            "status": "healthy",
         }
-    
+
     @app.get("/health")
     async def health_check():
         """Health check endpoint."""
@@ -117,28 +123,25 @@ def create_app() -> FastAPI:
         except Exception as e:
             context_logger.error("Database health check failed", error=str(e))
             db_status = "unhealthy"
-        
+
         return {
             "status": "healthy" if db_status == "healthy" else "degraded",
             "database": db_status,
-            "environment": settings.ENVIRONMENT
+            "environment": settings.ENVIRONMENT,
         }
-    
+
     # Add metrics endpoint
     @app.get("/metrics")
     async def metrics():
         """Prometheus metrics endpoint."""
         from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
         from fastapi import Response
-        
+
         # Update system metrics before serving
         update_system_metrics()
-        
-        return Response(
-            generate_latest(),
-            media_type=CONTENT_TYPE_LATEST
-        )
-    
+
+        return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
     return app
 
 

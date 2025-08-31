@@ -16,12 +16,14 @@ router = APIRouter()
 
 class GuideRequest(BaseModel):
     """Request model for guide endpoint."""
+
     question: str
     context: Optional[str] = None
 
 
 class GuideResponse(BaseModel):
     """Response model for guide endpoint."""
+
     answer: str
     confidence: Optional[float] = None
     sources: Optional[list[str]] = None
@@ -31,7 +33,7 @@ class GuideResponse(BaseModel):
 async def get_guide(request: GuideRequest):
     """
     Get AI-powered guidance for questions about sustainable living and gardening.
-    
+
     This endpoint provides helpful advice and guidance for questions related to:
     - Sustainable living practices
     - Gardening and permaculture
@@ -55,8 +57,11 @@ async def get_guide(request: GuideRequest):
 5. **Paillis permanent** : Gardez le sol couvert pour protéger sa structure et nourrir la vie microbienne.
 
 Ces méthodes améliorent progressivement la texture et la fertilité de votre sol argileux."""
-            
-        elif "jardinage" in request.question.lower() or "plante" in request.question.lower():
+
+        elif (
+            "jardinage" in request.question.lower()
+            or "plante" in request.question.lower()
+        ):
             answer = """Pour réussir votre jardinage, voici des conseils de base :
 
 1. **Connaître son sol** : Testez le pH et la composition de votre terre
@@ -66,7 +71,7 @@ Ces méthodes améliorent progressivement la texture et la fertilité de votre s
 5. **Composter** : Recyclez vos déchets verts pour nourrir le sol
 
 Besoin de conseils plus spécifiques ? N'hésitez pas à préciser votre question !"""
-        
+
         else:
             answer = f"""Merci pour votre question : "{request.question}"
 
@@ -81,14 +86,14 @@ Pouvez-vous préciser votre domaine d'intérêt pour que je puisse vous donner d
         return GuideResponse(
             answer=answer,
             confidence=0.8,
-            sources=["La Vida Luca Knowledge Base", "Sustainable Living Practices"]
+            sources=["La Vida Luca Knowledge Base", "Sustainable Living Practices"],
         )
-        
+
     except Exception as e:
         logger.error(f"Error in guide endpoint: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail="Une erreur est survenue lors du traitement de votre question"
+            detail="Une erreur est survenue lors du traitement de votre question",
         )
 
 
@@ -98,5 +103,5 @@ async def guide_health():
     return {
         "status": "healthy",
         "service": "guide",
-        "ai_enabled": settings.OPENAI_API_KEY is not None
+        "ai_enabled": settings.OPENAI_API_KEY is not None,
     }

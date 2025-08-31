@@ -10,7 +10,7 @@ def test_register_user(client: TestClient):
         "email": "test@example.com",
         "username": "testuser",
         "password": "testpassword",
-        "full_name": "Test User"
+        "full_name": "Test User",
     }
     response = client.post("/api/v1/auth/register", json=user_data)
     assert response.status_code == 200
@@ -25,12 +25,12 @@ def test_register_duplicate_user(client: TestClient):
     user_data = {
         "email": "test@example.com",
         "username": "testuser",
-        "password": "testpassword"
+        "password": "testpassword",
     }
     # Register first user
     response = client.post("/api/v1/auth/register", json=user_data)
     assert response.status_code == 200
-    
+
     # Try to register same user again
     response = client.post("/api/v1/auth/register", json=user_data)
     assert response.status_code == 400
@@ -45,16 +45,13 @@ def test_login_user(client: TestClient, db_session: Session):
         email="test@example.com",
         username="testuser",
         hashed_password=hashed_password,
-        full_name="Test User"
+        full_name="Test User",
     )
     db_session.add(user)
     db_session.commit()
-    
+
     # Test login
-    login_data = {
-        "username": "testuser",
-        "password": password
-    }
+    login_data = {"username": "testuser", "password": password}
     response = client.post("/api/v1/auth/login", json=login_data)
     assert response.status_code == 200
     data = response.json()
@@ -63,10 +60,7 @@ def test_login_user(client: TestClient, db_session: Session):
 
 
 def test_login_invalid_credentials(client: TestClient):
-    login_data = {
-        "username": "nonexistent",
-        "password": "wrongpassword"
-    }
+    login_data = {"username": "nonexistent", "password": "wrongpassword"}
     response = client.post("/api/v1/auth/login", json=login_data)
     assert response.status_code == 401
     assert "Incorrect username or password" in response.json()["detail"]

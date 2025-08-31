@@ -14,6 +14,7 @@ router = APIRouter()
 
 class ContactType(str, Enum):
     """Contact request types."""
+
     GENERAL = "general"
     PARTNERSHIP = "partnership"
     SUPPORT = "support"
@@ -24,6 +25,7 @@ class ContactType(str, Enum):
 
 class ContactCreate(BaseModel):
     """Contact creation schema."""
+
     name: str = Field(..., max_length=255)
     email: EmailStr
     phone: str = Field(None, max_length=50)
@@ -45,13 +47,14 @@ class ContactCreate(BaseModel):
                 "message": "Bonjour, nous souhaitons explorer une collaboration avec La Vida Luca pour nos formations...",
                 "contact_type": "partnership",
                 "consent_privacy": True,
-                "consent_marketing": False
+                "consent_marketing": False,
             }
         }
 
 
 class ContactResponse(BaseModel):
     """Contact response schema."""
+
     id: str
     name: str
     email: EmailStr
@@ -71,7 +74,7 @@ class ContactResponse(BaseModel):
                 "message": "Bonjour, nous souhaitons explorer une collaboration...",
                 "contact_type": "partnership",
                 "status": "new",
-                "created_at": "2024-01-15T10:30:00Z"
+                "created_at": "2024-01-15T10:30:00Z",
             }
         }
 
@@ -80,10 +83,10 @@ class ContactResponse(BaseModel):
 def create_contact(contact_data: ContactCreate):
     """
     Submit a new contact form (public endpoint).
-    
+
     This endpoint allows users to submit contact forms without authentication.
     All submissions are stored for review by administrators.
-    
+
     - **name**: Full name of the person submitting the form
     - **email**: Valid email address for contact
     - **subject**: Brief subject line for the inquiry
@@ -96,7 +99,7 @@ def create_contact(contact_data: ContactCreate):
     # For now, return a mock response
     import uuid
     from datetime import datetime
-    
+
     return ContactResponse(
         id=str(uuid.uuid4()),
         name=contact_data.name,
@@ -105,7 +108,7 @@ def create_contact(contact_data: ContactCreate):
         message=contact_data.message,
         contact_type=contact_data.contact_type.value,
         status="new",
-        created_at=datetime.utcnow().isoformat() + "Z"
+        created_at=datetime.utcnow().isoformat() + "Z",
     )
 
 
@@ -113,7 +116,7 @@ def create_contact(contact_data: ContactCreate):
 def get_contact_types():
     """
     Get available contact form types.
-    
+
     Returns a list of all available contact types that can be used
     when submitting a contact form.
     """

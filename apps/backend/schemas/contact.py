@@ -10,6 +10,7 @@ from enum import Enum
 
 class ContactType(str, Enum):
     """Contact request types."""
+
     GENERAL = "general"
     PARTNERSHIP = "partnership"
     SUPPORT = "support"
@@ -20,6 +21,7 @@ class ContactType(str, Enum):
 
 class ContactStatus(str, Enum):
     """Contact status options."""
+
     NEW = "new"
     IN_PROGRESS = "in_progress"
     RESOLVED = "resolved"
@@ -28,6 +30,7 @@ class ContactStatus(str, Enum):
 
 class ContactPriority(str, Enum):
     """Contact priority levels."""
+
     LOW = "low"
     NORMAL = "normal"
     HIGH = "high"
@@ -36,6 +39,7 @@ class ContactPriority(str, Enum):
 
 class ContactBase(BaseModel):
     """Base contact schema."""
+
     name: str = Field(..., max_length=255)
     email: EmailStr
     phone: Optional[str] = Field(None, max_length=50)
@@ -47,10 +51,11 @@ class ContactBase(BaseModel):
 
 class ContactCreate(ContactBase):
     """Contact creation schema."""
+
     consent_privacy: bool = True
     consent_marketing: bool = False
     metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
-    
+
     class Config:
         schema_extra = {
             "example": {
@@ -62,13 +67,14 @@ class ContactCreate(ContactBase):
                 "message": "Bonjour, nous souhaitons explorer une collaboration avec La Vida Luca pour nos formations...",
                 "contact_type": "partnership",
                 "consent_privacy": True,
-                "consent_marketing": False
+                "consent_marketing": False,
             }
         }
 
 
 class ContactUpdate(BaseModel):
     """Contact update schema (for admins)."""
+
     status: Optional[ContactStatus] = None
     priority: Optional[ContactPriority] = None
     assigned_to: Optional[UUID4] = None
@@ -78,6 +84,7 @@ class ContactUpdate(BaseModel):
 
 class ContactResponse(BaseModel):
     """Contact response schema."""
+
     id: UUID4
     name: str
     email: EmailStr
@@ -98,13 +105,14 @@ class ContactResponse(BaseModel):
     consent_marketing: bool
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
-    
+
     class Config:
         from_attributes = True
 
 
 class ContactListResponse(BaseModel):
     """Contact list response schema (minimal info for listings)."""
+
     id: UUID4
     name: str
     email: EmailStr
@@ -114,13 +122,14 @@ class ContactListResponse(BaseModel):
     priority: str
     is_responded: bool
     created_at: Optional[datetime]
-    
+
     class Config:
         from_attributes = True
 
 
 class ContactFilters(BaseModel):
     """Contact search and filter parameters."""
+
     contact_type: Optional[ContactType] = None
     status: Optional[ContactStatus] = None
     priority: Optional[ContactPriority] = None

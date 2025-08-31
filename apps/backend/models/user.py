@@ -12,38 +12,38 @@ from ..database import Base
 
 class User(Base):
     """User model for authentication and profiles."""
-    
+
     __tablename__ = "users"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = Column(String(255), unique=True, nullable=False, index=True)
     hashed_password = Column(String(255), nullable=False)
-    
+
     # Profile information
     first_name = Column(String(100))
     last_name = Column(String(100))
     profile = Column(JSON, default=dict)  # Flexible profile data
-    
+
     # User status
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)
     is_superuser = Column(Boolean, default=False)
-    
+
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     last_login = Column(DateTime(timezone=True))
-    
+
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email})>"
-    
+
     @property
     def full_name(self):
         """Get user's full name."""
         if self.first_name and self.last_name:
             return f"{self.first_name} {self.last_name}"
         return self.email
-    
+
     def to_dict(self):
         """Convert user to dictionary (excluding sensitive data)."""
         return {

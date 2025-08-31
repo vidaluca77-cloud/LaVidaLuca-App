@@ -36,13 +36,11 @@ def sample_user_data():
         "email": "test@example.com",
         "password": "TestPassword123",
         "first_name": "Test",
-        "last_name": "User"
+        "last_name": "User",
     }
 
 
 @pytest.fixture
 def sample_guide_question():
     """Sample guide question for testing."""
-    return {
-        "question": "Comment améliorer un sol argileux compact ?"
-    }
+    return {"question": "Comment améliorer un sol argileux compact ?"}
