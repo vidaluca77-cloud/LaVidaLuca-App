@@ -1,4 +1,21 @@
+"use client";
+import { useState, useEffect } from "react";
+
 export default function Home() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsLoggedIn(false);
+    window.location.reload();
+  };
+
   return (
     <div className="min-h-screen">
       {/* Navigation */}
@@ -15,9 +32,26 @@ export default function Home() {
             <a href="/proposer-aide" className="text-neutral-700 hover:text-primary-600 transition-colors font-medium">
               Contribuer
             </a>
-            <a href="/test-ia" className="btn btn-primary">
+            <a href="/ai-assistant" className="text-neutral-700 hover:text-primary-600 transition-colors font-medium">
               Assistant IA
             </a>
+            {isLoggedIn ? (
+              <>
+                <a href="/dashboard" className="btn btn-primary">
+                  Dashboard
+                </a>
+                <button
+                  onClick={handleLogout}
+                  className="text-red-600 hover:text-red-700 transition-colors font-medium"
+                >
+                  Déconnexion
+                </button>
+              </>
+            ) : (
+              <a href="/auth" className="btn btn-primary">
+                Se connecter
+              </a>
+            )}
           </div>
         </div>
       </nav>
@@ -48,7 +82,7 @@ export default function Home() {
               <a href="/proposer-aide" className="btn btn-secondary text-base px-8 py-3">
                 🤝 Proposer mon aide
               </a>
-              <a href="/test-ia" className="btn btn-success text-base px-8 py-3">
+              <a href="/ai-assistant" className="btn btn-success text-base px-8 py-3">
                 🤖 Tester l'assistant IA
               </a>
             </div>
