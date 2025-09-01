@@ -98,10 +98,26 @@ export default function ProposerAide() {
           <p className="text-xl text-neutral-600 mb-2 max-w-3xl mx-auto">
             Rejoignez notre communauté et contribuez au projet
           </p>
-          <p className="text-neutral-500 max-w-2xl mx-auto">
-            Si vous souhaitez contribuer au projet (temps, matériel, compétences), 
-            laissez vos coordonnées ci-dessous.
+          <p className="text-neutral-500 max-w-2xl mx-auto mb-8">
+            Plusieurs façons de contribuer : créer des activités, partager vos connaissances ou nous contacter.
           </p>
+
+          {/* Call to Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+            <a href="/create-activity" className="btn btn-primary text-base px-8 py-3">
+              🌱 Créer une activité
+            </a>
+            <a href="/auth" className="btn btn-secondary text-base px-8 py-3">
+              👤 Se connecter / S'inscrire
+            </a>
+            <a href="/ai-assistant" className="btn btn-success text-base px-8 py-3">
+              🤖 Demander conseil à l'IA
+            </a>
+          </div>
+
+          <div className="text-center mb-8">
+            <p className="text-neutral-600 mb-4">Ou laissez-nous vos coordonnées pour d'autres types de contributions :</p>
+          </div>
         </section>
 
         {/* Success Message */}
